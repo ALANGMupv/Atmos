@@ -29,9 +29,9 @@ describe("Test de Lógica de Negocio", function() {
     });
 
     it("guardarMedida inserta y devuelve la fila correctamente", async function() {
-        const medida = await logica.guardarMedida("TEST-UUID", 1, 123, 99);
+        const medida = await logica.guardarMedida("TEST-UUID", 12, 123, 99);
         assert.strictEqual(medida.uuid, "TEST-UUID");
-        assert.strictEqual(medida.gas, 1);
+        assert.strictEqual(medida.gas, 12);
         assert.strictEqual(medida.valor, 123);
         assert.strictEqual(medida.contador, 99);
     });
