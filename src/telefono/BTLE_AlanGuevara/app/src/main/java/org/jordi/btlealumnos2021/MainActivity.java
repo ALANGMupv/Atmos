@@ -197,7 +197,7 @@ public class MainActivity extends AppCompatActivity {
 
                     int gas = (major >> 8) & 0xFF;   // parte alta = tipo (11 = CO2)
                     int contador = major & 0xFF;     // parte baja = contador
-                    int valor = minor;               // valor de CO2
+                    float valor = minor / 1000.0f; // Entre 1000 para la conversión y f para que se muestren los decimales
 
                     // Nuevo: solo enviamos si el contador ha cambiado
                     if (contador != ultimoContador) {
