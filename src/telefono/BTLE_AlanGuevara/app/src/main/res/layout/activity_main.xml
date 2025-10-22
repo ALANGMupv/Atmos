@@ -30,4 +30,16 @@
         android:onClick="botonBuscarNuestroDispositivoBTLEPulsado"
         android:text="Buscar placa Alan y guardar en la BBDD" />
 
+    <TextView
+        android:id="@+id/valorOzono"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Valor ozono (ppm): —"
+        android:textAlignment="center"
+        android:textColor="@android:color/holo_blue_dark"
+        android:textStyle="bold"
+        android:textSize="22sp"
+        android:padding="16dp"
+        android:background="@android:color/background_light" />
+
 </android.widget.LinearLayout>
