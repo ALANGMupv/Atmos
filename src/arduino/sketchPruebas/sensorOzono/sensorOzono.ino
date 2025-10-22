@@ -1,7 +1,7 @@
 #include <bluefruit.h>  // Librería base para el nRF52840
 
 // =====================================================
-//     Sensor de Ozono SPEC Sensors O3 (modo laboratorio)
+//     Variables Sensor de Ozono SPEC Sensors O3 (modo laboratorio)
 //     Lectura con Vref, para recalibrar contra sensor patrón
 // =====================================================
 
