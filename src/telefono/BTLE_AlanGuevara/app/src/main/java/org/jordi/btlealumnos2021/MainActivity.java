@@ -17,6 +17,7 @@ import android.os.Bundle;
 import android.os.ParcelUuid;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,6 +25,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 // ------------------------------------------------------------------
@@ -51,6 +53,9 @@ public class MainActivity extends AppCompatActivity {
     private int ultimoContador = -1; // Recuerda el último contador recibido
 
     private boolean dispositivoEncontrado = false; // Para el TOAST de Encontrado el dispositivo....(Placa Alan)
+
+    // TextView provisional para mostrar el valor de ozono
+    private TextView valorOzonoText;
 
 
     // --------------------------------------------------------------
@@ -197,7 +202,16 @@ public class MainActivity extends AppCompatActivity {
 
                     int gas = (major >> 8) & 0xFF;   // parte alta = tipo (11 = CO2)
                     int contador = major & 0xFF;     // parte baja = contador
-                    int valor = minor;               // valor de CO2
+                    float valor = minor / 1000.0f; // Entre 1000 para la conversión y f para que se muestren los decimales
+
+                    // Mostrar en el TextView con 4 decimales
+                    runOnUiThread(() -> {
+                        // Locale.US le dice a Android que use el formato estadounidense, es decir:
+                        // - punto . como separador decimal
+                        // - coma , como separador de miles
+                        valorOzonoText.setText(String.format(Locale.US, "Valor ozono (ppm): %.4f", valor));
+                    });
+
 
                     // Nuevo: solo enviamos si el contador ha cambiado
                     if (contador != ultimoContador) {
@@ -377,6 +391,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Inicializamos el textView
+        valorOzonoText = findViewById(R.id.valorOzono);
 
         Log.d(ETIQUETA_LOG, " onCreate(): empieza ");
 
