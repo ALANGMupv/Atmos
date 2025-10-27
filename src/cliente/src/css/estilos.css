@@ -1,0 +1,128 @@
+/* region --- RESET (DANIPA) --- */
+* { margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; }
+
+input, button, textarea, select { font: inherit; }
+
+p { text-wrap: pretty; }
+h1, h2, h3, h4, h5, h6 { text-wrap: balance; }
+
+img, video, svg { height: auto; max-width: 100%; }
+
+@media (prefers-reduced-motion: reduce)  {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+        transition: none;
+    }
+}
+
+a { color: inherit; }
+
+html, body {
+    height: 100%;
+    width: 100%;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+}
+
+main {
+    flex: 1;
+}
+/* endregion */
+
+
+/* region --- VARIABLES GLOBALES --- */
+:root {
+    --color-fondo-blanco: #FFFFFF;
+    --color-circulo-gris: #EBEBEB;
+    --color-gris: #C5C5C5;
+    --color-azul: #749BB0;
+    --color-gris-enlace: #8B8B8B;
+    --color-azul-oscuro: #2C5365;
+    --color-azul-muy-oscuro: #2C3948;
+    --color-blanco: #FFFFFF;
+
+    --fuente-principal: 'Open Sauce', sans-serif;
+    --fuente-titulos: 'Futura', sans-serif;
+}
+/* endregion */
+
+
+/* region --- TIPOGRAFÍA GLOBAL --- */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--fuente-titulos);
+    color: var(--color-azul-muy-oscuro);
+    font-weight: bold;
+}
+
+h1 { font-size: 2.3125em; }  /* 37px / 16 */
+h2 { font-size: 2.125em; }   /* 34px / 16 */
+h3 { font-size: 1.875em; }   /* 30px / 16 */
+
+p {
+    font-family: var(--fuente-principal);
+    color: var(--color-azul-muy-oscuro);
+    font-size: 1.625em;      /* 26px / 16 */
+    line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+    h1 { font-size: 2em; }       /* 32px / 16 */
+    h2 { font-size: 1.625em; }   /* 26px / 16 */
+    h3 { font-size: 1.375em; }   /* 22px / 16 */
+    p { font-size: 1.0625em; }   /* 17px / 16 */
+}
+/* endregion */
+
+
+/* region --- BOTONES --- */
+.btn {
+    background-color: var(--color-azul-muy-oscuro);
+    color: var(--color-blanco);
+    border: none;
+    border-radius: 6px;
+    padding: 0.7em 1.2em;
+    font-size: 1.25em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+    text-align: center;
+}
+
+.btn:hover {
+    background-color: var(--color-azul-oscuro);
+}
+
+.btn:disabled {
+    background-color: var(--color-gris);
+    cursor: not-allowed;
+}
+/* endregion */
+
+
+/* region --- INPUTS --- */
+.input-base {
+    width: 100%;
+    background-color: var(--color-blanco);
+    border: none;
+    border-radius: 6px;
+    padding: 0.6em 0.8em;
+    font-size: 1em;
+    box-shadow: 0 0 0 1px var(--color-gris);
+    transition: box-shadow 0.2s ease-in-out;
+}
+
+.input-base:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--color-azul);
+}
+/* endregion */

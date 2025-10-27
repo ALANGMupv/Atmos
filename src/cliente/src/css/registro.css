@@ -1,0 +1,153 @@
+/* region --- CONTENEDOR PRINCIPAL --- */
+.registro-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 1.75em 2em;
+    background-color: transparent;
+    position: relative;
+    z-index: 1;
+    height: 90dvh;
+    justify-content: center;
+}
+/* endregion */
+
+
+/* region --- ICONO DE CIERRE (ARRIBA IZQUIERDA FIJO) --- */
+.icono-cerrar {
+    position: fixed;
+    top: 2em;
+    left: 2em;
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+    z-index: 10;
+}
+/* endregion */
+
+
+/* region --- LOGO Y TEXTO INTRODUCTORIO --- */
+.logo-registro {
+    width: 125px;
+    height: 125px;
+    margin-bottom: 1em;
+}
+
+.texto-intro {
+    color: var(--color-azul-muy-oscuro);
+    font-size: 1.3em;
+    text-align: center;
+    margin-bottom: 1.5em;
+    line-height: 1.4;
+}
+/* endregion */
+
+
+/* region --- FORMULARIO --- */
+.formulario-registro {
+    display: flex;
+    flex-direction: column;
+    width: 90%;
+    gap: 0.8em;
+}
+
+/* Bloque general de cada campo */
+.formulario-registro label {
+    display: block;
+    font-family: var(--fuente-principal);
+    color: var(--color-azul-muy-oscuro);
+    font-size: 0.95em;
+    margin-bottom: 0.4em;
+    text-align: center;
+}
+
+/* Campos dobles (nombre + apellidos) */
+.campo-doble {
+    display: flex;
+    gap: 1em;
+    width: 100%;
+}
+
+.campo-doble .mitad {
+    flex: 1;
+}
+
+/* Botón */
+.btn-registrar {
+    margin-top: 1.5em;
+    width: 100%;
+    padding: 0.6em;
+    font-size: 1em;
+}
+/* endregion */
+
+
+/* region --- ENLACE “YA TENGO CUENTA” --- */
+.enlace-login {
+    text-align: center;
+    font-size: 0.95em;
+}
+
+.enlace-login a {
+    color: var(--color-azul-oscuro);
+    text-decoration: underline;
+    font-weight: 500;
+    transition: color 0.2s ease-in-out;
+}
+
+.enlace-login a:hover {
+    color: var(--color-azul-muy-oscuro);
+    text-decoration: none;
+}
+/* endregion */
+
+
+/* region --- FONDO SEMICIRCULAR (FIJO Y CENTRADO ABAJO) --- */
+body {
+    background-color: var(--color-blanco);
+    position: relative;
+    overflow-x: hidden;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 130vw;
+    height: 90vh;
+    background-color: var(--color-circulo-gris);
+    border-radius: 0 0 50% 50%;
+    z-index: 0;
+}
+/* endregion */
+
+
+/* region --- RESPONSIVE --- */
+@media (max-width: 768px) {
+    .registro-container {
+        justify-content: center;
+        height: 100dvh;
+        padding-top: 0;
+    }
+
+    .logo-registro {
+        width: 100px;
+        height: 100px;
+    }
+
+    .icono-cerrar {
+        top: 1em;
+        left: 1em;
+        width: 20px;
+        height: 20px;
+    }
+
+    body::before {
+        height: 34vh;
+    }
+}
+/* endregion */
+
