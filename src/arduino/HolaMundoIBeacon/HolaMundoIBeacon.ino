@@ -67,7 +67,7 @@ void inicializarPlaquita () {
 void setup() {
 
 // Se queda en bucle hasta que el puerto serie (Serial) esté listo para imprimir
-  Globales::elPuerto.esperarDisponible();
+  //Globales::elPuerto.esperarDisponible();
 
   // 
   // 

@@ -29,9 +29,9 @@ const float sensibilidad = -42.31;  // nA/ppm (según etiqueta del sensor)
 const float gananciaTIA = 499.0;    // kV/A (según manual)
 const float M = sensibilidad * gananciaTIA * 1e-6;  // V/ppm
 
-// Variables de corrección (TOCARÁ SUSTITUIRLO TRAS EL LABORATORIO)
-float a = 1.0;  // Factor de ganancia experimental (pendiente)
-float b = 0.0;  // Offset experimental (intersección)
+// Variables de corrección 
+float a = 1.143019508; // Factor de ganancia experimental (pendiente)
+float b = --0.175050042;  // Offset experimental (intersección)
 
 // =====================================================
 // =====================================================
@@ -59,7 +59,7 @@ public:
     float Vref = leerVoltaje(pinVref);
     float deltaV = Vgas - Vref;
     float Cx = deltaV / M;
-    float Cx_corregido = a * Cx + b;
+    float Cx_corregido = (Cx - b) / a;
 
     // El sensor da valores negativos: usar valor absoluto ('fabs')
     int ppm = (int)(fabs(Cx_corregido) * 1000); // Escalado x1000, ya que beacon no admite decimales, luego lo dividimos por 1000.
