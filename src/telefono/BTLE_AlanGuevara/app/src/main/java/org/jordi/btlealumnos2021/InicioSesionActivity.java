@@ -23,20 +23,16 @@ public class InicioSesionActivity extends AppCompatActivity {
     private EditText emailCampo, contrasenyaCampo;
     private Button loginBoton;
 
-    // URL del endpoint Laravel (ajústala igual que en el registro)
-    private static final String URL_LOGIN = "https://aguemar.upv.edu.es/laravel/public/api/login";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.inicio_sesion); // Carga el diseño XML de login
+        setContentView(R.layout.inicio_sesion);
 
-        // Vincula los elementos visuales del XML con las variables
         emailCampo = findViewById(R.id.login_email_tv);
         contrasenyaCampo = findViewById(R.id.login_contrasenya_tv);
         loginBoton = findViewById(R.id.login_btn);
 
-        // Listener del botón "Iniciar sesión"
+        // Listener del botón Iniciar sesión
         loginBoton.setOnClickListener(v -> iniciarSesion());
     }
 
@@ -58,32 +54,6 @@ public class InicioSesionActivity extends AppCompatActivity {
             return;
         }
 
-        // Crear la petición con Volley
-        RequestQueue queue = Volley.newRequestQueue(this);
 
-        StringRequest request = new StringRequest(Request.Method.POST, URL_LOGIN,
-                response -> {
-                    // Si el servidor responde correctamente
-                    Toast.makeText(this, "Inicio de sesión exitoso", Toast.LENGTH_SHORT).show();
-
-                    // Añadir SharedPreferences para mantener la sesión iniciada
-                },
-                error -> {
-                    // Si el servidor da error o no hay conexión
-                    Toast.makeText(this, "Error al iniciar sesión", Toast.LENGTH_SHORT).show();
-                }) {
-
-            // Datos que se mandan al servidor (Laravel los usará para validar)
-            @Override
-            protected Map<String, String> getParams() {
-                Map<String, String> params = new HashMap<>();
-                params.put("email", email);
-                params.put("contrasena", password);
-                return params;
-            }
-        };
-
-        // Enviar la petición
-        queue.add(request);
     }
 }

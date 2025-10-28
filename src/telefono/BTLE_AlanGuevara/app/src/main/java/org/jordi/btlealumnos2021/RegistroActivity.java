@@ -23,10 +23,6 @@ public class RegistroActivity extends AppCompatActivity {
     private EditText nombreCampo, apellidosCampo, emailCampo, contrasenyaCampo, contrasenyaRepCampo;
     private Button registroBoton;
 
-    // URL del endpoint Laravel (ajústala según dónde instales la API)
-    private static final String URL_REGISTER = "https://aguemar.upv.edu.es/api/register";
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,33 +66,6 @@ public class RegistroActivity extends AppCompatActivity {
             return;
         }
 
-        //Si está bien, se prepara la petición HTTP con Volley
-        RequestQueue queue = Volley.newRequestQueue(this);
 
-        // StringRequest = petición al servidor tipo POST
-        StringRequest request = new StringRequest(Request.Method.POST, URL_REGISTER,
-                response -> {
-                    // Si el servidor responde correctamente
-                    Toast.makeText(this, "Registro exitoso", Toast.LENGTH_SHORT).show();
-                },
-                error -> {
-                    // Si hay algún problema (conexión o error en Laravel)
-                    Toast.makeText(this, "Error en el registro", Toast.LENGTH_SHORT).show();
-                }) {
-
-            // Aquí se definen los datos que se van a enviar al servidor
-            @Override
-            protected Map<String, String> getParams() {
-                Map<String, String> params = new HashMap<>();
-                params.put("nombre", nombre);
-                params.put("email", email);
-                params.put("contrasena", password);
-                params.put("id_rol", "1"); // 1 = usuario normal
-                return params;
-            }
-        };
-
-        // Finalmente, se lanza la petición
-        queue.add(request);
     }
 }
