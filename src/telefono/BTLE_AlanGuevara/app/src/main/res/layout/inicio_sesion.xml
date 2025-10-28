@@ -31,7 +31,7 @@
             android:layout_marginStart="16dp"
             android:background="@android:color/transparent"
             android:contentDescription="@null"
-            android:src="?attr/actionModeCloseDrawable" />
+            android:src="@drawable/flecha_atras" />
 
         <!-- Logo -->
         <ImageView
@@ -40,7 +40,7 @@
             android:layout_height="150dp"
             android:layout_marginTop="8dp"
             android:contentDescription="@null"
-            android:src="@drawable/logo" />
+            android:src="@drawable/logo_atmos" />
 
         <TextView
             android:id="@+id/textView"
