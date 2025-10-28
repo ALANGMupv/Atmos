@@ -15,7 +15,7 @@ import java.net.URL;
 public class LogicaFake {
     private static final String TAG = ">>>>";
 
-    private static final String API_URL = "https://aguemar.upv.edu.es/medida";
+    private static final String API_URL = "https://nagufor.upv.edu.es/medida";
 
 // uuid: Texto, gas: Z, valor: R, contador: Z → guardarMedicion() →
     public void guardarMedicion(String uuid, int gas, float valor, int contador) {
