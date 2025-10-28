@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "57482508042",
+    "project_id": "atmos-e3f6c",
+    "storage_bucket": "atmos-e3f6c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:57482508042:android:e2223fce51819391f26cf3",
+        "android_client_info": {
+          "package_name": "org.jordi.btlealumnos2021"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDAyM_UUwr5uE76Mf5tsNbfk6P3-2HKfJQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
