@@ -69,5 +69,7 @@
     </section>
 </main>
 
+<script type="module" src="js/registro.js"></script>
+
 </body>
 </html>

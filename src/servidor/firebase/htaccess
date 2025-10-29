@@ -1,0 +1,7 @@
+# Bloquear el acceso a todo lo que esté en /firebase/
+<Directory "/httpdocs/servidor/firebase">
+  Order allow,deny
+  Deny from all
+</Directory>
+
+Options -Indexes

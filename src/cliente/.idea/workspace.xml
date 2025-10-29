@@ -5,8 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4202d008-6093-4929-b8d3-31f325f3c05a" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../../.idea/php.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/../../.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/restContrasenya.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/restContrasenya.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../servidor/apiREST/ReglasREST.js" beforeDir="false" afterPath="$PROJECT_DIR$/../servidor/apiREST/ReglasREST.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../servidor/logica/Logica.js" beforeDir="false" afterPath="$PROJECT_DIR$/../servidor/logica/Logica.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../servidor/node_modules/.package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/../servidor/node_modules/.package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../servidor/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/../servidor/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../servidor/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../servidor/package.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -81,7 +88,8 @@
       <workItem from="1761037050069" duration="597000" />
       <workItem from="1761583628969" duration="43000" />
       <workItem from="1761584278715" duration="321000" />
-      <workItem from="1761649341615" duration="67000" />
+      <workItem from="1761649341615" duration="786000" />
+      <workItem from="1761671048682" duration="6000" />
     </task>
     <servers />
   </component>
