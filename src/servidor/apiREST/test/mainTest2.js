@@ -1,37 +1,35 @@
 // .....................................................................
 // @author: Alan Guevara Martínez
-// mainTest2.js Comprueba que si falta un campo, la API devuelve 400 error.
+// mainTest2.js - Inserta una medida de prueba en la BD a través del endpoint POST
 // .....................................................................
 
-var request = require("request")
-var assert  = require("assert")
+const request = require("request");
+const assert = require("assert");
 
-// Dirección de servidor REST en Plesk y también en local, veremos si funciona
-const IP_PUERTO = process.env.TEST_URL || "https://aguemar.upv.edu.es";
+// Dirección del servidor REST
+const IP_PUERTO = process.env.TEST_URL || "http://localhost:3000";
 
-/* Dirección de servidor REST en local 
-const IP_PUERTO = "http://localhost:3000"*/
+describe("Test 2 - Insertar medida", function () {
+  it("POST /medida debe devolver status ok", function (done) {
+    const medida = {
+      id_placa: 1,
+      tipo: 11,         // tipo de gas o sensor (ejemplo: 11 = CO₂)
+      valor: 42.5,      // valor de la medida
+      latitud: 0,
+      longitud: 0
+    };
 
-describe("Test 2 : Validación de JSON", function() {
-
-    it("POST /medida con JSON incompleto devuelve error 400", function(hecho) {
-        var medidaIncompleta = { uuid: "EPSG-GTI-PROY-3A", gas: 11 } // faltan campos
-
-        request.post(
-            {
-                url: IP_PUERTO + "/medida",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(medidaIncompleta)
-            },
-            function(err, respuesta, carga) {
-                assert.equal(err, null, "¿Error en POST /medida?")
-                assert.equal(respuesta.statusCode, 400, "¿No devolvió 400?")
-
-                var solucion = JSON.parse(carga)
-                assert.equal(solucion.status, "error", "¿Status no es error?")
-                hecho()
-            }
-        )
-    }) // it
-
-}) // describe
+    request.post(
+      {
+        url: IP_PUERTO + "/medida",
+        json: medida
+      },
+      function (err, res, body) {
+        assert.strictEqual(err, null);
+        assert.strictEqual(res.statusCode, 200);
+        assert.strictEqual(body.status, "ok");
+        done();
+      }
+    );
+  });
+});

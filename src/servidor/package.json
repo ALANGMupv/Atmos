@@ -4,7 +4,8 @@
   "description": "",
   "main": "crearBD.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node mainServidorREST.js",
+    "test": "mocha \"./*.js\""
   },
   "keywords": [],
   "author": "",
@@ -13,5 +14,9 @@
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "mocha": "^11.7.4",
+    "supertest": "^7.1.4"
   }
 }
