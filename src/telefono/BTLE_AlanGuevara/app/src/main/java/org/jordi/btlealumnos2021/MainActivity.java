@@ -1,4 +1,3 @@
-
 package org.jordi.btlealumnos2021;
 // ------------------------------------------------------------------
 // ------------------------------------------------------------------
@@ -324,7 +323,8 @@ public class MainActivity extends AppCompatActivity {
         dispositivoEncontrado = false;
 
         /* PARA VER SI FUNCIONABA (NO HACER CASO)
-        logicaFake.guardarMedicion("EPSG-GTI-PROY-3A", 12, 1254, 8);*/
+        logicaFake.guardarMedicion("GTI-3A-PlacaAlan", 11, 1234.567f, (int)(System.currentTimeMillis() / 1000));
+        */
     } // ()
 
     // --------------------------------------------------------------

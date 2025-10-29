@@ -10,43 +10,52 @@
 
 // @author: Alan Guevara Martínez
 
-// Importamos las librerías y módulos necesarios
-const express = require("express");           // Framework para levantar el servidor HTTP y definir rutas
-const cors = require("cors");                 // Middleware para permitir peticiones desde otros orígenes
+require("dotenv").config(); // Cargar variables desde .env
+const express = require("express");
+const cors = require("cors");
 
-const Logica = require("./logica/Logica");    // Capa de lógica de negocio (conexión a MySQL)
-const reglasREST = require("./apiREST/ReglasREST"); // Endpoints REST
+const Logica = require("./logica/Logica");
+const reglasREST = require("./apiREST/ReglasREST");
 
-// Puerto donde escuchará el servidor (en Plesk se define automáticamente, usamos el que da el sistema)
-const PORT = process.env.PORT || 3000;
 
-// Configuración de conexión a MySQL (Plesk)
+// Configuración del servidor
 const DB_CONFIG = {
-    host: "localhost",                 
-    user: "alan",                      
-    password: "12345pleskGuevara",     
-    database: "aguemar_proyecto_biometria" 
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT || 3306
 };
 
-// Crear la aplicación de Express
+// Puerto (en local o en Plesk)
+const PORT = process.env.PORT || 3000;
+
+
+// Inicialización del servidor
 const app = express();
-
-// Middleware para procesar JSON en las peticiones
 app.use(express.json());
-app.use(cors()); // Permitir peticiones desde cualquier origen (útil para la web en /httpdocs)
+app.use(cors());
 
-// Instanciamos la lógica de negocio con la configuración de MySQL
+
+// Conexión con la capa lógica
 const logica = new Logica(DB_CONFIG);
-
-// Montamos las rutas REST con acceso a la lógica
 app.use("/", reglasREST(logica));
 
-// Ruta raíz para comprobar que el servidor está vivo
+//  Ruta raíz (ping)
 app.get("/", (req, res) => {
-    res.status(200).json({ status: "ok", message: "Servidor vivo 🚀" });
+  res.status(200).json({
+    status: "ok",
+    message: "Servidor Atmos Biometría activo 🚀"
+  });
 });
 
-// Arrancar el servidor
-app.listen(PORT, () => {
-    console.log(`Servidor REST escuchando en http://localhost:${PORT}`);
-});
+
+// Exportar app para tests
+module.exports = app;
+
+// Arrancar servidor solo si se ejecuta directamente
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`✅ Servidor REST escuchando en http://localhost:${PORT}`);
+  });
+}
