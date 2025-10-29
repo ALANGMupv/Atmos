@@ -1,0 +1,90 @@
+.editar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-width: 480px;
+  margin: 0 auto;
+  height: 90dvh;
+  padding: 1.75em 2em;
+  background-color: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  position: relative;
+}
+
+/* Iconos */
+.icono-cerrar {
+  position: fixed;
+  top: 2em;
+  left: 2em;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.icono-usuario {
+  width: 90px;   
+  height: auto;  
+  margin-bottom: 1.5em;
+  object-fit: contain; 
+}
+
+/* Título */
+.titulo-editar {
+  font-family: var(--fuente-titulos);
+  color: var(--color-azul-muy-oscuro);
+  font-size: 1.6em;
+  text-align: center;
+  margin-bottom: 1.5em;
+}
+
+/* Formulario */
+.formulario-editar {
+  display: flex;
+  flex-direction: column;
+  width: 90%;
+  gap: 1.4em;
+  margin-top: 1.5em;
+}
+
+.btn {
+  padding: 0.6em 0.8em; 
+  font-size: 1em;        
+  border-radius: 6px;    
+  margin-top: 0.6em;     
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.campo label {
+  font-family: var(--fuente-principal);
+  color: var(--color-azul-muy-oscuro);
+  font-size: 0.95em;
+  margin-bottom: 0.4em;
+  text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .editar-container {
+    height: 100dvh;
+  }
+
+  .icono-cerrar {
+    top: 1em;
+    left: 1em;
+    width: 20px;
+    height: 20px;
+  }
+
+  .icono-usuario {
+    width: 70px;
+    height: 70px;
+  }
+}

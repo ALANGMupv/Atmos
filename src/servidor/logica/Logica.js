@@ -219,14 +219,46 @@ const bcrypt = require("bcrypt");
 
 
 class Logica {
-    /**
-     * Constructor de la clase Logica.
-     * @param {object} config - Objeto con la configuración de conexión a MySQL.
-     */
-    constructor(config) {
-        this.config = config;                 // Guardamos la configuración
-        this.pool = mysql.createPool(config); // Creamos el pool de conexiones
+  /**
+   * @param {object} config Configuración de conexión (viene del .env)
+   */
+  constructor(config) {
+    this.config = config;
+    this.pool = mysql.createPool(config);
+  }
+
+  /**
+   * Guarda una nueva medida en la tabla `medida`.
+   * 
+   * @param {number} id_placa - ID de la placa (FK)
+   * @param {number} tipo - Tipo de medida (11=CO₂, 12=Temperatura, etc.)
+   * @param {number} valor - Valor numérico de la medida
+   * @param {number} latitud - Coordenada (puede ser 0 por ahora)
+   * @param {number} longitud - Coordenada (puede ser 0 por ahora)
+   * @returns {Promise<Object>} La fila insertada
+   */
+  async guardarMedida(id_placa, tipo, valor, latitud = 0, longitud = 0) {
+    const conn = await this.pool.getConnection();
+    try {
+      const sqlInsert = `
+        INSERT INTO medida (id_placa, tipo, valor, latitud, longitud, fecha_hora)
+        VALUES (?, ?, ?, ?, ?, NOW())
+      `;
+      const [resultado] = await conn.execute(sqlInsert, [
+        id_placa,
+        tipo,
+        valor,
+        latitud,
+        longitud,
+      ]);
+
+      const sqlSelect = `SELECT * FROM medida WHERE id_medida = ?`;
+      const [filas] = await conn.execute(sqlSelect, [resultado.insertId]);
+      return filas[0];
+    } finally {
+      conn.release();
     }
+  }
 
     /**
      * Guardar una medida en la tabla `medidas`.
@@ -378,5 +410,4 @@ class Logica {
 
 }
 
-// Exportamos la clase para usarla en mainServidorREST.js
 module.exports = Logica;

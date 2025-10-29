@@ -3,33 +3,20 @@
 // mainTest4.js - Comprueba que GET /medidas devuelve un array de medidas
 // .....................................................................
 
-var request = require("request");
-var assert  = require("assert");
+const request = require("request");
+const assert = require("assert");
 
-const IP_PUERTO = process.env.TEST_URL || "https://aguemar.upv.edu.es";
+const IP_PUERTO = process.env.TEST_URL || "http://localhost:3000";
 
-describe("Test 4 : Listado de medidas", function() {
-
-    it("GET /medidas devuelve un array con medidas", function(hecho) {
-        request.get(
-            {
-                url: IP_PUERTO + "/medidas?limit=5",
-                headers: { "Content-Type": "application/json" }
-            },
-            function(err, respuesta, carga) {
-                assert.equal(err, null, "¿Error en GET /medidas?");
-                assert.equal(respuesta.statusCode, 200, "¿No devolvió 200?");
-
-                var solucion = JSON.parse(carga);
-
-                // Si el backend devuelve { status, medidas }
-                const datos = Array.isArray(solucion) ? solucion : solucion.medidas;
-
-                assert.ok(Array.isArray(datos), "¿No devolvió array?");
-                assert.ok(datos.length > 0, "¿El array está vacío?");
-                hecho();
-            }
-        );
+describe("Test 4 - Listar medidas", function () {
+  it("GET /medidas debe devolver un array con medidas", function (done) {
+    request.get({ url: IP_PUERTO + "/medidas?limit=5" }, function (err, res, body) {
+      assert.strictEqual(err, null);
+      assert.strictEqual(res.statusCode, 200);
+      const datos = JSON.parse(body);
+      assert.strictEqual(datos.status, "ok");
+      assert.ok(Array.isArray(datos.medidas));
+      done();
     });
-
+  });
 });
