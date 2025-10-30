@@ -19,12 +19,9 @@
 
 </head>
 <body>
-<header class="topbar">
-    <div class="container">
-        <h1>Proyecto Biometría - Alan Guevara Martínez</h1>
-        <p class="subtitle">Sprint 0 – Medidas en tiempo real</p>
-    </div>
-</header>
+<?php
+  include __DIR__ . '/partials/header.php';
+?>
 
 <main class="container">
     <section class="panel">
