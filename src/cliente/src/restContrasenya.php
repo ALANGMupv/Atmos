@@ -16,15 +16,12 @@
 <main>
     <section class="login-container">
 
-        <!-- Icono X (cerrar) -->
-        <img src="icons/cerrar.svg" alt="Cerrar" class="icono-cerrar">
-
         <!-- Logo -->
         <img src="img/logoAtmos.png" alt="Logo Atmos" class="logo-login">
 
         <!-- Texto de introducción -->
         <p class="texto-intro">
-            Introduce el correo electrónico asociado a tu cuenta para recuperar tu contraseña
+            Introduce el correo electrónico asociado a tu cuenta para <strong>recuperar tu contraseña</strong>
         </p>
 
         <!-- Formulario -->

@@ -55,5 +55,12 @@
   </section>
 </main>
 
+<!-- Popup visual -->
+<div id="popup" style="display:none; position:fixed; top:20px; right:20px;
+  background:#333; color:#fff; padding:15px 20px; border-radius:10px;
+  font-family:sans-serif; box-shadow:0 0 10px rgba(0,0,0,0.3);
+  z-index:10000; opacity:0; transition:opacity 0.3s;">
+</div>
+<script type="module" src="editar_perfil.js?v=1"></script>
 </body>
 </html>

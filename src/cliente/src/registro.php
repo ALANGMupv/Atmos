@@ -16,15 +16,12 @@
 <main>
     <section class="registro-container">
 
-        <!-- Icono X (cerrar) -->
-        <img src="icons/cerrar.svg" alt="Cerrar" class="icono-cerrar">
-
         <!-- Logo -->
         <img src="img/logoAtmos.png" alt="Logo Atmos" class="logo-registro">
 
         <!-- Texto de introducción -->
         <p class="texto-intro">
-            Introduce tus datos personales para crear una cuenta
+            Introduce tus datos personales para <strong>crear cuenta</strong>
         </p>
 
         <!-- Formulario -->
