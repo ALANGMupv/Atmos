@@ -1,7 +1,7 @@
 <?php
-// ux/src/index.php
-// Archivo principal de la interfaz web. Aunque tiene extensión .php,
-// realmente no ejecuta PHP, solo genera HTML.
+session_start();
+$isGuest = !isset($_SESSION['usuario']);
+include __DIR__ . '/partials/header.php';
 ?>
 <!doctype html>
 <html lang="es">
@@ -19,11 +19,7 @@
 
 </head>
 <body>
-<?php
-session_start();
-$isGuest = !isset($_SESSION['usuario']);
-include __DIR__ . '/partials/header.php';
-?>
+
 
 <main class="container">
     <section class="panel">
