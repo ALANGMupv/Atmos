@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="css/index.css" />
 
     <!-- Script JS de la app -->
-    <script defer src="js/index.js"></script>
+    <script defer src="js/index.js?v=3"></script>
     <!-- Prueba commit -->
 
 </head>
@@ -51,10 +51,11 @@
                 <thead>
                 <tr>
                     <th>ID</th>
-                    <th>UUID</th>
-                    <th>Gas</th>
+                    <th>Placa</th>
+                    <th>Tipo</th>
                     <th>Valor</th>
                     <th>Contador</th>
+                    <th>Lat, Long</th>
                     <th>Fecha</th>
                     <th>Hora</th>
                 </tr>
