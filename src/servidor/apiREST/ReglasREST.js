@@ -215,6 +215,48 @@ function reglasREST(logica) {
         }
     });
 
+    // -----------------------------------------------------------------------------
+    // PUT /usuario → Actualiza datos si la contraseña actual es correcta
+    // -----------------------------------------------------------------------------
+    router.put("/usuario", async (req, res) => {
+        try {
+            const { id_usuario, nombre, apellidos, email, contrasena_actual, nueva_contrasena } = req.body;
+
+            if (!id_usuario || !contrasena_actual) {
+                return res.status(400).json({ error: "Faltan datos obligatorios" });
+            }
+
+            // Obtener usuario
+            const usuario = await logica.obtenerUsuarioPorId(id_usuario);
+            if (!usuario) return res.status(404).json({ error: "Usuario no encontrado" });
+
+            // Verificar contraseña actual
+            const ok = await bcrypt.compare(contrasena_actual, usuario.contrasena);
+            if (!ok) return res.status(401).json({ error: "Contraseña actual incorrecta" });
+
+            // Hashear nueva contraseña si se envía
+            let contrasenaFinal = usuario.contrasena;
+            if (nueva_contrasena) {
+                contrasenaFinal = await bcrypt.hash(nueva_contrasena, 10);
+            }
+
+            // Actualizar usuario
+            const actualizado = await logica.actualizarUsuario(id_usuario, {
+                nombre,
+                apellidos,
+                email,
+                contrasena: contrasenaFinal
+            });
+
+            if (actualizado) res.json({ status: "ok" });
+            else res.status(500).json({ error: "No se pudo actualizar" });
+
+        } catch (e) {
+            console.error(e);
+            res.status(500).json({ error: "Error interno al actualizar usuario" });
+        }
+    });
+
     // --------------------------------------------------------------------------
     //  Devolvemos el router con todas las rutas activas
     // --------------------------------------------------------------------------
