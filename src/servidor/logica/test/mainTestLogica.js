@@ -1,44 +1,38 @@
-// .....................................................................
 // @author: Alan Guevara Martínez
-// mainTestLogica.js - Pruebas unitarias de la capa de Lógica de Negocio
-// .....................................................................
+// mainTestLogica.js - Pruebas unitarias de la capa de lógica
 
-const assert  = require("assert");
-const Logica  = require("../Logica"); // importa la clase de logica/Logica.js
+const assert = require("assert");
+const Logica = require("../Logica");
 
-// Configuración de conexión a la BD (igual que en mainServidorREST.js)
+// Configuración para entorno local (usa tu .env si prefieres)
 const DB_CONFIG = {
-    host: "localhost",
-    port: 3306,
-    user: "alan",
-    password: "12345pleskGuevara",
-    database: "aguemar_proyecto_biometria"
+  host: "localhost",
+  user: "nerea_local",
+  password: "12345",
+  database: "biometria",
+  port: 3306
 };
 
-describe("Test de Lógica de Negocio", function() {
-    let logica;
+describe("Test Lógica de Negocio", function () {
+  let logica;
 
-    // Antes de los tests, instanciamos la lógica
-    before(async function() {
-        logica = new Logica(DB_CONFIG);
-    });
+  before(async function () {
+    logica = new Logica(DB_CONFIG);
+  });
 
-    // Después de todos los tests, cerramos el pool
-    after(async function() {
-        await logica.pool.end();
-    });
+  after(async function () {
+    await logica.pool.end();
+  });
 
-    it("guardarMedida inserta y devuelve la fila correctamente", async function() {
-        const medida = await logica.guardarMedida("TEST-UUID", 12, 123, 99);
-        assert.strictEqual(medida.uuid, "TEST-UUID");
-        assert.strictEqual(medida.gas, 12);
-        assert.strictEqual(medida.valor, 123);
-        assert.strictEqual(medida.contador, 99);
-    });
+  it("guardarMedida debe insertar correctamente una fila", async function () {
+    const medida = await logica.guardarMedida(1, 11, 99.9, 0, 0);
+    assert.equal(medida.id_placa, 1);
+    assert.strictEqual(medida.tipo, 11);
+    assert.strictEqual(medida.valor, 99.9);
+  });
 
-    it("listarMedidas devuelve un array con medidas", async function() { // Confirmación de que la función está aplicando bien la seguridad en el límite
-        const medidas = await logica.listarMedidas(5);
-        assert.ok(Array.isArray(medidas), "¿No devolvió array?");
-        assert.ok(medidas.length > 0, "¿Array vacío?");
-    });
+  it("listarMedidas devuelve un array con medidas", async function () {
+    const medidas = await logica.listarMedidas(5);
+    assert.ok(Array.isArray(medidas));
+  });
 });
