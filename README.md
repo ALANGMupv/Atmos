@@ -1,6 +1,6 @@
 # 🌱 Proyecto Biometría 2025  
 
-🔗 **Web del proyecto (Plesk):** [https://aguemar.upv.edu.es/biometriaAlan/index.php](https://aguemar.upv.edu.es/biometriaAlan/index.php)  
+🔗 **Web del proyecto (Plesk):** [https://aguemar.upv.edu.es/biometriaAlan/index.php](https://nagufor.upv.edu.es/cliente/index.php)  
 
 Repositorio del proyecto de **Biometría y Medio Ambiente**. Incluye código, diseños, API REST, base de datos y pruebas automatizadas.  
 
@@ -52,7 +52,7 @@ El proyecto está desplegado en **Plesk (UPV)**:
 3. **Frontend (PHP en /httpdocs)**  
    - Desplegado en la carpeta pública de Plesk.  
    - Accesible en:  
-     👉 [https://aguemar.upv.edu.es/biometriaAlan/index.php](https://aguemar.upv.edu.es/biometriaAlan/index.php)
+     👉 [https://nagufor.upv.edu.es/cliente/index.php](https://nagufor.upv.edu.es/cliente/index.php)
 
 ---
 
