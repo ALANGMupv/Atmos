@@ -31,7 +31,8 @@ const float M = sensibilidad * gananciaTIA * 1e-6;  // V/ppm
 
 // Variables de corrección 
 float a = 1.143019508; // Factor de ganancia experimental (pendiente)
-float b = --0.175050042;  // Offset experimental (intersección)
+float b = -0.175050042;  // Offset experimental (intersección)
+
 
 // =====================================================
 // =====================================================

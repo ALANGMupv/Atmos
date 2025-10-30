@@ -16,15 +16,12 @@
 <main>
     <section class="login-container">
 
-        <!-- Icono X (cerrar) -->
-        <img src="icons/cerrar.svg" alt="Cerrar" class="icono-cerrar">
-
         <!-- Logo -->
         <img src="img/logoAtmos.png" alt="Logo Atmos" class="logo-login">
 
         <!-- Texto de introducción -->
         <p class="texto-intro">
-            Introduce tus credenciales de inicio de sesión
+            Introduce tus credenciales de <strong>inicio de sesión</strong>
         </p>
 
         <!-- Formulario -->
@@ -40,7 +37,7 @@
                 <input type="password" id="contrasena" name="contrasena" class="input-base" required>
             </div>
 
-            <a href="#" class="enlace-secundario">Olvidé mi contraseña</a>
+            <a href="#" id="contrasena" class="enlace-secundario">Olvidé mi contraseña</a>
 
             <button type="submit" class="btn btn-login">Iniciar Sesión</button>
 
