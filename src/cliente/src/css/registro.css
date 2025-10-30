@@ -30,7 +30,7 @@ Autor: Alan Guevara Martínez
 .icono-cerrar {
     position: fixed;
     top: 2em;
-    left: 2em;
+    right: 2em;
     width: 22px;
     height: 22px;
     cursor: pointer;
@@ -151,7 +151,7 @@ body::before {
 
     .icono-cerrar {
         top: 1em;
-        left: 1em;
+        right: 1em;
         width: 20px;
         height: 20px;
     }
