@@ -7,7 +7,7 @@
 // -----------------------------------------------------------------------------
 
 // Si cambia la ruta en el servidor, modificar aquí.
-window.API_BASE = "https://aguemar.upv.edu.es";
+window.API_BASE = "https://nagufor.upv.edu.es";
 
 // -----------------------------------------------------------------------------
 // Referencias a elementos del DOM (HTML)
@@ -60,7 +60,7 @@ async function cargarMedidas() {
 
 // -----------------------------------------------------------------------------
 // Genera las filas de la tabla HTML a partir de los datos recibidos de la API
-// Recibe: filas (array de objetos con {id, uuid, gas, valor, contador, fecha})
+// Recibe: filas (array de objetos con {id_medida, id_placa, tipo, valor, latitud, longitud, fecha})
 // -----------------------------------------------------------------------------
 function pintarFilas(filas) {
     if (!filas.length) {
@@ -76,11 +76,12 @@ function pintarFilas(filas) {
         const [fecha, hora] = formatearFecha(r.fecha); // separa fecha y hora
         return `
         <tr>
-          <td>${r.id}</td>
-          <td>${escaparHTML(r.uuid)}</td>
-          <td>${gasATexto(r.gas)}</td>
+          <td>${r.id_medida}</td>
+          <td>${escaparHTML(r.id_placa)}</td>
+          <td>${gasATexto(r.tipo)}</td>
           <td>${r.valor}</td>
-          <td>${r.contador}</td>
+          <td>${r.id_contador ?? "-"}</td>
+          <td>${r.latitud}, ${r.longitud}</td>
           <td>${fecha}</td>
           <td>${hora}</td>
         </tr>
