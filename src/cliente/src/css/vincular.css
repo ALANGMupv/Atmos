@@ -1,3 +1,14 @@
+/*
+==========================================================
+Nombre del archivo: vincular.css
+Descripción: Hoja de estilos para la página de vinculación de dispositivos
+en la aplicación Atmos. Define la estructura del contenedor, los estilos
+del formulario, los textos, el botón principal y la adaptación responsive.
+Fecha: 30/10/2025
+Autor: Alan Guevara Martínez
+==========================================================
+*/
+
 /* region --- CENTRADO GLOBAL --- */
 html, body {
     height: 100dvh;

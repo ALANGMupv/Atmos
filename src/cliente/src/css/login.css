@@ -1,3 +1,14 @@
+/*
+==========================================================
+Nombre del archivo: login.css
+Descripción: Hoja de estilos de la página de inicio de sesión de la aplicación Atmos.
+Define la estructura del contenedor principal, los estilos del formulario,
+botones, enlaces secundarios y la apariencia responsive del fondo semicircular.
+Fecha: 30/10/2025
+Autor: Alan Guevara Martínez
+==========================================================
+*/
+
 /* region --- CONTENEDOR PRINCIPAL --- */
 .login-container {
     display: flex;

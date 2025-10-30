@@ -1,7 +1,18 @@
 <?php
-// ux/src/index.php
-// Archivo principal de la interfaz web. Aunque tiene extensión .php,
-// realmente no ejecuta PHP, solo genera HTML.
+/*
+==========================================================
+Nombre del archivo: index.php
+Descripción: Archivo principal de la interfaz web del Proyecto Biometría.
+Muestra las medidas obtenidas en tiempo real desde la API en formato tabla.
+Contiene el selector de número de filas y los elementos visuales principales
+de la interfaz del Sprint 0.
+Fecha: 30/10/2025
+Autor: Alan Guevara Martínez
+==========================================================
+*/
+
+// Aunque tiene extensión .php, este archivo no ejecuta código PHP;
+// únicamente genera el HTML de la aplicación web.
 ?>
 <!doctype html>
 <html lang="es">
@@ -13,12 +24,13 @@
     <!-- Hoja de estilos principal -->
     <link rel="stylesheet" href="css/index.css" />
 
-    <!-- Script JS de la app -->
+    <!-- Script principal de la app -->
     <script defer src="js/index.js?v=3"></script>
-    <!-- Prueba commit -->
-
+    <!-- Comentario temporal: prueba de commit -->
 </head>
 <body>
+
+<!-- Barra superior con título del proyecto -->
 <header class="topbar">
     <div class="container">
         <h1>Proyecto Biometría - Alan Guevara Martínez</h1>
@@ -27,13 +39,16 @@
 </header>
 
 <main class="container">
+
+    <!-- Panel principal donde se muestran las medidas -->
     <section class="panel">
+
+        <!-- Cabecera del panel con título y selector de filas -->
         <div class="panel-header">
             <h2>Últimas medidas</h2>
-            <div class="controls">
 
-                <!-- CÓDIGO PARA CUANDO MUESTRE VARIAS MEDIDAS EN UNA TABLA
-                Selector de número de filas a mostrar -->
+            <div class="controls">
+                <!-- Selector para definir el número de medidas mostradas -->
                 <label for="limit">Filas:</label>
                 <select id="limit">
                     <option value="1" selected>Última medida</option>
@@ -45,37 +60,40 @@
             </div>
         </div>
 
+        <!-- Contenedor de la tabla de medidas -->
         <div class="table-wrap">
-            <!-- Tabla donde se cargan las medidas desde la API -->
+            <!-- Tabla dinámica cargada desde la API -->
             <table class="table" id="tabla-medidas">
                 <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Placa</th>
-                    <th>Tipo</th>
-                    <th>Valor</th>
-                    <th>Contador</th>
-                    <th>Lat, Long</th>
-                    <th>Fecha</th>
-                    <th>Hora</th>
-                </tr>
+                    <tr>
+                        <th>ID</th>
+                        <th>Placa</th>
+                        <th>Tipo</th>
+                        <th>Valor</th>
+                        <th>Contador</th>
+                        <th>Lat, Long</th>
+                        <th>Fecha</th>
+                        <th>Hora</th>
+                    </tr>
                 </thead>
                 <tbody id="tbody-medidas">
-                <!-- Mensaje inicial mientras carga -->
-                <tr><td colspan="7" class="muted">Cargando…</td></tr>
+                    <!-- Mensaje inicial mientras se cargan los datos -->
+                    <tr><td colspan="7" class="muted">Cargando…</td></tr>
                 </tbody>
             </table>
         </div>
 
-        <!-- Mensaje de error oculto por defecto -->
+        <!-- Mensaje de error (oculto por defecto) -->
         <p id="error" class="error" hidden></p>
     </section>
 </main>
 
+<!-- Pie de página con créditos -->
 <footer class="footer">
     <div class="container">
         <small>© 2025 Proyecto Biometría</small>
     </div>
 </footer>
+
 </body>
 </html>

@@ -1,3 +1,14 @@
+<!--
+==========================================================
+Nombre del archivo: vincular.php
+Descripción: Página para vincular un nuevo dispositivo a la cuenta del usuario
+en la aplicación Atmos. Permite introducir el código del dispositivo y enviarlo
+al servidor mediante un formulario.
+Fecha: 30/10/2025
+Autor: Alan Guevara Martínez
+==========================================================
+-->
+
 <!doctype html>
 <html lang="es">
 <head>
@@ -16,29 +27,28 @@
 <main>
     <section class="vincular-container">
 
-        <!-- Icono X (cerrar) -->
-        <img src="icons/cerrar.svg" alt="Cerrar" class="icono-cerrar">
+        <!-- Icono X (cerrar): al hacer clic redirige a la landing page -->
+        <a href="index.php">
+            <img src="icons/cerrar.svg" alt="Cerrar" class="icono-cerrar">
+        </a>
 
-        <!-- Título -->
+        <!-- Título principal de la página -->
         <h2 class="titulo-vincular">Vincular Dispositivo</h2>
 
-        <!-- Subtexto -->
+        <!-- Subtexto con instrucciones -->
         <p class="texto-secundario">
             Introduce el código del dispositivo y un nombre identificativo
         </p>
 
-        <!-- Formulario -->
+        <!-- Formulario para introducir el código del dispositivo -->
+        <!-- Envia los datos al archivo PHP vincularDispositivo.php mediante POST -->
         <form class="formulario-vincular" action="vincularDispositivo.php" method="post">
             <div class="campo">
                 <label for="codigo">Código del dispositivo</label>
                 <input type="text" id="codigo" name="codigo" class="input-base" required>
             </div>
 
-            <div class="campo">
-                <label for="nombre">Nombre</label>
-                <input type="text" id="nombre" name="nombre" class="input-base" required>
-            </div>
-
+            <!-- Botón que envía el formulario -->
             <button type="submit" class="btn btn-vincular">Vincular</button>
         </form>
     </section>

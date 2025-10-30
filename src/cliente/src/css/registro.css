@@ -1,3 +1,14 @@
+/*
+==========================================================
+Nombre del archivo: registro.css
+Descripción: Hoja de estilos de la página de registro de la aplicación Atmos.
+Define el diseño del formulario de registro, la disposición de los campos,
+los botones, enlaces y el fondo semicircular, con adaptaciones responsive.
+Fecha: 30/10/2025
+Autor: Alan Guevara Martínez
+==========================================================
+*/
+
 /* region --- CONTENEDOR PRINCIPAL --- */
 .registro-container {
     display: flex;

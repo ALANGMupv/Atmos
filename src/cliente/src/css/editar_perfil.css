@@ -1,3 +1,14 @@
+/*
+==========================================================
+Nombre del archivo: editar_perfil.css
+Descripción: Hoja de estilos específica para la página de edición de perfil
+de la aplicación Atmos. Define la disposición de los elementos,
+el formato del formulario y la adaptación responsive.
+Fecha: 30/10/2025
+Autor: Nerea Aguilar Forés
+==========================================================
+*/
+
 .editar-container {
   display: flex;
   flex-direction: column;
