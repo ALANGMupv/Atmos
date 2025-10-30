@@ -306,7 +306,7 @@ public class MainActivity extends AppCompatActivity {
         //this.buscarEsteDispositivoBTLE( Utilidades.stringToUUID( "EPSG-GTI-PROY-3A" ) );
 
         //this.buscarEsteDispositivoBTLE( "EPSG-GTI-PROY-3A" );
-        this.buscarEsteDispositivoBTLE("GTI-3A-PlacaAlan"); //AQUÍ METO EL NOMBRE DE MI PLACA
+        this.buscarEsteDispositivoBTLE("AtmosPlacaGrupo4"); //AQUÍ METO EL NOMBRE DE MI PLACA
     } // ()
 
     // --------------------------------------------------------------
