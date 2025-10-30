@@ -20,7 +20,9 @@
 </head>
 <body>
 <?php
-  include __DIR__ . '/partials/header.php';
+session_start();
+$isGuest = !isset($_SESSION['usuario']);
+include __DIR__ . '/partials/header.php';
 ?>
 
 <main class="container">

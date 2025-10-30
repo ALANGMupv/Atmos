@@ -13,9 +13,12 @@
 
 <body>
 <?php
-  $active = 'mapas';
-  include __DIR__ . '/partials/header.php';
+session_start();
+$isGuest = !isset($_SESSION['usuario']);
+$active = 'mapas';
+include __DIR__ . '/partials/header.php';
 ?>
+
 
 <main class="container">
   <section class="panel">
