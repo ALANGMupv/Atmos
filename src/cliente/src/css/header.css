@@ -36,6 +36,25 @@
   width: auto;
   display: block;
 }
+/* Logo no clickeable */
+.brand.no-link {
+  display: flex;
+  align-items: center;
+  cursor: default;
+}
+
+.brand.no-link img {
+  opacity: 0.9;
+}
+
+.brand.no-link .brand-text {
+  color: #fff;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-left: 8px;
+  letter-spacing: 0.5px;
+}
+
 
 .brand-text {
   color: var(--color-blanco);
