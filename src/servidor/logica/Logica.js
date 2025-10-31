@@ -123,7 +123,19 @@ class Logica {
     }
 
     // --------------------------------------------------------------------------
-    // MÉTODOS NUEVOS: actualización y verificación de contraseña
+    // Actualización y verificación de contraseña
+    // Autor: Nerea Aguilar Forés
+    // -----------------------------------------------------------------------------
+    // Descripción:
+    //   Actualiza los datos de un usuario en la base de datos.
+    //
+    // Parámetros:
+    //   {N} id_usuario - Identificador único del usuario a actualizar.
+    //   {object} datos      - Objeto con los nuevos valores del usuario:
+    //                                { nombre, apellidos, email, contrasena }
+    //
+    // Devuelve:
+    //   {Promise<boolean>} - true si se actualiza correctamente, false en caso contrario.
     // --------------------------------------------------------------------------
     async actualizarUsuario(id_usuario, { nombre, apellidos, email, contrasena }) {
         const conn = await this.pool.getConnection();
@@ -149,6 +161,21 @@ class Logica {
         }
     }
 
+    // -----------------------------------------------------------------------------
+    // Obtener usuario por ID
+    // Autor: Nerea Aguilar Forés
+    // -----------------------------------------------------------------------------
+    // Descripción:
+    //   Recupera todos los datos de un usuario a partir de su identificador.
+    //   Este método se usa principalmente para comprobar la contraseña actual
+    //   antes de permitir una actualización.
+    //
+    // Parámetros:
+    //   {N} id_usuario - Identificador único del usuario a buscar.
+    //
+    // Devuelve:
+    //   {Promise<Object|null>} - Objeto usuario si existe, o null si no se encuentra.
+    // -----------------------------------------------------------------------------
     async obtenerUsuarioPorId(id_usuario) {
         const conn = await this.pool.getConnection();
         try {
@@ -161,6 +188,62 @@ class Logica {
             conn.release();
         }
     }
+
+    // -----------------------------------------------------------------------------
+    // Funcionalidad: Vincular una placa a un usuario
+    // Autor: Nerea Aguilar Forés
+    // -----------------------------------------------------------------------------
+    // Descripción:
+    //   Asocia una placa existente a un usuario determinado en la base de datos.
+    //   Si la placa ya está asignada a otro usuario, la operación no se realiza.
+    //
+    // Parámetros:
+    //  {N} id_usuario - ID del usuario que desea vincular la placa.
+    //  {string} id_placa   - ID o código único de la placa.
+    //
+    // Devuelve:
+    //   {Promise<Object>} - Objeto con el estado de la operación.
+    //                               { status: "ok", mensaje: "..." } o error 
+    // -----------------------------------------------------------------------------
+    //
+    async vincularPlacaAUsuario(id_usuario, id_placa) {
+        const conn = await this.pool.getConnection();
+        try {
+            // Verificar si la placa existe
+            const [placas] = await conn.query(
+                "SELECT asignada FROM placa WHERE id_placa = ?",
+                [id_placa]
+            );
+            if (placas.length === 0) throw new Error("Placa no encontrada");
+
+            // Comprobar si ya está asignada
+            if (placas[0].asignada === 1)
+                throw new Error("La placa ya está asignada a otro usuario");
+
+            // Insertar la relación usuario placa
+            await conn.query(
+                "INSERT INTO usuarioplaca (id_placa, id_usuario) VALUES (?, ?)",
+                [id_placa, id_usuario]
+            );
+
+            // Actualizar el estado de la placa a asignada
+            await conn.query(
+                "UPDATE placa SET asignada = 1 WHERE id_placa = ?",
+                [id_placa]
+            );
+
+            // Resultado correcto
+            return { status: "ok", mensaje: "Placa vinculada correctamente" };
+
+        } catch (err) {
+            console.error("Error vinculando placa:", err);
+            throw err;
+        } finally {
+            conn.release();
+        }
+    
+    }
+
 }
 
 module.exports = Logica;

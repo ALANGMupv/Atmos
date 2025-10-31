@@ -216,7 +216,11 @@ function reglasREST(logica) {
     });
 
     // -----------------------------------------------------------------------------
-    // PUT /usuario → Actualiza datos si la contraseña actual es correcta
+    // Endpoint: PUT /usuario
+    // Autor: Nerea Aguilar Forés
+    // -----------------------------------------------------------------------------
+    // Descripción:
+    // Actualiza datos si la contraseña actual es correcta
     // -----------------------------------------------------------------------------
     router.put("/usuario", async (req, res) => {
         try {
@@ -254,6 +258,42 @@ function reglasREST(logica) {
         } catch (e) {
             console.error(e);
             res.status(500).json({ error: "Error interno al actualizar usuario" });
+        }
+    });
+
+    // -----------------------------------------------------------------------------
+    // Endpoint: POST /vincular
+    // Autor: Nerea Aguilar Forés
+    // -----------------------------------------------------------------------------
+    // Descripción:
+    //   Permite a un usuario vincular una placa a su cuenta.
+    //   Valida los datos recibidos.
+    //
+    // Body esperado (JSON):
+    //   {
+    //     "id_usuario": 6,
+    //     "id_placa": "placa1"
+    //   }
+    //
+    // Respuesta posible:
+    //    200: { status: "ok", mensaje: "Placa vinculada correctamente" }
+    //    400: Faltan datos.
+    //    500: Error interno del servidor.
+    // -----------------------------------------------------------------------------
+    router.post("/vincular", async (req, res) => {
+        try {
+            const { id_usuario, id_placa } = req.body;
+
+            if (!id_usuario || !id_placa) {
+                return res.status(400).json({ error: "Faltan datos: id_usuario o id_placa" });
+            }
+
+            const resultado = await logica.vincularPlacaAUsuario(id_usuario, id_placa);
+            res.json(resultado);
+
+        } catch (err) {
+            console.error("Error en POST /vincular:", err);
+            res.status(500).json({ error: err.message });
         }
     });
 
