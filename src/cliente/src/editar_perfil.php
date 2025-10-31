@@ -67,12 +67,38 @@ $active  = 'perfil'; // activa el icono del perfil
   </section>
 </main>
 
-<!-- Popup visual -->
-<div id="popup" style="display:none; position:fixed; top:20px; right:20px;
-  background:#333; color:#fff; padding:15px 20px; border-radius:10px;
-  font-family:sans-serif; box-shadow:0 0 10px rgba(0,0,0,0.3);
-  z-index:10000; opacity:0; transition:opacity 0.3s;">
+<!-- Popup de verificación -->
+<div id="popup-overlay" style="
+  display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+  background:rgba(0,0,0,0.5); z-index:10000; justify-content:center; align-items:center;">
+  <div id="popup" style="
+    background:white; padding:25px 30px; border-radius:12px; width:300px;
+    text-align:center; box-shadow:0 0 20px rgba(0,0,0,0.3); font-family:sans-serif;">
+    <h3 style="margin-bottom:15px;">Confirmar cambios</h3>
+    <p style="margin-bottom:10px;">Introduce tu contraseña actual para guardar los cambios.</p>
+    <input type="password" id="popup-pass" placeholder="Contraseña" style="
+      width:100%; padding:10px; margin-bottom:15px; border:1px solid #ccc;
+      border-radius:6px; font-size:14px;">
+    <div>
+      <button id="popup-confirm" style="
+        background:#0f2940; color:white; border:none; padding:8px 14px;
+        border-radius:6px; cursor:pointer; margin-right:8px;">
+        Confirmar
+      </button>
+      <button id="popup-cancel" style="
+        background:#ccc; color:#333; border:none; padding:8px 14px;
+        border-radius:6px; cursor:pointer;">
+        Cancelar
+      </button>
+    </div>
+  </div>
 </div>
+
+<script>
+  // Variable global accesible desde editar_perfil.js
+  const id_usuario = <?php echo json_encode($usuario['id'] ?? null); ?>;
+  console.log("ID de usuario cargado desde PHP:", id_usuario);
+</script>
 
 <script type="module" src="js/editar_perfil.js?v=1"></script>
 </body>
