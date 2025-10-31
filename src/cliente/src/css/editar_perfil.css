@@ -1,65 +1,55 @@
+/* Unifica tipografía con el header */
+body {
+  font-family: var(--fuente-principal, 'Poppins', sans-serif);
+  color: var(--color-azul-muy-oscuro, #143052);
+  background-color: #fff;
+  margin: 0;
+  padding: 0;
+}
+
+/* Contenedor general */
 .editar-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;
+  justify-content: flex-start;
   max-width: 480px;
-  margin: 0 auto;
-  height: 90dvh;
-  padding: 1.75em 2em;
+  margin: 70px auto 0 auto; /* reducimos el espacio arriba */
+  padding: 1.5em 2em;
   background-color: transparent;
   border-radius: 0;
   box-shadow: none;
-  position: relative;
 }
 
-/* Iconos */
-.icono-cerrar {
-  position: fixed;
-  top: 2em;
-  left: 2em;
-  width: 22px;
-  height: 22px;
-  cursor: pointer;
-  z-index: 10;
-}
-
+/* Quitamos iconos */
+.icono-cerrar,
 .icono-usuario {
-  width: 90px;   
-  height: auto;  
-  margin-bottom: 1.5em;
-  object-fit: contain; 
+  display: none;
 }
 
 /* Título */
 .titulo-editar {
-  font-family: var(--fuente-titulos);
-  color: var(--color-azul-muy-oscuro);
-  font-size: 1.6em;
-  text-align: center;
+  font-family: var(--fuente-titulos, 'Poppins', sans-serif);
+  color: var(--color-azul-muy-oscuro, #143052);
+  font-size: 1.7em;
+  text-align: left;
+  width: 100%;
   margin-bottom: 1.5em;
+  border-bottom: 2px solid #14305215;
+  padding-bottom: 0.3em;
 }
 
 /* Formulario */
 .formulario-editar {
   display: flex;
   flex-direction: column;
-  width: 90%;
-  gap: 1.4em;
-  margin-top: 1.5em;
-}
-
-.btn {
-  padding: 0.6em 0.8em; 
-  font-size: 1em;        
-  border-radius: 6px;    
-  margin-top: 0.6em;     
+  width: 100%;
+  gap: 1.2em;
 }
 
 .campo {
   display: flex;
   flex-direction: column;
-  align-items: center;
 }
 
 .campo label {
@@ -67,77 +57,40 @@
   color: var(--color-azul-muy-oscuro);
   font-size: 0.95em;
   margin-bottom: 0.4em;
-  text-align: center;
+}
+
+.input-base {
+  width: 100%;
+  padding: 0.5em 0.6em;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95em;
+}
+
+.btn {
+  padding: 0.6em 0.8em;
+  font-size: 1em;
+  border-radius: 6px;
+  margin-top: 1em;
+  background-color: #143052;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.btn:hover {
+  opacity: 0.9;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
   .editar-container {
-    height: 100dvh;
+    margin-top: 80px;
+    padding: 1.5em;
   }
 
-  .icono-cerrar {
-    top: 1em;
-    left: 1em;
-    width: 20px;
-    height: 20px;
+  .titulo-editar {
+    font-size: 1.4em;
   }
-
-  .icono-usuario {
-    width: 70px;
-    height: 70px;
-  }
-}
-
-/* ------------------ POPUP DE CONFIRMACIÓN ------------------ */
-.popup-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(255, 255, 255, 0.9);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 50;
-  font-family: var(--fuente-principal);
-}
-
-.popup-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  padding: 2em;
-  border-radius: 0;
-  box-shadow: none;
-  width: 90%;
-  max-width: 400px;
-}
-
-.popup-container h2 {
-  font-size: 1.3em;
-  color: var(--color-azul-muy-oscuro);
-  margin-bottom: 0.8em;
-  text-align: center;
-}
-
-.popup-container p {
-  font-size: 0.95em;
-  color: var(--color-azul-muy-oscuro);
-  margin-bottom: 1.2em;
-  text-align: center;
-}
-
-.popup-botones {
-  display: flex;
-  gap: 1em;
-  margin-top: 1em;
-}
-
-.btn-secundario {
-  background-color: #ccc;
-  color: #333;
 }
