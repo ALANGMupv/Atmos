@@ -1,6 +1,15 @@
 <?php
 session_start();
-$isGuest = !isset($_SESSION['usuario']);
+
+// Verificar si el usuario tiene sesión
+if (!isset($_SESSION['usuario'])) {
+    // Si no tiene sesión → redirigir a mapas.php
+    header("Location: mapas.php");
+    exit;
+}
+
+$isGuest = false; // ya sabemos que está logueado
+$active  = 'medidas';
 include __DIR__ . '/partials/header.php';
 ?>
 <!doctype html>
@@ -12,23 +21,18 @@ include __DIR__ . '/partials/header.php';
 
     <!-- Hoja de estilos principal -->
     <link rel="stylesheet" href="css/index.css" />
+    <link rel="stylesheet" href="css/header.css" />
 
     <!-- Script JS de la app -->
     <script defer src="js/index.js?v=3"></script>
-    <!-- Prueba commit -->
-
 </head>
 <body>
-
 
 <main class="container">
     <section class="panel">
         <div class="panel-header">
             <h2>Últimas medidas</h2>
             <div class="controls">
-
-                <!-- CÓDIGO PARA CUANDO MUESTRE VARIAS MEDIDAS EN UNA TABLA
-                Selector de número de filas a mostrar -->
                 <label for="limit">Filas:</label>
                 <select id="limit">
                     <option value="1" selected>Última medida</option>
@@ -41,28 +45,25 @@ include __DIR__ . '/partials/header.php';
         </div>
 
         <div class="table-wrap">
-            <!-- Tabla donde se cargan las medidas desde la API -->
             <table class="table" id="tabla-medidas">
                 <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Placa</th>
-                    <th>Tipo</th>
-                    <th>Valor</th>
-                    <th>Contador</th>
-                    <th>Lat, Long</th>
-                    <th>Fecha</th>
-                    <th>Hora</th>
-                </tr>
+                    <tr>
+                        <th>ID</th>
+                        <th>Placa</th>
+                        <th>Tipo</th>
+                        <th>Valor</th>
+                        <th>Contador</th>
+                        <th>Lat, Long</th>
+                        <th>Fecha</th>
+                        <th>Hora</th>
+                    </tr>
                 </thead>
                 <tbody id="tbody-medidas">
-                <!-- Mensaje inicial mientras carga -->
-                <tr><td colspan="7" class="muted">Cargando…</td></tr>
+                    <tr><td colspan="7" class="muted">Cargando…</td></tr>
                 </tbody>
             </table>
         </div>
 
-        <!-- Mensaje de error oculto por defecto -->
         <p id="error" class="error" hidden></p>
     </section>
 </main>
@@ -72,5 +73,6 @@ include __DIR__ . '/partials/header.php';
         <small>© 2025 Proyecto Biometría</small>
     </div>
 </footer>
+
 </body>
 </html>

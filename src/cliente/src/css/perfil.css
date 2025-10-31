@@ -1,0 +1,93 @@
+.perfil-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+  padding: 22px;
+  margin: 28px auto;
+  max-width: 760px;
+}
+
+.perfil-top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.perfil-avatar {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.perfil-identidad .perfil-nombre {
+  font-size: 1.4rem;
+  color: #0b1f35; /* mismo navy */
+  margin: 0;
+}
+.perfil-identidad .perfil-email {
+  color: #6b7280;
+  margin: 4px 0 0;
+}
+
+.perfil-info {
+  margin-top: 8px;
+  border-top: 1px dashed #e5e7eb;
+  padding-top: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.info-label {
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.info-value {
+  color: #111827;
+  font-weight: 500;
+}
+
+.perfil-actions {
+  margin-top: 18px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-block;
+  padding: 10px 14px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: transform .04s ease, opacity .2s ease;
+}
+
+.btn:hover { opacity: .92; }
+.btn:active { transform: translateY(1px); }
+
+.btn-primario {
+  background: #143052;   /* azul header hover */
+  color: #fff;
+}
+
+.btn-secundario {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+@media (max-width: 640px) {
+  .perfil-card { padding: 18px; }
+  .perfil-avatar { width: 72px; height: 72px; }
+}
