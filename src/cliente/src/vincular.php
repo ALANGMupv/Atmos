@@ -42,7 +42,7 @@ $active = 'vincular';
 
 <main>
     <section class="vincular-container">
-        <h2 class="titulo-vincular">Vincular Dispositivo</h2>
+        <h2 class="titulo-vincular"><strong>¡Empieza a ver datos!</strong></h2>
         <p class="texto-secundario">Introduce el código del dispositivo que deseas vincular</p>
 
         <form class="formulario-vincular">

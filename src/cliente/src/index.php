@@ -31,7 +31,7 @@ include __DIR__ . '/partials/header.php';
 <main class="container">
     <section class="panel">
         <div class="panel-header">
-            <h2>Últimas medidas</h2>
+            <h2>Últimas medidas de tu sensor de <strong>Ozono</strong></h2>
             <div class="controls">
                 <label for="limit">Filas:</label>
                 <select id="limit">

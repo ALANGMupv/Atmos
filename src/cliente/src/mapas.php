@@ -25,7 +25,7 @@ include __DIR__ . '/partials/header.php';
 <main class="container">
   <section class="panel">
     <div class="panel-header">
-      <h2>Vista de mapas</h2>
+      <h2>Vista de mapa de contaminación de tu zona</h2>
     </div>
 
     <div class="mapa-simulado">
