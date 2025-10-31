@@ -205,3 +205,47 @@ describe("Test Lógica de Negocio", function () {
     assert.strictEqual(usuario, null, "Debe devolver null si no hay coincidencias");
   });
 });
+
+// ---------------------------------------------------------------------------
+// TEST 8: vincularPlacaAUsuario()
+// ---------------------------------------------------------------------------
+it("vincularPlacaAUsuario() debe asociar una placa libre a un usuario", async function () {
+  /**
+   * Este test valida que el método vincularPlacaAUsuario():
+   *  - Comprueba que la placa exista.
+   *  - No permite vincular una placa ya asignada.
+   *  - Asocia correctamente una placa libre a un usuario.
+   */
+
+  // Crea una placa de prueba que no esté asignada (si no existe ya)
+  const conn = await logica.pool.getConnection();
+  let idPlaca = "TEST_PLACA_" + Date.now();
+
+  await conn.query(
+    "INSERT INTO placa (id_placa, descripcion, asignada) VALUES (?, 'Placa de prueba', 0)",
+    [idPlaca]
+  );
+  conn.release();
+
+  // Ejecuta la vinculación
+  const resultado = await logica.vincularPlacaAUsuario(idUsuarioCreado, idPlaca);
+
+  // Debe devolver un objeto con status y mensaje
+  assert.ok(resultado);
+  assert.strictEqual(resultado.status, "ok");
+  assert.match(resultado.mensaje, /vinculada/i);
+
+  // Verifica que la placa quedó marcada como asignada
+  const [placaActualizada] = await logica.pool.query(
+    "SELECT asignada FROM placa WHERE id_placa = ?",
+    [idPlaca]
+  );
+  assert.strictEqual(placaActualizada[0].asignada, 1, "La placa debe estar asignada");
+
+  // Verifica que la relación se haya insertado
+  const [relacion] = await logica.pool.query(
+    "SELECT * FROM usuarioplaca WHERE id_placa = ? AND id_usuario = ?",
+    [idPlaca, idUsuarioCreado]
+  );
+  assert.ok(relacion.length > 0, "Debe haberse insertado la relación en usuarioplaca");
+});
