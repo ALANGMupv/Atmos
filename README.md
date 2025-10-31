@@ -1,6 +1,6 @@
 # 🌱 Proyecto Biometría 2025  
 
-🔗 **Web del proyecto (Plesk):** [https://aguemar.upv.edu.es/biometriaAlan/index.php](https://aguemar.upv.edu.es/biometriaAlan/index.php)  
+🔗 **Web del proyecto (Plesk):** [https://nagufor.upv.edu.es/cliente/index.php](https://nagufor.upv.edu.es/cliente/index.php)  
 
 Repositorio del proyecto de **Biometría y Medio Ambiente**. Incluye código, diseños, API REST, base de datos y pruebas automatizadas.  
 
@@ -42,8 +42,6 @@ El proyecto está desplegado en **Plesk (UPV)**:
 
 1. **Backend (Node.js + Express)**  
    - Se ejecuta en el panel de Plesk, con puerto asignado internamente.  
-   - El acceso externo está publicado mediante proxy inverso en:  
-     👉 `https://aguemar.upv.edu.es/medida`
 
 2. **Base de Datos (MySQL en Plesk)**  
    - Configurada y gestionada desde el propio panel.  
@@ -52,7 +50,7 @@ El proyecto está desplegado en **Plesk (UPV)**:
 3. **Frontend (PHP en /httpdocs)**  
    - Desplegado en la carpeta pública de Plesk.  
    - Accesible en:  
-     👉 [https://aguemar.upv.edu.es/biometriaAlan/index.php](https://aguemar.upv.edu.es/biometriaAlan/index.php)
+     👉 [https://nagufor.upv.edu.es/cliente/index.php](https://nagufor.upv.edu.es/cliente/index.php)
 
 ---
 
@@ -60,11 +58,13 @@ El proyecto está desplegado en **Plesk (UPV)**:
 
 Los tests están desarrollados con **Mocha + Request** y verifican:
 
-- Inserción de medidas (`POST /medida`)  
-- Validación de JSON y errores  
-- Persistencia en base de datos  
-- Listado de medidas (`GET /medidas`)  
-- Lógica de negocio (consultas MySQL)  
+- `guardarMedida()` → Inserta una nueva medida y devuelve el registro insertado.  
+- `listarMedidas()` → Lista las últimas medidas con límite configurable.  
+- `guardarUsuario()` → Crea un usuario nuevo con contraseña cifrada mediante bcrypt.  
+- `actualizarEstadoVerificado()` → Marca a un usuario como verificado.  
+- `buscarUsuarioPorEmail()` → Busca un usuario existente por su correo electrónico.  
+- `actualizarUsuario()` → Actualiza los datos personales de un usuario existente.  
+- `obtenerUsuarioPorId()` → Devuelve los datos completos de un usuario o `null` si no existe.  
 
 Para ejecutarlos:
 

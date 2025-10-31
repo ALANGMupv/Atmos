@@ -24,7 +24,7 @@ private:
   // ............................................................
 public:
   EmisoraBLE laEmisora {
-	"GTI-3A-PlacaAlan", //  nombre emisora
+	"AtmosPlacaGrupo4", //  nombre emisora
 	  0x004c, // fabricanteID (Apple) OBLIGATORIO
 	  4 // txPower: Es “+4 dBm”, la potencia máxima de transmisión (real - antena).
 	  };
