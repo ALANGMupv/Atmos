@@ -61,7 +61,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const contrasena_actual = document.getElementById("popup-pass").value.trim();
 
     // Recuperamos el ID del usuario logueado.
-    const id_usuario = localStorage.getItem("id_usuario");
+
+    //PROBAR
+    // const id_usuario = localStorage.getItem("id_usuario");
+    const id_usuario = 6; 
 
     // Validaciones básicas
     if (!id_usuario) {
@@ -100,7 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Interpretamos la respuesta del backend
       if (data.status === "ok") {
-        mostrarToast("Datos actualizados correctamente ✅", "success");
+        mostrarToast("Datos actualizados correctamente", "success");
         form.reset(); // Limpia el formulario tras guardar
       } else {
         mostrarToast(data.error || "Error al actualizar los datos.", "error");

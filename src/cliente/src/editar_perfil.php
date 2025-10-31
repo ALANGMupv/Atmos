@@ -1,156 +1,105 @@
-// --------------------------------------------------------------------------
-// editar_perfil.js
-// --------------------------------------------------------------------------
-// Script encargado de gestionar la edición de datos del usuario actual.
-//
-// Flujo general:
-//    El usuario modifica campos en el formulario de perfil.
-//    Al pulsar "Guardar cambios", se abre un POPUP pidiendo su contraseña actual.
-//    Si confirma, se envía la solicitud PUT /usuario al servidor con los datos nuevos.
-//    El backend valida la contraseña y actualiza los datos.
-//    Se muestra un mensaje con el resultado.
-//
-// Autor: Nerea Aguilar Forés
-// --------------------------------------------------------------------------
+<?php
+session_start();
 
-document.addEventListener("DOMContentLoaded", () => {
-  // Seleccionar el formulario principal de edición
-  const form = document.querySelector(".formulario-editar");
-  if (!form) return; // Si no existe, no hacemos nada
-
-  // ------------------------------------------------------------------------
-  // POPUP de confirmación de contraseña
-  // ------------------------------------------------------------------------
-  // (Ya está en el HTML, solo lo referenciamos)
-  const overlay = document.getElementById("popup-overlay");
-  const confirmBtn = document.getElementById("popup-confirm");
-  const cancelBtn = document.getElementById("popup-cancel");
-
-  // ------------------------------------------------------------------------
-  //  Evento principal: click en "Guardar cambios"
-  // ------------------------------------------------------------------------
-  // Este evento NO manda los datos todavía. Primero abre el popup
-  // para que el usuario verifique su identidad con su contraseña actual.
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-
-    const nombre = document.getElementById("nombre").value.trim();
-    const apellidos = document.getElementById("apellidos").value.trim();
-    const email = document.getElementById("correo").value.trim();
-
-    // Si no hay ningún campo cambiado, no abre el popup
-    if (!nombre && !apellidos && !email) {
-      mostrarToast("No hay cambios que guardar.", "info");
-      return;
-    }
-
-    // Mostrar el popup de verificación
-    overlay.style.display = "flex";
-
-    // Guardar temporalmente los datos a modificar
-    overlay.dataset.nombre = nombre;
-    overlay.dataset.apellidos = apellidos;
-    overlay.dataset.email = email;
-  });
-
-  // ------------------------------------------------------------------------
-  // Botón "Confirmar" del popup
-  // ------------------------------------------------------------------------
-  confirmBtn.addEventListener("click", async () => {
-    // Obtener la contraseña introducida en el popup
-    const contrasena_actual = document.getElementById("popup-pass").value.trim();
-
-    // Recuperamos el ID del usuario logueado.
-    const id_usuario = localStorage.getItem("id_usuario");
-
-    // Validaciones básicas
-    if (!id_usuario) {
-      mostrarToast("No se encontró el usuario actual.", "error");
-      overlay.style.display = "none";
-      return;
-    }
-
-    if (!contrasena_actual) {
-      mostrarToast("Debes introducir tu contraseña.", "warning");
-      return;
-    }
-
-    // Recuperamos los datos almacenados temporalmente en el overlay
-    const nombre = overlay.dataset.nombre;
-    const apellidos = overlay.dataset.apellidos;
-    const email = overlay.dataset.email;
-
-    // Creamos un objeto con solo los campos que el usuario haya editado
-    const datosActualizados = { id_usuario, contrasena_actual };
-    if (nombre) datosActualizados.nombre = nombre;
-    if (apellidos) datosActualizados.apellidos = apellidos;
-    if (email) datosActualizados.email = email;
-
-    // ----------------------------------------------------------------------
-    // Envío de la petición PUT al servidor REST
-    // ----------------------------------------------------------------------
-    try {
-      const resp = await fetch("https://nagufor.upv.edu.es/usuario", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(datosActualizados)
-      });
-
-      const data = await resp.json();
-
-      // Interpretamos la respuesta del backend
-      if (data.status === "ok") {
-        mostrarToast("Datos actualizados correctamente ✅", "success");
-        form.reset(); // Limpia el formulario tras guardar
-      } else {
-        mostrarToast(data.error || "Error al actualizar los datos.", "error");
-      }
-    } catch (err) {
-      console.error("Error en PUT /usuario:", err);
-      mostrarToast("No se pudo conectar con el servidor.", "error");
-    }
-
-    // Cerrar el popup y limpiar el input de contraseña
-    overlay.style.display = "none";
-    document.getElementById("popup-pass").value = "";
-  });
-
-  // ------------------------------------------------------------------------
-  // Botón "Cancelar" del popup.
-  // ------------------------------------------------------------------------
-  cancelBtn.addEventListener("click", () => {
-    overlay.style.display = "none"; // Oculta el popup
-    document.getElementById("popup-pass").value = ""; // Limpia el campo
-  });
-});
-
-// Mostrar notificaciones toast
-function mostrarToast(mensaje, tipo = "info", duracion = 4000) {
-  let box = document.getElementById("toast");
-  if (!box) {
-    box = document.createElement("div");
-    box.id = "toast";
-    box.style.cssText = `
-      position:fixed; bottom:20px; right:20px; padding:15px 20px;
-      border-radius:10px; color:white; font-family:sans-serif; z-index:9999;
-      box-shadow:0 0 10px rgba(0,0,0,0.3); opacity:0; transition:opacity 0.3s;
-    `;
-    document.body.appendChild(box);
-  }
-
-  // Colores según el tipo de mensaje
-  const colores = {
-    success: "#4CAF50", // verde
-    error: "#E53935",   // rojo
-    warning: "#FFC107", // amarillo
-    info: "#333"        // gris oscuro
-  };
-
-  // Personalizar el mensaje y color
-  box.style.background = colores[tipo] || "#333";
-  box.textContent = mensaje;
-  box.style.opacity = "1";
-
-  // Ocultar el toast.
-  setTimeout(() => { box.style.opacity = "0"; }, duracion);
+// Si el usuario no ha iniciado sesión, redirige a mapas
+if (!isset($_SESSION['usuario'])) {
+  header("Location: mapas.php");
+  exit;
 }
+
+$usuario = $_SESSION['usuario'];
+$isGuest = false;
+$active  = 'perfil'; // activa el icono del perfil
+?>
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Editar Perfil - ATMOS</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/estilos.css">
+  <link rel="stylesheet" href="css/header.css">
+  <link rel="stylesheet" href="css/editar_perfil.css">
+</head>
+<body>
+
+<?php include __DIR__ . '/partials/header.php'; ?>
+
+<main>
+  <section class="editar-container">
+
+    <!-- Título -->
+    <h1 class="titulo-editar">Editar perfil</h1>
+
+    <!-- Formulario -->
+    <form class="formulario-editar" method="post" action="actualizarPerfil.php">
+
+      <div class="campo">
+        <label for="nombre">Nombre</label>
+        <input type="text" id="nombre" name="nombre" class="input-base"
+               value="<?php echo htmlspecialchars($usuario['nombre']); ?>" required>
+      </div>
+
+      <div class="campo">
+        <label for="apellidos">Apellido/s</label>
+        <input type="text" id="apellidos" name="apellidos" class="input-base"
+               value="<?php echo htmlspecialchars($usuario['apellidos'] ?? ''); ?>">
+      </div>
+
+      <div class="campo">
+        <label for="correo">Correo electrónico</label>
+        <input type="email" id="correo" name="correo" class="input-base"
+               value="<?php echo htmlspecialchars($usuario['email']); ?>" readonly>
+      </div>
+
+      <div class="campo">
+        <label for="contrasena">Contraseña</label>
+        <input type="password" id="contrasena" name="contrasena" class="input-base" placeholder="Opcional">
+      </div>
+
+      <button type="submit" class="btn">Guardar cambios</button>
+    </form>
+
+  </section>
+</main>
+
+<!-- Popup de verificación -->
+<div id="popup-overlay" style="
+  display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+  background:rgba(0,0,0,0.5); z-index:10000; justify-content:center; align-items:center;">
+  <div id="popup" style="
+    background:white; padding:25px 30px; border-radius:12px; width:300px;
+    text-align:center; box-shadow:0 0 20px rgba(0,0,0,0.3); font-family:sans-serif;">
+    <h3 style="margin-bottom:15px;">Confirmar cambios</h3>
+    <p style="margin-bottom:10px;">Introduce tu contraseña actual para guardar los cambios.</p>
+    <input type="password" id="popup-pass" placeholder="Contraseña" style="
+      width:100%; padding:10px; margin-bottom:15px; border:1px solid #ccc;
+      border-radius:6px; font-size:14px;">
+    <div>
+      <button id="popup-confirm" style="
+        background:#0f2940; color:white; border:none; padding:8px 14px;
+        border-radius:6px; cursor:pointer; margin-right:8px;">
+        Confirmar
+      </button>
+      <button id="popup-cancel" style="
+        background:#ccc; color:#333; border:none; padding:8px 14px;
+        border-radius:6px; cursor:pointer;">
+        Cancelar
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Variable global accesible desde editar_perfil.js
+  const id_usuario = <?php echo json_encode($usuario['id'] ?? null); ?>;
+  console.log("ID de usuario cargado desde PHP:", id_usuario);
+</script>
+
+<script type="module" src="js/editar_perfil.js?v=1"></script>
+</body>
+</html>
