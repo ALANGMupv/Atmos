@@ -16,12 +16,6 @@
 <main>
     <section class="registro-container">
 
-<<<<<<< Updated upstream
-=======
-        <!-- Icono X (cerrar) -->
-        <img src="icons/cerrar.svg" alt="Cerrar" class="icono-cerrar" onclick="window.location.href='landing.php'">
-
->>>>>>> Stashed changes
         <!-- Logo -->
         <img src="img/logoAtmos.png" alt="Logo Atmos" class="logo-registro">
 
