@@ -4,9 +4,13 @@ session_start();
 // Comprobamos si la sesión contiene el usuario logueado
 if (isset($_SESSION['usuario']) && isset($_SESSION['usuario']['id'])) {
     $id_usuario = $_SESSION['usuario']['id'];
+    $isGuest = false;
 } else {
     $id_usuario = null; // No hay sesión activa
+    $isGuest = true;
 }
+
+$active = 'vincular';
 ?>
 <!doctype html>
 <html lang="es">
@@ -18,8 +22,10 @@ if (isset($_SESSION['usuario']) && isset($_SESSION['usuario']['id'])) {
     <title>Vincular Dispositivo - Atmos</title>
 
     <!-- CSS -->
+    <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="stylesheet" href="css/vincular.css">
+
 
     <!-- Inyectamos el ID del usuario desde PHP -->
     <script>
@@ -32,9 +38,10 @@ if (isset($_SESSION['usuario']) && isset($_SESSION['usuario']['id'])) {
 </head>
 <body>
 
+<?php include __DIR__ . '/partials/header.php'; ?>
+
 <main>
     <section class="vincular-container">
-        <img src="icons/cerrar.svg" alt="Cerrar" class="icono-cerrar">
         <h2 class="titulo-vincular">Vincular Dispositivo</h2>
         <p class="texto-secundario">Introduce el código del dispositivo que deseas vincular</p>
 
