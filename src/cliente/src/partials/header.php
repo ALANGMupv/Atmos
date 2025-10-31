@@ -1,23 +1,31 @@
 <?php
 /**
  * HEADER PRINCIPAL DE ATMOS
+ * ---------------------------------------------------
+ * Controla el header según si el usuario está logueado
+ * o entra como invitado.
  *
  * Uso:
+ * ---------------------------------------------------
  * session_start();
  * $isGuest = !isset($_SESSION['usuario']);
  * $active  = 'mapas' | 'medidas' | 'vincular' | 'perfil' | null;
  * include __DIR__ . '/partials/header.php';
+ *
+ * Autor: Alejandro Vázquez Remes
  */
+
 if (!isset($active))  { $active = null; }
 if (!isset($isGuest)) { $isGuest = true; } // seguridad
 ?>
 
+<!-- Vincula el CSS del header -->
 <link rel="stylesheet" href="css/header.css">
 
 <header class="site-header">
   <nav class="navbar" aria-label="Navegación principal">
 
-    <!-- Izquierda: LOGO + texto ATMOS (ya no clickeable) -->
+    <!-- Izquierda: LOGO + texto ATMOS (no clickeable) -->
     <div class="brand no-link">
       <img src="img/logoAtmosBlanco.png" alt="ATMOS" class="brand-logo">
       <span class="brand-text">ATMOS</span>
@@ -26,6 +34,7 @@ if (!isset($isGuest)) { $isGuest = true; } // seguridad
     <!-- Derecha: Navegación -->
     <div class="nav-right">
 
+      <!-- Siempre visible -->
       <a href="mapas.php"
          class="nav-link <?php echo $active === 'mapas' ? 'is-active' : ''; ?>"
          <?php echo $active === 'mapas' ? 'aria-current="page"' : ''; ?>>
@@ -50,8 +59,9 @@ if (!isset($isGuest)) { $isGuest = true; } // seguridad
            class="account <?php echo $active === 'perfil' ? 'is-active' : ''; ?>"
            title="Mi perfil" aria-label="Mi perfil"
            <?php echo $active === 'perfil' ? 'aria-current="page"' : ''; ?>>
-          <img src="img/usuario.png" alt="Usuario" class="account-avatar">
+          <img src="img/UserBlanco.png" alt="Usuario ATMOS" class="account-avatar">
         </a>
+
       <?php else: ?>
         <!-- Invitado -->
         <a href="login.php" class="nav-link">Iniciar sesión</a>
