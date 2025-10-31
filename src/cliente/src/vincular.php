@@ -1,3 +1,13 @@
+<?php
+session_start();
+
+// Comprobamos si la sesión contiene el usuario logueado
+if (isset($_SESSION['usuario']) && isset($_SESSION['usuario']['id'])) {
+    $id_usuario = $_SESSION['usuario']['id'];
+} else {
+    $id_usuario = null; // No hay sesión activa
+}
+?>
 <!doctype html>
 <html lang="es">
 <head>
@@ -10,33 +20,28 @@
     <!-- CSS -->
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="stylesheet" href="css/vincular.css">
+
+    <!-- Inyectamos el ID del usuario desde PHP -->
+    <script>
+        window.ID_USUARIO = <?php echo json_encode($id_usuario); ?>;
+        console.log("ID de usuario inyectado desde PHP:", window.ID_USUARIO);
+    </script>
+
+    <!-- Script de la app -->
+    <script defer src="js/vincular.js"></script>
 </head>
 <body>
 
 <main>
     <section class="vincular-container">
-
-        <!-- Icono X (cerrar) -->
         <img src="icons/cerrar.svg" alt="Cerrar" class="icono-cerrar">
-
-        <!-- Título -->
         <h2 class="titulo-vincular">Vincular Dispositivo</h2>
+        <p class="texto-secundario">Introduce el código del dispositivo que deseas vincular</p>
 
-        <!-- Subtexto -->
-        <p class="texto-secundario">
-            Introduce el código del dispositivo y un nombre identificativo
-        </p>
-
-        <!-- Formulario -->
-        <form class="formulario-vincular" action="vincularDispositivo.php" method="post">
+        <form class="formulario-vincular">
             <div class="campo">
                 <label for="codigo">Código del dispositivo</label>
                 <input type="text" id="codigo" name="codigo" class="input-base" required>
-            </div>
-
-            <div class="campo">
-                <label for="nombre">Nombre</label>
-                <input type="text" id="nombre" name="nombre" class="input-base" required>
             </div>
 
             <button type="submit" class="btn btn-vincular">Vincular</button>
