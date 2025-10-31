@@ -205,6 +205,7 @@ class Logica {
     //   {Promise<Object>} - Objeto con el estado de la operación.
     //                               { status: "ok", mensaje: "..." } o error 
     // -----------------------------------------------------------------------------
+    //
     async vincularPlacaAUsuario(id_usuario, id_placa) {
         const conn = await this.pool.getConnection();
         try {
@@ -240,6 +241,7 @@ class Logica {
         } finally {
             conn.release();
         }
+    
     }
 
 }
