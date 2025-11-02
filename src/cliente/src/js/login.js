@@ -56,16 +56,18 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       const data = await response.json();
+	  console.log("Respuesta cruda del backend:", data);
 
       if (data.status === "ok") {
-        // ¡Crear la sesión PHP local con los datos del usuario
+        // Crear la sesión PHP local con los datos del usuario
+		console.log("Datos recibidos del backend /login:", data);
         await fetch("guardarSesion.php", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data.usuario)
         });
 
-        // 6️Redirigir al home (index.php)
+        // 6Redirigir al home (index.php)
         window.location.href = "index.php";
       } else {
         alert("Error: " + (data.error || "Error desconocido"));
