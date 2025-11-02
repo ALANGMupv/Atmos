@@ -25,7 +25,7 @@
 
             <div class="Container-info">
                 <!-- Logo -->
-                <img src="img/logoAtmosFull.png" alt="Logo Atmos" class="logo">
+                <img src="img/LogoAtmosFull.png" alt="Logo Atmos" class="logo">
 
                 <!-- Texto de introducción -->
                 <h1 class="texto-intro">
@@ -36,7 +36,7 @@
             <div class="Container-ctas">
                 <button class="btn-login" onclick="window.location.href='login.php'">INICIAR SESÓN</button>
                 <button class="btn-registro" onclick="window.location.href='registro.php'">REGISTRARME</button>
-                <a href="" class="acceso-invitado">Acceder como invitado</a>
+                <a href="index.php" class="acceso-invitado">Acceder como invitado</a>
             </div>
 
 
