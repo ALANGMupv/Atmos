@@ -38,7 +38,7 @@
       </div>
 
       <!-- Enlace correcto al reset -->
-      <a href="restConstrasenya.php" id="link-olvido" class="enlace-secundario">Olvidé mi contraseña</a>
+      <a href="restContrasenya.php" id="link-olvido" class="enlace-secundario">Olvidé mi contraseña</a>
 
       <button type="submit" class="btn btn-login">Iniciar Sesión</button>
 
