@@ -18,7 +18,8 @@
 //  Importación de módulos de Firebase
 // --------------------------------------------------------------------------
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } 
+  from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
 // --------------------------------------------------------------------------
 //  Configuración e inicialización de Firebase
@@ -81,6 +82,9 @@ document.addEventListener("DOMContentLoaded", () => {
       // 1) Crear usuario en Firebase Authentication
       const cred = await createUserWithEmailAndPassword(auth, correo, contrasena);
 
+      // 1.5) Enviar correo de verificación
+      await sendEmailVerification(cred.user);
+
       // 2) Obtener el token JWT emitido por Firebase
       const idToken = await cred.user.getIdToken();
 
@@ -102,7 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await response.json();
 
       if (data.status === "ok") {
-        alert("Usuario registrado correctamente.");
+        alert("Se ha enviado una verificación a tu email. Podría haber llegado a SPAM");
         // Si se desea, redirigir al login:
         // window.location.href = "login.php";
       } else {

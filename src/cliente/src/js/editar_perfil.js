@@ -60,11 +60,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // Obtener la contraseña introducida en el popup
     const contrasena_actual = document.getElementById("popup-pass").value.trim();
 
-    // Recuperamos el ID del usuario logueado.
+    // Recuperamos el ID del usuario logueado desde PHP (variable global)
+    if (typeof id_usuario === "undefined" || !id_usuario) {
+       mostrarToast("No se encontró el usuario actual.", "error");
+       overlay.style.display = "none";
+       return;
+    }
 
-    //PROBAR
-    // const id_usuario = localStorage.getItem("id_usuario");
-    const id_usuario = 6; 
 
     // Validaciones básicas
     if (!id_usuario) {

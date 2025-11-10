@@ -24,7 +24,7 @@
       Introduce tus credenciales de <strong>inicio de sesión</strong>
     </p>
 
-    <!-- ✅ Formulario SIN action ni method -->
+    <!-- Formulario SIN action ni method -->
     <form class="formulario-login">
 
       <div class="campo">
@@ -37,8 +37,8 @@
         <input type="password" id="contrasena" name="contrasena" class="input-base" required>
       </div>
 
-      <!-- ✅ Enlace correcto al reset -->
-      <a href="restConstrasenya.php" id="link-olvido" class="enlace-secundario">Olvidé mi contraseña</a>
+      <!-- Enlace correcto al reset -->
+      <a href="restContrasenya.php" id="link-olvido" class="enlace-secundario">Olvidé mi contraseña</a>
 
       <button type="submit" class="btn btn-login">Iniciar Sesión</button>
 
@@ -49,7 +49,7 @@
   </section>
 </main>
 
-<!-- ✅ Carga del script de login -->
+<!-- Carga del script de login -->
 <script type="module" src="js/login.js"></script>
 
 </body>
