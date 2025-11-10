@@ -11,9 +11,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&family=Roboto:wght@600&display=swap" rel="stylesheet">
 
   <!-- Estilos -->
- <link rel="stylesheet" href="css/header.css?v=1.0.5">
+ 
 <link rel="stylesheet" href="css/index.css?v=1.0.6">
 <link rel="stylesheet" href="css/buttons.css?v=1.0.3"> 
+<link rel="stylesheet" href="css/header.css?v=1.0.5">
 
 
 </head>
