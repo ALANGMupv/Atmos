@@ -1,67 +1,105 @@
-<?php
-include __DIR__ . '/partials/header.php';
-?>
 <!doctype html>
 <html lang="es">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Proyecto Biometría – Medidas</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ATMOS — Respira con datos reales</title>
 
-    <!-- Hoja de estilos principal -->
-    <link rel="stylesheet" href="css/index.css" />
-    <link rel="stylesheet" href="css/header.css" />
+  <!-- Fuentes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&family=Roboto:wght@600&display=swap" rel="stylesheet">
 
-    <!-- Script JS de la app -->
-    <script defer src="js/index.js?v=3"></script>
+  <!-- Estilos -->
+  <link rel="stylesheet" href="css/header.css?v=1.0.5">
+  <link rel="stylesheet" href="css/index.css?v=1.0.5">
 </head>
 <body>
 
-<main class="container">
-    <section class="panel">
-        <div class="panel-header">
-            <h2>Últimas medidas</h2>
-            <div class="controls">
-                <label for="limit">Filas:</label>
-                <select id="limit">
-                    <option value="1" selected>Última medida</option>
-                    <option value="10">10</option>
-                    <option value="50">50</option>
-                    <option value="100">100</option>
-                    <option value="300">300</option>
-                </select>
-            </div>
-        </div>
+  <?php include __DIR__ . '/partials/header.php'; ?>
 
-        <div class="table-wrap">
-            <table class="table" id="tabla-medidas">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Placa</th>
-                        <th>Tipo</th>
-                        <th>Valor</th>
-                        <th>Contador</th>
-                        <th>Lat, Long</th>
-                        <th>Fecha</th>
-                        <th>Hora</th>
-                    </tr>
-                </thead>
-                <tbody id="tbody-medidas">
-                    <tr><td colspan="7" class="muted">Cargando…</td></tr>
-                </tbody>
-            </table>
-        </div>
+  <main>
+    <!-- ====== Sección 1 (Hero) ====== -->
+    <section id="hero" class="section section-hero">
+      <div class="wrap hero-content">
+        <h1 class="hero-title">
+          Visualiza el aire que<br>
+          <span class="line2">respiras en todo momento</span>
+        </h1>
 
-        <p id="error" class="error" hidden></p>
+        <p class="hero-sub">
+          Únete a una comunidad colaborativa que mide la calidad del aire en tiempo real.
+          Tus datos ayudan a crear ciudades más saludables.
+        </p>
+
+        <div class="cta-row centered">
+          <a href="registro.php" class="btn btn-primary">Comienza ahora</a>
+          <a href="mapa.php" class="btn btn-outline">Ver mapa público</a>
+        </div>
+      </div>
+      <div class="scroll-down">
+        <img src="img/ArrowDownCircle.svg" alt="Desplázate hacia abajo" class="scroll-icon">
+      </div>
     </section>
-</main>
 
-<footer class="footer">
-    <div class="container">
-        <small>© 2025 Proyecto Biometría</small>
+    <!-- ====== SECCIÓN I ====== -->
+    <section id="funciona" class="section section-funciona">
+      <div class="wrap funciona-content">
+
+        <!-- Bloque 1: Cómo funciona ATMOS -->
+        <h2 class="funciona-title">¿Cómo funciona Atmos?</h2>
+        <p class="funciona-sub">
+          Un sistema simple y efectivo basado en la participación ciudadana
+        </p>
+
+        <div class="funciona-grid">
+          <img src="img/Tarjeta Movil.png" alt="App móvil ATMOS" class="funciona-icon">
+          <img src="img/Recolecta Datos.png" alt="Recolección de datos ATMOS" class="funciona-icon">
+          <img src="img/Ver Mapas.png" alt="Ver mapas ATMOS" class="funciona-icon">
+        </div>
+
+        <!-- Separador -->
+        <div class="section-divider"></div>
+
+        <!-- Bloque 2: Funcionalidades -->
+        <h2 class="funcionalidades-title">Funcionalidades para cada usuario</h2>
+        <p class="funcionalidades-sub">
+          Diferentes niveles de acceso según tu participación
+        </p>
+
+        <div class="funcionalidades-grid">
+          <img src="img/Usuario Visitante.png" alt="Usuario visitante ATMOS" class="funcionalidades-icon">
+          <img src="img/Usuario Registrado.png" alt="Usuario registrado ATMOS" class="funcionalidades-icon">
+        </div>
+
+      </div>
+    </section>
+    <!-- ====== SECCIÓN CTA COMPRA SENSOR ====== -->
+<section id="compra-sensor" class="section-cta">
+  <div class="wrap">
+    <h2 class="cta-title">Comienza a monitorizar el aire hoy con la compra de tu sensor</h2>
+    <p class="cta-sub">Únete a cientos de personas que ya están contribuyendo a un futuro más saludable</p>
+
+    <div class="cta-actions">
+      <!-- Cambia el href a la URL real de tu checkout/tienda -->
+      <a href="tienda.php" class="btn btn-light">Compra tu sensor</a>
     </div>
-</footer>
+  </div>
+</section>
 
+
+  </main>
+
+  <!-- Scroll suave -->
+  <script>
+    document.addEventListener('click', e => {
+      const a = e.target.closest('a[href^="#"]');
+      if (!a) return;
+      const el = document.querySelector(a.getAttribute('href'));
+      if (!el) return;
+      e.preventDefault();
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  </script>
 </body>
 </html>
