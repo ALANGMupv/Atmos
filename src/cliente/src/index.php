@@ -11,8 +11,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&family=Roboto:wght@600&display=swap" rel="stylesheet">
 
   <!-- Estilos -->
-  <link rel="stylesheet" href="css/header.css?v=1.0.5">
-  <link rel="stylesheet" href="css/index.css?v=1.0.5">
+ <link rel="stylesheet" href="css/header.css?v=1.0.5">
+<link rel="stylesheet" href="css/index.css?v=1.0.6">
+<link rel="stylesheet" href="css/buttons.css?v=1.0.3"> 
+
+
 </head>
 <body>
 
@@ -33,9 +36,10 @@
         </p>
 
         <div class="cta-row centered">
-          <a href="registro.php" class="btn btn-primary">Comienza ahora</a>
-          <a href="mapa.php" class="btn btn-outline">Ver mapa público</a>
+        <a href="registro.php" class="btn btn-primary btn-lg">Comienza ahora</a>
+        <a href="mapa.php" class="btn btn-outline btn-lg">Ver mapa público</a>
         </div>
+
       </div>
       <div class="scroll-down">
         <img src="img/ArrowDownCircle.svg" alt="Desplázate hacia abajo" class="scroll-icon">
@@ -74,18 +78,18 @@
 
       </div>
     </section>
-    <!-- ====== SECCIÓN CTA COMPRA SENSOR ====== -->
+<!-- ====== SECCIÓN CTA COMPRA SENSOR ====== -->
 <section id="compra-sensor" class="section-cta">
   <div class="wrap">
     <h2 class="cta-title">Comienza a monitorizar el aire hoy con la compra de tu sensor</h2>
     <p class="cta-sub">Únete a cientos de personas que ya están contribuyendo a un futuro más saludable</p>
 
     <div class="cta-actions">
-      <!-- Cambia el href a la URL real de tu checkout/tienda -->
-      <a href="tienda.php" class="btn btn-light">Compra tu sensor</a>
+      <a href="index.php" class="btn btn-secondary btn-lg">Compra tu sensor</a>
     </div>
   </div>
 </section>
+
 
 
   </main>
