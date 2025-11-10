@@ -93,7 +93,8 @@
 
 
   </main>
-
+  <!-- ====== FOOTER ====== -->
+  <?php include __DIR__ . '/partials/footer.php'; ?>
   <!-- Scroll suave -->
   <script>
     document.addEventListener('click', e => {
