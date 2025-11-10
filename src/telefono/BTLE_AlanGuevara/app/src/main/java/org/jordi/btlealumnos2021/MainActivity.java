@@ -212,16 +212,16 @@ public class MainActivity extends AppCompatActivity {
                     });
 
 
-                    // solo enviamos si el contador ha cambiado
+                    // Nuevo: solo enviamos si el contador ha cambiado
                     if (contador != ultimoContador) {
 
                         // Detectar huecos ( ESTO DETECTA CONTADORES PERDIDOS, HE TENIDO PROBLEMAS CON ESO)
                         if (ultimoContador != -1 && contador > ultimoContador + 1) {
                             // Hemos perdido alguno entre medio
                             for (int perdido = ultimoContador + 1; perdido < contador; perdido++) {
-                                Log.w(ETIQUETA_LOG, " Se perdió el contador " + perdido);
+                                Log.w(ETIQUETA_LOG, "⚠ Se perdió el contador " + perdido);
                                 Toast.makeText(MainActivity.this,
-                                        " Perdido contador " + perdido,
+                                        "⚠ Perdido contador " + perdido,
                                         Toast.LENGTH_SHORT).show();
                             }
                         }

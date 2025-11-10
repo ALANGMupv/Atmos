@@ -73,14 +73,13 @@ function pintarFilas(filas) {
     // join("") une todas las filas en un único string de HTML
     // Se llama escaparHTML() para evitar inyección de HTML en el UUID
     tbody.innerHTML = filas.map(r => {
-        const [fecha, hora] = formatearFecha(r.fecha_hora || r.fecha || r.created_at);
-        const valorFormateado = parseFloat(r.valor).toFixed(3); // fuerza 3 decimales
+        const [fecha, hora] = formatearFecha(r.fecha); // separa fecha y hora
         return `
         <tr>
           <td>${r.id_medida}</td>
           <td>${escaparHTML(r.id_placa)}</td>
           <td>${gasATexto(r.tipo)}</td>
-          <td>${valorFormateado}</td>
+          <td>${r.valor}</td>
           <td>${r.id_contador ?? "-"}</td>
           <td>${r.latitud}, ${r.longitud}</td>
           <td>${fecha}</td>
@@ -89,6 +88,7 @@ function pintarFilas(filas) {
       `;
     }).join("");
 }
+
 // -----------------------------------------------------------------------------
 // Muestra un mensaje de error en la caja de error (errorBox)
 // -----------------------------------------------------------------------------

@@ -24,14 +24,14 @@ include __DIR__ . '/partials/header.php';
     <link rel="stylesheet" href="css/header.css" />
 
     <!-- Script JS de la app -->
-    <script defer src="js/index.js"></script>
+    <script defer src="js/index.js?v=3"></script>
 </head>
 <body>
 
 <main class="container">
     <section class="panel">
         <div class="panel-header">
-            <h2>Últimas medidas de tu sensor de <strong>Ozono</strong></h2>
+            <h2>Últimas medidas</h2>
             <div class="controls">
                 <label for="limit">Filas:</label>
                 <select id="limit">
@@ -47,19 +47,19 @@ include __DIR__ . '/partials/header.php';
         <div class="table-wrap">
             <table class="table" id="tabla-medidas">
                 <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Placa</th>
-                    <th>Tipo</th>
-                    <th>Valor</th>
-                    <th>Contador</th>
-                    <th>Lat, Long</th>
-                    <th>Fecha</th>
-                    <th>Hora</th>
-                </tr>
+                    <tr>
+                        <th>ID</th>
+                        <th>Placa</th>
+                        <th>Tipo</th>
+                        <th>Valor</th>
+                        <th>Contador</th>
+                        <th>Lat, Long</th>
+                        <th>Fecha</th>
+                        <th>Hora</th>
+                    </tr>
                 </thead>
                 <tbody id="tbody-medidas">
-                <tr><td colspan="7" class="muted">Cargando…</td></tr>
+                    <tr><td colspan="7" class="muted">Cargando…</td></tr>
                 </tbody>
             </table>
         </div>

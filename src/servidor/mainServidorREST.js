@@ -66,11 +66,7 @@ const DB_CONFIG = {
  */
 const app = express();
 app.use(express.json());
-app.use(cors({
-    origin: "https://nagufor.upv.edu.es",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"]
-}));
+app.use(cors());
 
 // --------------------------------------------------------------------------
 //  Comprobación de conexión MySQL y arranque del servidor
