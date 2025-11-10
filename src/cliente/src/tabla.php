@@ -1,4 +1,15 @@
 <?php
+session_start();
+
+// Verificar si el usuario tiene sesión
+if (!isset($_SESSION['usuario'])) {
+    // Si no tiene sesión → redirigir a mapas.php
+    header("Location: mapas.php");
+    exit;
+}
+
+$isGuest = false; // ya sabemos que está logueado
+$active  = 'medidas';
 include __DIR__ . '/partials/header.php';
 ?>
 <!doctype html>

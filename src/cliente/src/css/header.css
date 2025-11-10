@@ -1,77 +1,69 @@
-/* ========== VARIABLES HEADER ========== */
+/* Forzar fuente y tamaño exacto en el header */
+.site-header, .site-header * {
+  font-family: 'Open Sans', sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+}
+/* ======= VARIABLES ======= */
 :root {
-  --color-azul-muy-oscuro: #0b1f35;  /* navy */
-  --color-azul-oscuro:     #143052;  /* hover */
-  --color-blanco:          #ffffff;  /* texto/iconos */
+  --color-principal: #059669; /* Verde principal */
+  --color-hover: #04815D;
+  --color-blanco: #ffffff;
+  --color-texto: #333333;
+  --color-gris-borde: #e5e5e5;
+
+  --fuente-principal: 'Open Sans', sans-serif;
+  --font-size-base: 12px;
 }
 
-/* ========== HEADER ========== */
+/* ======= GLOBAL ======= */
+body {
+  margin: 0;
+  font-family: var(--fuente-principal);
+  font-size: var(--font-size-base);
+  color: var(--color-texto);
+  background-color: var(--color-blanco);
+}
+
+/* ======= HEADER ======= */
 .site-header {
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: var(--color-azul-muy-oscuro);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  background: var(--color-blanco);
+  border-bottom: 1px solid var(--color-gris-borde);
 }
 
 .navbar {
-  height: 64px;
-  max-width: 1200px;
+  height: 72px;
+  max-width: 1920px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 40px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
 
-/* Logo */
-.brand {
-  display: inline-flex;
-  align-items: center;
-  text-decoration: none;
-}
-.brand-logo {
-  height: 38px;
-  width: auto;
-  display: block;
-}
-/* Logo no clickeable */
+/* ======= LOGO ======= */
 .brand.no-link {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   cursor: default;
 }
-
-.brand.no-link img {
-  opacity: 0.9;
+.brand-logo {
+  height: 48px;
+  width: auto;
+  display: block;
 }
 
-.brand.no-link .brand-text {
-  color: #fff;
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin-left: 8px;
-  letter-spacing: 0.5px;
-}
-
-
-.brand-text {
-  color: var(--color-blanco);
-  font-size: 1.3rem;
-  font-weight: 600;
-  margin-left: 8px;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
-
-
-/* Pestañas + Avatar */
+/* ======= NAVIGATION ======= */
 .nav-right {
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 18px;
 }
 
 .nav-link {
@@ -82,24 +74,60 @@
   border-radius: 8px;
   text-decoration: none;
   font-weight: 500;
-  font-size: 1rem;
-  color: var(--color-blanco);
-  transition: background-color .2s ease, color .2s ease;
-}
-.nav-link:hover {
-  background: var(--color-azul-oscuro);
-}
-.nav-link.is-active {
-  background: var(--color-azul-oscuro);
+  font-size: 0.95rem; /* aprox 12–13px */
+  color: var(--color-texto);
+  transition: color 0.2s ease, background-color 0.2s ease;
 }
 
-/* Avatar */
+.nav-link:hover {
+  color: var(--color-principal);
+  background: rgba(5, 150, 105, 0.08);
+}
+
+.nav-link.is-active {
+  color: var(--color-principal);
+  background: rgba(5, 150, 105, 0.12);
+}
+
+/* ======= BOTONES ======= */
+.btn {
+  padding: 8px 18px;
+  border-radius: 30px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.btn-outline {
+  border: 2px solid var(--color-principal);
+  color: var(--color-principal);
+  background: transparent;
+}
+
+.btn-outline:hover {
+  background: var(--color-principal);
+  color: var(--color-blanco);
+}
+
+.btn-primary {
+  background: var(--color-principal);
+  color: var(--color-blanco);
+  border: 2px solid var(--color-principal);
+}
+
+.btn-primary:hover {
+  background: var(--color-hover);
+}
+
+/* ======= AVATAR (si está logueado) ======= */
 .account {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 40px;
-  width: 40px;
+  height: 42px;
+  width: 42px;
   border-radius: 50%;
   overflow: hidden;
 }
@@ -110,10 +138,11 @@
   display: block;
 }
 
-/* Responsive */
-@media (max-width: 640px) {
-  .navbar { padding: 0 10px; height: 58px; }
-  .brand-logo { height: 32px; }
-  .nav-link { font-size: .92rem; padding: 0 10px; height: 36px; }
-  .account { height: 36px; width: 36px; }
+/* ======= RESPONSIVE ======= */
+@media (max-width: 768px) {
+  .navbar { padding: 0 20px; height: 64px; }
+  .brand-logo { height: 36px; }
+  .nav-right { gap: 10px; }
+  .nav-link { font-size: 0.85rem; padding: 0 10px; }
+  .btn { padding: 6px 12px; font-size: 0.85rem; }
 }

@@ -19,7 +19,7 @@
 </head>
 
 <body>
-
+    <?php include __DIR__ . '/partials/header.php'; ?>
     <main>
         <section class="landing-container">
 
