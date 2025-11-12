@@ -110,6 +110,9 @@ input:focus {
     border-radius: 15px;
     font-family: 'Open Sans', sans-serif;
     font-size: 1rem;
+    border: none;
+    cursor: pointer;
+    color: white;
 }
 
 .grupo-final button:hover {

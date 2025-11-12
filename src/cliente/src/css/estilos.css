@@ -51,8 +51,8 @@ main {
     --color-azul-muy-oscuro: #2C3948;
     --color-blanco: #FFFFFF;
 
-    --fuente-principal: 'Open Sauce', sans-serif;
-    --fuente-titulos: 'Futura', sans-serif;
+    --fuente-principal: 'Open Sans', sans-serif;
+    --fuente-titulos: 'Roboto', sans-serif;
 }
 /* endregion */
 
@@ -86,25 +86,15 @@ p {
 
 /* region --- BOTONES --- */
 .btn {
-    background-color: var(--color-azul-muy-oscuro);
-    color: var(--color-blanco);
-    border: none;
-    border-radius: 6px;
-    padding: 0.7em 1.2em;
-    font-size: 1.25em;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s ease-in-out;
-    text-align: center;
+
 }
 
 .btn:hover {
-    background-color: var(--color-azul-oscuro);
+
 }
 
 .btn:disabled {
-    background-color: var(--color-gris);
-    cursor: not-allowed;
+
 }
 /* endregion */
 

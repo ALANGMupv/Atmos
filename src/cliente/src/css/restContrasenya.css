@@ -1,0 +1,95 @@
+.rc-main-container{
+    display: flex;
+    flex-direction: column;
+    height: 91.1vh;
+    background-color: #F9FAFB;
+    justify-content: center;
+}
+
+.rc-container{
+    max-width: 600px;
+    width: 90%;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.04);
+    border-radius: 15px;
+    align-self: center;
+    text-align: center;
+    padding: 50px;
+}
+
+.texto-titulo{
+    font-family: "Roboto", sans-serif;
+    font-size: 1.8rem;
+    margin-bottom: 30px;
+}
+
+.texto-intro, .texto-intro2{
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1.1rem;
+}
+
+.texto-intro2{
+    margin-top: 10px;
+}
+
+.formulario-restContrasenya{
+    display: flex;
+    flex-direction: column;
+    margin-top: 45px;
+    width: 80%;
+    align-self: center;
+    text-align: left;
+}
+
+label{
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1rem;
+    margin-bottom: 20px;
+
+}
+
+input{
+    all: unset;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1rem;
+    border-bottom: 1px solid rgba(17, 24, 39, 0.29);
+    text-align: left;
+}
+
+input:focus {
+    outline: none;
+    border: none;
+    box-shadow: none;
+}
+
+button {
+    height: 45px;
+    background-color: #059669;
+    border-radius: 15px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1rem;
+    border: none;
+    cursor: pointer;
+    margin-top: 25px;
+    color: white;
+}
+
+button:hover {
+    background-color: #058d63;
+}
+
+.enlace-secundario{
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1rem;
+    color: black;
+    margin-top: 20px;
+    text-align: center;
+}
+
+.enlace-secundario a{
+    color: #0EA971;
+    text-decoration: none;
+}
+
