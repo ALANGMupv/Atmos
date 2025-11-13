@@ -1,145 +1,167 @@
-/* region --- CONTENEDOR PRINCIPAL --- */
-.login-container {
+/* ESTILOS USADOS EN: login.php, olvidoContrasenya.php, nuevaContrasenya.php */
+
+/* region --- Estilos solo para página de login--- */
+.login-container.login-solo {
+    display: flex;
+    height: 91.1vh;
+    background-color: #F9FAFB;
+}
+
+.login-solo .login-imagen {
+    width: 50%;
+    background-image: url('../img/fondoLogin_Registro.svg');
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+.login-solo .contenido-imagen {
+    position: absolute;
+    inset: 0;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    max-width: 480px;
-    margin: 0 auto;
-    padding: 1.75em 2em;
-    background-color: transparent;
-    position: relative;
-    z-index: 1;
-    height: 90dvh;
     justify-content: center;
-}
-/* endregion */
-
-
-/* region --- LOGO Y TEXTO INTRODUCTORIO --- */
-.logo-login {
-    width: 120px;
-    height: 120px;
-    margin-bottom: 1em;
-}
-
-.texto-intro {
-    color: var(--color-azul-muy-oscuro);
-    font-size: 1.3em;
+    align-items: center;
+    padding: 2em;
     text-align: center;
-    margin-bottom: 1.5em;
-    line-height: 1.4;
+    background-color: rgba(0, 0, 0, 0.15);
 }
-/* endregion */
+
+.logo-login-desk {
+    max-width: 200px;
+    width: 100%;
+    height: auto;
+    margin-bottom: 2em;
+}
 
 
-/* region --- FORMULARIO --- */
-.formulario-login {
+.texto-login-imagen {
+    color: white;
+    font-family: "Roboto", sans-serif;
+    font-weight: 300;
+    font-size: 1.5em;
+    max-width: 90%;
+}
+
+ .formulario-login {
+     width: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.formulario-login-pagLogin {
+    max-width: 500px;
+    min-width: 350px;
+    width: 80%;
     display: flex;
     flex-direction: column;
-    width: 90%;
-    gap: 1em;
+    gap: 3em;
 }
 
-.formulario-login label {
-    display: block;
-    font-family: var(--fuente-principal);
-    color: var(--color-azul-muy-oscuro);
-    font-size: 0.95em;
-    margin-bottom: 0.4em;
-}
-
-/* Botón */
-.btn-login {
-    margin-top: 1em;
-    width: 100%;
-    padding: 0.6em;
-    font-size: 1.1em;
-}
-/* endregion */
-
-
-/* region --- ENLACES SECUNDARIOS (Olvidé + No tengo cuenta) --- */
-.enlace-secundario,
-.enlace-secundario a {
+.formulario-login-pagLogin h2 {
     text-align: center;
-    display: block;
-    font-size: 1em;
-    color: var(--color-azul-oscuro);
-    text-decoration: underline;
-    font-weight: 500;
-    transition: color 0.2s ease-in-out;
+    font-family: "Roboto", sans-serif;
+    color: #111827;
 }
 
-/* Espaciado superior del enlace de registro (último) */
-.enlace-secundario:last-of-type {
-    margin-top: 0.8em;
+.campo{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
-/* Espaciado más pequeño para “Olvidé mi contraseña” */
-.enlace-secundario:first-of-type {
-    margin-top: 0.3em;
+.campo label{
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1rem;
 }
 
-.enlace-secundario:hover,
-.enlace-secundario a:hover {
-    color: var(--color-azul-muy-oscuro);
+.campo input{
+    all: unset;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1rem;
+    border-bottom: 1px solid rgba(17, 24, 39, 0.29);
+}
+
+input:focus {
+    outline: none;
+    border: none;
+    box-shadow: none;
+}
+
+.grupo-final {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5em;
+    margin-top: -20px;
+}
+
+.grupo-final a{
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1rem;
     text-decoration: none;
+    color: #10B981;
+
 }
 
-/* Posicionar "Olvidé mi contraseña" a la derecha */
-#contrasena.enlace-secundario {
-    text-align: right;       /* mueve el texto a la derecha */
-    display: block;
-    margin-top: 0.1em;       /* pequeño espacio debajo del campo */
-    margin-right: 4px;       /* ajusta si quieres más o menos margen */
+.grupo-final button {
+    height: 45px;
+    background-color: #059669;
+    border-radius: 15px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1rem;
+    border: none;
+    cursor: pointer;
+    color: white;
 }
 
-/* endregion */
-
-
-/* region --- FONDO SEMICIRCULAR --- */
-body {
-    background-color: var(--color-blanco);
-    position: relative;
-    overflow-x: hidden;
+.grupo-final button:hover {
+    background-color: #058d63;
 }
 
-body::before {
-    content: "";
-    position: fixed;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 130vw;
-    height: 90vh;
-    background-color: var(--color-circulo-gris);
-    border-radius: 0 0 50% 50%;
-    z-index: 0;
+.texto-secundario{
+    text-align: center;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1rem;
 }
-/* endregion */
 
+@media (max-width: 880px) {
 
-/* region --- RESPONSIVE --- */
-@media (max-width: 768px) {
-    .login-container {
+    .login-container.login-solo {
+        display: flex;
+        flex-direction: column;
+        height: 91.1vh;
+        background-color: #F9FAFB;
+    }
+
+    .login-solo .login-imagen {
+        width: 100%;
+        height: 200px;
+        display: flex;
+    }
+
+    .contenido-imagen h2{
+        display: none;
+    }
+
+    .logo-login-desk {
+        max-width: 150px;
+        margin-bottom: 0;
+    }
+
+    .formulario-login {
+        width: 100%;
+        display: flex;
         justify-content: center;
-        height: 100dvh;
-        padding-top: 0;
+        align-items: center;
+        margin-top: 45px;
     }
 
-    .logo-login {
-        width: 100px;
-        height: 100px;
+    .login-solo .login-formulario {
+        padding: 4em;
     }
 
-    .icono-cerrar {
-        top: 1em;
-        left: 1em;
-        width: 20px;
-        height: 20px;
-    }
-
-    body::before {
-        height: 40vh;
+    .formulario-login-pagLogin{
+        width: 60%;
     }
 }
-/* endregion */

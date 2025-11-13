@@ -7,47 +7,69 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Iniciar Sesión - Atmos</title>
 
-  <!-- CSS -->
-  <link rel="stylesheet" href="css/estilos.css">
-  <link rel="stylesheet" href="css/login.css">
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/estilos.css">
+    <link rel="stylesheet" href="css/login.css">
+
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
 </head>
 <body>
+<?php
+include __DIR__ . '/partials/header.php';
+?>
 
 <main>
-  <section class="login-container">
+    <section class="login-container login-solo">
 
-    <!-- Logo -->
-    <img src="img/logoAtmos.png" alt="Logo Atmos" class="logo-login">
+        <div class="login-imagen">
 
-    <!-- Texto de introducción -->
-    <p class="texto-intro">
-      Introduce tus credenciales de <strong>inicio de sesión</strong>
-    </p>
+            <div class="contenido-imagen">
+                <img src="img/logoAtmosFull_Blanco.PNG" alt="Logo Atmos Blanco" class="logo-login-desk">
 
-    <!-- ✅ Formulario SIN action ni method -->
-    <form class="formulario-login">
+                <h2 class="texto-login-imagen">Solo un paso más… inicia sesión y empieza.</h2>
+            </div>
+        </div>
 
-      <div class="campo">
-        <label for="correo">Correo electrónico</label>
-        <input type="email" id="correo" name="correo" class="input-base" required>
-      </div>
+        <!-- Parte derecha login - FORMULARIO-->
+        <div class="formulario-login">
 
-      <div class="campo">
-        <label for="contrasena">Contraseña</label>
-        <input type="password" id="contrasena" name="contrasena" class="input-base" required>
-      </div>
+            <form class="formulario-login-pagLogin">
+                <h2>Iniciar sesión</h2>
 
-      <!-- ✅ Enlace correcto al reset -->
-      <a href="restConstrasenya.php" id="link-olvido" class="enlace-secundario">Olvidé mi contraseña</a>
+                <div class="campo">
+                    <label for="correo">Correo *</label>
+                    <input type="email" id="correo" class="input-base">
+                </div>
 
-      <button type="submit" class="btn btn-login">Iniciar Sesión</button>
+                <div class="campo">
+                    <label for="contrasena">Contraseña *</label>
+                    <input type="password" id="contrasena" class="input-base">
+                </div>
 
-      <p class="enlace-secundario">
-        <a href="registro.php">No tengo una cuenta. Registrarme</a>
-      </p>
-    </form>
-  </section>
+                <div class="grupo-final">
+
+                    <a href="restContrasenya.php" class="enlace-secundario">¿Olvidaste tu contraseña?</a>
+
+                    <button type="submit" class="btn">Iniciar sesión</button>
+
+                    <p class="texto-secundario">
+                        ¿No tienes una cuenta?
+                        <a href="registro.php" class="enlace-secundario">Regístrate</a>
+                    </p>
+
+                </div>
+            </form>
+        </div>
+    </section>
 </main>
+
+<?php
+include __DIR__ . '/partials/footer.php';
+?>
 
 <!-- ✅ Carga del script de login -->
 <script type="module" src="js/login.js"></script>

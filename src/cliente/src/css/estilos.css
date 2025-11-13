@@ -51,8 +51,8 @@ main {
     --color-azul-muy-oscuro: #2C3948;
     --color-blanco: #FFFFFF;
 
-    --fuente-principal: 'Open Sauce', sans-serif;
-    --fuente-titulos: 'Futura', sans-serif;
+    --fuente-principal: 'Open Sans', sans-serif;
+    --fuente-titulos: 'Roboto', sans-serif;
 }
 /* endregion */
 
@@ -86,43 +86,29 @@ p {
 
 /* region --- BOTONES --- */
 .btn {
-    background-color: var(--color-azul-muy-oscuro);
-    color: var(--color-blanco);
-    border: none;
-    border-radius: 6px;
-    padding: 0.7em 1.2em;
-    font-size: 1.25em;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s ease-in-out;
-    text-align: center;
+
 }
 
 .btn:hover {
-    background-color: var(--color-azul-oscuro);
+
 }
 
 .btn:disabled {
-    background-color: var(--color-gris);
-    cursor: not-allowed;
+
 }
 /* endregion */
 
 
 /* region --- INPUTS --- */
 .input-base {
-    width: 100%;
-    background-color: var(--color-blanco);
-    border: none;
-    border-radius: 6px;
-    padding: 0.6em 0.8em;
-    font-size: 1em;
-    box-shadow: 0 0 0 1px var(--color-gris);
-    transition: box-shadow 0.2s ease-in-out;
+    all: unset;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1rem;
+    border-bottom: 1px solid rgba(17, 24, 39, 0.29);
 }
 
 .input-base:focus {
     outline: none;
-    box-shadow: 0 0 0 2px var(--color-azul);
+    border-bottom: 1px solid rgba(17, 24, 39, 0.29);
 }
 /* endregion */
