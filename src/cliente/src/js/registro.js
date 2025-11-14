@@ -18,7 +18,8 @@
 //  Importación de módulos de Firebase
 // --------------------------------------------------------------------------
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
 
 // --------------------------------------------------------------------------
 //  Configuración e inicialización de Firebase
@@ -59,7 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const inputRepetir = document.getElementById("repetir");
 
   // Patrones de validación (6 caracteres y almenos un número)
-  const regexPassword = /^(?=.*[0-9\W]).{6,}$/;
+  const regexPassword =   /^(?=.*[A-Za-z])(?=.*[0-9\W]).{8,}$/;
 
   function validarInput(input, condicion) {
     if (condicion) {
@@ -112,10 +113,8 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Nueva validación de contraseña
-    const regexPassword = /^(?=.*[0-9\W]).{6,}$/;
     if (!regexPassword.test(contrasena)) {
-      alert("La contraseña debe tener al menos 6 caracteres e incluir números o símbolos.");
+      alert("La contraseña debe tener mínimo 8 caracteres e incluir letras y al menos un número o un símbolo.");
       return;
     }
 
@@ -131,9 +130,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Flujo principal de registro
     try {
+      // Crear usuario en Firebase
       const cred = await createUserWithEmailAndPassword(auth, correo, contrasena);
+
+      // Enviar email de verificación
+      await sendEmailVerification(cred.user);
+
+      // Obtener token JWT
       const idToken = await cred.user.getIdToken();
 
+      // Guardar usuario en backend
       const response = await fetch("https://nagufor.upv.edu.es/usuario", {
         method: "POST",
         headers: {
@@ -150,7 +156,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await response.json();
 
       if (data.status === "ok") {
-        alert("Usuario registrado correctamente.");
+        alert("Usuario registrado correctamente. Valida tu correo para poder inciar sesión. Revisa tu carpeta de spam.");
         window.location.href = "login.php"; // Redirección añadida
       } else {
         alert("Error en el registro: " + (data.error || "Error desconocido"));

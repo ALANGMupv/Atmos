@@ -54,7 +54,7 @@
                 <div class="campo">
                     <div class="fila-label">
                         <label for="contrasena">Contraseña *</label>
-                        <span class="info-contrasena">Debe contener al menos 6 caracteres e incluir números o símbolos</span>
+                        <span class="info-contrasena">Debe contener al menos 8 caracteres e incluir números o símbolos</span>
                     </div>
 
                     <div class="input-password">
