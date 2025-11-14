@@ -24,13 +24,13 @@ if (!isset($isGuest)) { $isGuest = true; }
         <a href="mapas.php"
            class="nav-link <?php echo $active === 'mapa' ? 'is-active' : ''; ?>"
            <?php echo $active === 'mapa' ? 'aria-current="page"' : ''; ?>>
-           Mapa Contaminación
+           MAPA CONTAMINACIÓN
         </a>
 
         <a href="solucion.php"
            class="nav-link <?php echo $active === 'solucion' ? 'is-active' : ''; ?>"
            <?php echo $active === 'solucion' ? 'aria-current="page"' : ''; ?>>
-           Nuestra Solución
+           NUESTRA SOLUCIÓN
         </a>
 
         <?php if ($isGuest): ?>

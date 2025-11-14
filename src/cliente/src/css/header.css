@@ -59,7 +59,7 @@
   border-radius: 8px;
   text-decoration: none;
   font-weight: 500;
-  font-size: 0.95rem;
+  font-size: 0.90rem;
   color: var(--color-texto);
   transition: color 0.2s ease, background-color 0.2s ease;
 }
