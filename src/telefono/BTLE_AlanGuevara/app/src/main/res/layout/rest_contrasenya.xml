@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white"
+    tools:context=".RestablecerContrasenaActivity">
+
+    <!-- BLOQUE SUPERIOR -->
+    <LinearLayout
+        android:id="@+id/parte_superior"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@android:color/white"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- Flecha + Texto -->
+        <LinearLayout
+            android:id="@+id/layout_volver"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp">
+
+            <ImageView
+                android:id="@+id/btn_volver"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="@null"
+                android:src="@drawable/icn_volver_atras" />
+
+            <TextView
+                android:id="@+id/tvVolverLogin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:fontFamily="@font/roboto"
+                android:text="Volver a iniciar sesión"
+                android:textColor="@color/verde_principal"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <!-- Logo centrado -->
+        <ImageView
+            android:id="@+id/logoSuperior"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_marginTop="50dp"
+            android:contentDescription="@null"
+            android:src="@drawable/logo_atmos_verde" />
+
+    </LinearLayout>
+
+
+    <!-- BLOQUE INFERIOR -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/parte_inferior"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="16dp"
+        android:background="@android:color/white"
+        android:padding="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/parte_superior">
+
+        <!-- Título -->
+        <TextView
+            android:id="@+id/tvTituloReset"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:fontFamily="@font/roboto_bold"
+            android:text="Restablecer contraseña"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Descripción -->
+        <TextView
+            android:id="@+id/tvDescripcionReset"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="32dp"
+            android:layout_marginEnd="24dp"
+            android:fontFamily="@font/roboto"
+            android:text="Ingresa la dirección de correo electrónico asociada a tu cuenta y te enviaremos un enlace para restablecer tu contraseña. Si no ves el mensaje, revisa tu carpeta de spam."
+            android:textColor="#444444"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvTituloReset" />
+
+        <!-- Etiqueta correo -->
+        <TextView
+            android:id="@+id/textCorreo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="28dp"
+            android:fontFamily="@font/roboto"
+            android:text="Correo *"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvDescripcionReset" />
+
+        <!-- Campo correo -->
+        <EditText
+            android:id="@+id/reset_email_tv"
+            style="@style/CampoTextoLinea"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="24dp"
+            android:inputType="textEmailAddress"
+            android:padding="12dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textCorreo" />
+
+        <!-- Botón enviar -->
+        <Button
+            android:id="@+id/btnEnviarReset"
+            style="@style/BotonPrincipal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="32dp"
+            android:layout_marginEnd="24dp"
+            android:text="Enviar correo"
+            android:textAllCaps="false"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/reset_email_tv" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,5 +1,6 @@
 package org.jordi.btlealumnos2021;
 
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.method.PasswordTransformationMethod;
@@ -7,6 +8,7 @@ import android.util.Patterns;
 import android.view.MotionEvent;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,15 +18,13 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
-import java.util.HashMap;
-import java.util.Map;
-
 // Clase para manejar el inicio de sesión de usuarios ya registrados
 public class InicioSesionActivity extends AppCompatActivity {
 
     // Campos de texto y botón de login
     private EditText emailCampo, contrasenyaCampo;
     private Button loginBoton;
+    private TextView olvidasteContrasenya;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +34,13 @@ public class InicioSesionActivity extends AppCompatActivity {
         emailCampo = findViewById(R.id.login_email_tv);
         contrasenyaCampo = findViewById(R.id.login_contrasenya_tv);
         loginBoton = findViewById(R.id.login_btn);
+
+        // Redirección a la página de Reestablecer Contraseña
+        olvidasteContrasenya = findViewById(R.id.enlaceReestablecer);
+        olvidasteContrasenya.setOnClickListener(v -> {
+            Intent intent = new Intent(InicioSesionActivity.this, RestablecerContrasenaActivity.class);
+            startActivity(intent);
+        });
 
         // Listener del botón Iniciar sesión
         loginBoton.setOnClickListener(v -> iniciarSesion());

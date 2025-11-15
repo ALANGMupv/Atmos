@@ -10,12 +10,14 @@ import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.ParcelUuid;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -391,6 +393,17 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+        // Botón temporal que te redirige a Login (Borrar después)
+        Button irLoginBtn = findViewById(R.id.irLogin);
+
+        irLoginBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, InicioSesionActivity.class);
+            startActivity(intent);
+        });
+        // -------------------------------------- (Borrar después)
+
 
         // Inicializamos el textView
         valorOzonoText = findViewById(R.id.valorOzono);
