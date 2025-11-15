@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Fondo transparente -->
+    <solid android:color="@android:color/transparent" />
+
+    <!-- Solo la línea inferior -->
+    <stroke
+        android:width="0dp"
+        android:color="@android:color/transparent" />
+
+    <padding android:bottom="8dp" />
+
+    <!-- Añadimos una línea abajo -->
+    <size android:height="1dp" />
+</shape>
