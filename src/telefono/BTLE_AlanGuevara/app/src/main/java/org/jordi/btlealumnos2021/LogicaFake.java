@@ -10,10 +10,13 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-// -----------------------------------------------------------------------------------
-// @author: Alan Guevara Martínez
-// LogicaFake.java: Envío de mediciones adaptado a la nueva BBDD ('medida')
-// -----------------------------------------------------------------------------------
+/**
+ * Nombre Fichero: LogicaFake.java
+ * Descripción: Clase encargada de llamar a los métodos de la lógica de negocio
+ * Autores: Alan Guevara Martínez
+ */
+
+
 public class LogicaFake {
     private static final String TAG = ">>>>";
 

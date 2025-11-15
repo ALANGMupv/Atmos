@@ -1,5 +1,12 @@
+local.properties
 .gradle/
-build/
 .idea/
+build/
+captures/
 */build/
 */captures/
+app/build/
+*/.gradle/
+*/build/
+*.iml
+.DS_Store
