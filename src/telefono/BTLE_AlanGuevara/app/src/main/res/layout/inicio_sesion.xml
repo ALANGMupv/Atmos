@@ -12,47 +12,27 @@
         android:id="@+id/parte_superior"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="@drawable/fondo_circulo"
+        android:background="@drawable/fondo_registro_y_login"
         android:gravity="center_horizontal"
         android:orientation="vertical"
         android:paddingTop="24dp"
         android:paddingBottom="32dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.37"
+        app:layout_constraintHeight_percent="0.30"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <!-- Flecha atrás -->
-        <ImageButton
-            android:id="@+id/imageButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="start"
-            android:layout_marginStart="16dp"
-            android:background="@android:color/transparent"
-            android:contentDescription="@null"
-            android:src="@drawable/flecha_atras" />
 
         <!-- Logo -->
         <ImageView
             android:id="@+id/logo"
             android:layout_width="150dp"
             android:layout_height="150dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="10dp"
             android:contentDescription="@null"
-            android:src="@drawable/logo_atmos" />
+            android:src="@drawable/logo_blanco_texto" />
 
-        <TextView
-            android:id="@+id/textView"
-            android:layout_width="300dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:gravity="center"
-            android:maxWidth="260dp"
-            android:text="Introduce tus credenciales de\ninicio de sesión"
-            android:textAlignment="center"
-            android:textColor="@android:color/black"
-            android:textSize="16sp" />
     </LinearLayout>
 
     <!-- BLOQUE INFERIOR -->
@@ -60,7 +40,7 @@
         android:id="@+id/parte_inferior"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:padding="32dp"
+        android:padding="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -72,43 +52,38 @@
             android:id="@+id/textCorreo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:text="Correo electrónico"
+            android:fontFamily="@font/roboto"
+            android:text="Correo electrónico *"
             android:textColor="@android:color/darker_gray"
             android:textSize="14sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toTopOf="@+id/login_email_tv"
-            app:layout_constraintEnd_toEndOf="@+id/login_email_tv"
             app:layout_constraintStart_toStartOf="@+id/login_email_tv" />
 
         <EditText
             android:id="@+id/login_email_tv"
+            style="@style/CampoTextoLinea"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
-            android:layout_marginTop="100dp"
+            android:layout_marginTop="40dp"
             android:layout_marginEnd="24dp"
-            android:background="@drawable/bg_edittext"
             android:inputType="textEmailAddress"
             android:padding="12dp"
-            android:textColor="@android:color/black"
-            android:textColorHint="@android:color/darker_gray"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
+            app:layout_constraintTop_toBottomOf="@+id/textView5" />
 
         <TextView
             android:id="@+id/textContrasena"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:text="Contraseña"
+            android:fontFamily="@font/roboto"
+            android:text="Contraseña *"
             android:textColor="@android:color/darker_gray"
             android:textSize="14sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toTopOf="@+id/login_contrasenya_tv"
-            app:layout_constraintEnd_toEndOf="@+id/login_contrasenya_tv"
             app:layout_constraintStart_toStartOf="@+id/login_contrasenya_tv" />
 
         <EditText
@@ -116,14 +91,14 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="40dp"
-            android:background="@drawable/bg_edittext"
+            style="@style/CampoTextoLinea"
             android:cursorVisible="true"
             android:focusable="true"
             android:importantForAutofill="no"
             android:inputType="textPassword"
             android:padding="12dp"
-            android:textColor="@android:color/black"
-            android:textColorHint="#9E9E9E"
+            android:drawableEnd="@drawable/ic_eye"
+            android:drawablePadding="8dp"
             app:layout_constraintEnd_toEndOf="@id/login_email_tv"
             app:layout_constraintStart_toStartOf="@id/login_email_tv"
             app:layout_constraintTop_toBottomOf="@id/login_email_tv" />
@@ -131,41 +106,87 @@
         <TextView
             android:id="@+id/textView8"
             android:layout_width="wrap_content"
-            android:layout_height="18dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="32dp"
-            android:text="Olvidé mi contraseña"
-            android:textColor="@android:color/darker_gray"
-            android:textSize="14sp"
-            app:layout_constraintEnd_toEndOf="@+id/login_contrasenya_tv"
+            android:text="¿Olvidaste tu contraseña?"
+            android:textColor="@color/verde_principal"
+            android:textColorLink="@color/verde_principal"
+            android:textSize="16sp"
             app:layout_constraintStart_toStartOf="@+id/login_contrasenya_tv"
             app:layout_constraintTop_toBottomOf="@+id/login_contrasenya_tv" />
 
         <Button
             android:id="@+id/login_btn"
+            style="@style/BotonPrincipal"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginBottom="64dp"
-            android:backgroundTint="#1F2B38"
             android:text="Iniciar Sesión"
             android:textAllCaps="false"
-            android:textColor="@android:color/white"
+            android:textColorLink="@color/verde_boton"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="@+id/login_contrasenya_tv"
             app:layout_constraintStart_toStartOf="@+id/login_contrasenya_tv" />
 
-
-        <TextView
-            android:id="@+id/textView7"
+        <!-- Enlace registro -->
+        <LinearLayout
+            android:id="@+id/enlace_registrarme"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
             android:layout_marginTop="16dp"
-            android:text="No tengo una cuenta. Registrarme"
-            android:textColor="#1F2B38"
-            android:textSize="16sp"
+            app:layout_constraintTop_toBottomOf="@id/login_btn"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <TextView
+                android:id="@+id/tvPreguntaRegistro"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="¿No tienes una cuenta?"
+                android:fontFamily="@font/roboto"
+                android:textColor="#1F2B38"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/tvRegistrarme"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" Registrarme"
+                android:fontFamily="@font/roboto"
+                android:textColor="@color/verde_principal"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:clickable="true"
+                android:focusable="true" />
+
+        </LinearLayout>
+
+
+        <!-- Campo email -->
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/roboto_bold"
+            android:text="Bienvenido"
+            android:textSize="24sp"
             android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="@+id/login_btn"
-            app:layout_constraintStart_toStartOf="@+id/login_btn"
-            app:layout_constraintTop_toBottomOf="@id/login_btn" />
+            app:layout_constraintEnd_toEndOf="@+id/login_email_tv"
+            app:layout_constraintStart_toStartOf="@+id/login_email_tv"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Subtitulo -->
+        <TextView
+            android:id="@+id/textView5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/roboto"
+            android:text="Inicia sesión para continuar"
+            app:layout_constraintEnd_toEndOf="@+id/textView"
+            app:layout_constraintStart_toStartOf="@+id/textView"
+            app:layout_constraintTop_toBottomOf="@+id/textView" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

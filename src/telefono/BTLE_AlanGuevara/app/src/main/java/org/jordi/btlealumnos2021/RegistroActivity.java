@@ -1,20 +1,24 @@
 package org.jordi.btlealumnos2021;
 
+import android.graphics.Color;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.TextPaint;
+import android.text.method.LinkMovementMethod;
+import android.text.method.PasswordTransformationMethod;
+import android.text.style.ClickableSpan;
+import android.text.style.ForegroundColorSpan;
 import android.util.Patterns;
+import android.view.MotionEvent;
+import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
-
-import java.util.HashMap;
-import java.util.Map;
 
 // Clase que maneja el registro de nuevos usuarios
 public class RegistroActivity extends AppCompatActivity {
@@ -37,6 +41,54 @@ public class RegistroActivity extends AppCompatActivity {
 
         // Cuando el usuario pulse el botón de registro, se ejecutará este metodo
         registroBoton.setOnClickListener(v -> registrarUsuario());
+
+        //----------------------------------------------------------------------
+        //Check terminos y condiciones
+        //----------------------------------------------------------------------
+        CheckBox check = findViewById(R.id.checkBox);
+
+        String txt = check.getText().toString();
+        SpannableString ss = new SpannableString(txt);
+
+        // Localizar "términos de servicio"
+        int start = txt.indexOf("términos");
+        int end = start + "términos de servicio".length();
+
+        // Poner ese trozo en verde
+        ss.setSpan(
+                new ForegroundColorSpan(getColor(R.color.verde_principal)),
+                start, end,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        );
+
+        // Hacerlo clicable
+        ss.setSpan(new ClickableSpan() {
+            @Override
+            public void onClick(@NonNull View widget) {
+                // Abrir pantalla terminos y servicos
+                // startActivity(new Intent(RegistroActivity.this, TerminosActivity.class));
+            }
+
+            @Override
+            public void updateDrawState(TextPaint ds) {
+                super.updateDrawState(ds);
+                ds.setUnderlineText(false);
+            }
+        }, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        // Aplicar el texto enriquecido al CheckBox
+        check.setText(ss);
+
+        // Necesario para que los spans se puedan pulsar
+        check.setMovementMethod(LinkMovementMethod.getInstance());
+        check.setHighlightColor(Color.TRANSPARENT);
+
+        //----------------------------------------------------
+
+        // Ver contraseña al pulsar ojo
+        enablePasswordToggle(contrasenyaCampo);
+        enablePasswordToggle(contrasenyaRepCampo);
+
     }
 
     // Metodo que recoge los datos, valida y los envía al servidor
@@ -65,7 +117,34 @@ public class RegistroActivity extends AppCompatActivity {
             Toast.makeText(this, "Correo electrónico no válido", Toast.LENGTH_SHORT).show();
             return;
         }
-
-
     }
+
+    //
+    private void enablePasswordToggle(EditText editText) {
+        editText.setOnTouchListener((v, event) -> {
+
+            if (event.getAction() != MotionEvent.ACTION_UP) return false;
+
+            int drawableRight = editText.getWidth() - editText.getCompoundPaddingRight();
+
+            // Si el dedo toca el área del icono
+            if (event.getX() >= drawableRight) {
+
+                int cursorPos = editText.getSelectionEnd();
+
+                if (editText.getTransformationMethod() instanceof PasswordTransformationMethod) {
+                    editText.setTransformationMethod(null); // Mostrar
+                } else {
+                    editText.setTransformationMethod(PasswordTransformationMethod.getInstance()); // Ocultar
+                }
+
+                editText.setSelection(cursorPos);
+                return true;
+            }
+
+            return false;
+        });
+    }
+
+
 }

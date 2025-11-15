@@ -1,7 +1,10 @@
 package org.jordi.btlealumnos2021;
 
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.text.method.PasswordTransformationMethod;
 import android.util.Patterns;
+import android.view.MotionEvent;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -34,6 +37,9 @@ public class InicioSesionActivity extends AppCompatActivity {
 
         // Listener del botón Iniciar sesión
         loginBoton.setOnClickListener(v -> iniciarSesion());
+
+        //Pulsar ojo para ver contraseña
+        enablePasswordToggle(contrasenyaCampo);
     }
 
     // Metodo que valida y envía los datos de login
@@ -53,7 +59,39 @@ public class InicioSesionActivity extends AppCompatActivity {
             Toast.makeText(this, "Correo electrónico no válido", Toast.LENGTH_SHORT).show();
             return;
         }
-
-
     }
+
+    // Función para ver contraseña
+    private void enablePasswordToggle(final EditText editText) {
+
+        editText.setOnTouchListener((v, event) -> {
+
+            if (event.getAction() != MotionEvent.ACTION_UP) return false;
+
+            final int DRAWABLE_END = 2;
+            Drawable drawableEnd = editText.getCompoundDrawables()[DRAWABLE_END];
+
+            if (drawableEnd == null) return false;
+
+            int width = drawableEnd.getBounds().width();
+            int touchArea = editText.getWidth() - width - editText.getPaddingEnd();
+
+            if (event.getX() >= touchArea) {
+
+                int cursor = editText.getSelectionEnd();
+
+                if (editText.getTransformationMethod() instanceof PasswordTransformationMethod) {
+                    editText.setTransformationMethod(null); // mostrar
+                } else {
+                    editText.setTransformationMethod(PasswordTransformationMethod.getInstance()); // ocultar
+                }
+
+                editText.setSelection(cursor);
+                return true;
+            }
+
+            return false;
+        });
+    }
+
 }
