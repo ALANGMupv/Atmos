@@ -18,7 +18,13 @@
 //  Importación de módulos de Firebase
 // --------------------------------------------------------------------------
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  setPersistence,
+  browserLocalPersistence
+} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
 // --------------------------------------------------------------------------
 //  Configuración e inicialización de Firebase
@@ -33,11 +39,22 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
+// --- HABILITAR PERSISTENCIA DEL LOGIN (OBLIGATORIO)
+setPersistence(auth, browserLocalPersistence)
+    .then(() => {
+      console.log("Persistencia habilitada: el login se mantiene al cambiar de página.");
+    })
+    .catch(err => {
+      console.error("Error aplicando la persistencia:", err);
+    });
+
+
 // --------------------------------------------------------------------------
 //  Manejador principal de inicio de sesión
 // --------------------------------------------------------------------------
 document.addEventListener("DOMContentLoaded", () => {
-  const form = document.querySelector(".formulario-login");
+  const form = document.querySelector(".formulario-login-pagLogin");
+
 
   form.addEventListener("submit", async (evt) => {
     evt.preventDefault();
@@ -93,10 +110,22 @@ document.addEventListener("DOMContentLoaded", () => {
         // ------------------------------------------------------------------
         //  6.1) Crear sesión PHP local con los datos del usuario
         // ------------------------------------------------------------------
+        console.log("JSON QUE VOY A ENVIAR A guardarSesion.php:", {
+          id_usuario: data.usuario.id,
+          nombre: data.usuario.nombre,
+          apellidos: data.usuario.apellidos,
+          email: data.usuario.email
+        });
+
         await fetch("guardarSesion.php", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data.usuario)
+          body: JSON.stringify({
+            id_usuario: data.usuario.id_usuario,
+            nombre: data.usuario.nombre,
+            apellidos: data.usuario.apellidos,
+            email: data.usuario.email
+          })
         });
 
         // ------------------------------------------------------------------

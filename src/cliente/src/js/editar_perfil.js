@@ -4,13 +4,12 @@
  *  Autor: Alan Guevara Martínez
  *  Fecha: 16/11/2025
  *
- *  Descripción general:
- *  --------------------
- *  Este script controla:
- *     1. La apertura y cierre del popup para *Cambiar contraseña*.
- *     2. La apertura y cierre del popup para *Confirmar cambios*.
- *     3. La funcionalidad de mostrar/ocultar contraseña mediante
- *        el icono del ojo, igual que en la página de registro.
+ * Descripción general:
+ * --------------------
+ * Este script controla:
+ *    1. La apertura y cierre de los popups (cambiar contraseña / confirmar cambios).
+ *    2. La visibilidad de la contraseña mediante el icono de ojo.
+ *    3. La validación de la contraseña en Firebase antes de actualizar los datos.
  * ------------------------------------------------------------------
  */
 
@@ -94,3 +93,138 @@ document.querySelectorAll(".toggle-pass").forEach(icon => {
     }
   });
 });
+
+
+// --- CONFIRMAR CAMBIOS → VALIDACIÓN CON FIREBASE ---
+
+// Importamos los módulos necesarios de Firebase desde su CDN.
+// *** IMPORTANTE ***
+// Unificamos TODOS los imports de firebase-auth en un solo bloque
+// porque usar varios imports separados del mismo archivo rompe los módulos.
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  onAuthStateChanged,
+  setPersistence,           // <-- añadido en el import unificado
+  browserLocalPersistence   // <-- añadido también
+} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+
+// -------- CONFIG FIREBASE --------
+// Configuración del proyecto Firebase (claves públicas del frontend).
+const firebaseConfig = {
+  apiKey: "AIzaSyBQ8T4ECyaDpybvoL6M6XbmfaipYfFeEXM",
+  authDomain: "atmos-e3f6c.firebaseapp.com",
+  projectId: "atmos-e3f6c"
+};
+
+// Inicializamos Firebase con la configuración anterior.
+const app = initializeApp(firebaseConfig);
+
+// Obtenemos el servicio de autenticación.
+const auth = getAuth(app);
+
+
+// --- HABILITAR PERSISTENCIA DEL LOGIN ---
+// Esto permite que Firebase mantenga al usuario logueado al cambiar de página.
+setPersistence(auth, browserLocalPersistence)
+    .catch(err => console.error("Error en persistencia:", err));
+
+
+// Detectamos si hay sesión activa de Firebase
+let firebaseUser = null;
+
+onAuthStateChanged(auth, (user) => {
+  firebaseUser = user;
+});
+
+
+// --------------------------------------------------------
+// Botón del popup de confirmación.
+const popupConfirmBtn = document.getElementById("popup-confirmar-btn");
+
+// Si el botón existe en la página...
+if (popupConfirmBtn) {
+
+  // Escuchamos el clic del botón para confirmar cambios.
+  popupConfirmBtn.addEventListener("click", async () => {
+
+    // Leemos los valores del formulario que el usuario ha editado.
+    const nombre = document.getElementById("nombre").value.trim();
+    const apellidos = document.getElementById("apellidos").value.trim();
+    const email = document.getElementById("correo").value.trim();
+    const contrasena = document.getElementById("popup-pass-confirm").value;
+
+    // Si el usuario no ha escrito la contraseña, no continuamos.
+    if (!contrasena) {
+      alert("Introduce tu contraseña.");
+      return;
+    }
+
+    // Obtenemos el ID del usuario (inyectado desde PHP).
+    const id_usuario = document.getElementById("id_usuario").value;
+
+    // ---------- (A) SESIÓN EXPIRADA EN FIREBASE ----------
+    if (!firebaseUser) {
+      alert("Tu sesión ha caducado. Vuelve a iniciar sesión para continuar.");
+      window.location.href = "login.php";
+      return;
+    }
+
+    // ---------- (B) VALIDAR CONTRASEÑA CON REAUTHENTICATE ----------
+    try {
+      const credential = EmailAuthProvider.credential(email, contrasena);
+
+      await reauthenticateWithCredential(firebaseUser, credential);
+
+      // Obtenemos token actualizado
+      const token = await firebaseUser.getIdToken();
+
+      // ---------- (C) LLAMAR AL BACKEND PARA ACTUALIZAR DATOS ----------
+      const resp = await fetch("https://nagufor.upv.edu.es/usuario", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify({
+          id_usuario: id_usuario,
+          nombre: nombre,
+          apellidos: apellidos,
+          email: email,
+          contrasena_actual: contrasena,
+          nueva_contrasena: ""             // cadena vacía porque aquí no la cambiamos
+        })
+      });
+
+      const data = await resp.json();
+
+      if (resp.ok) {
+        // Actualiza la sesión PHP con los nuevos datos
+        await fetch("guardarSesion.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id_usuario: id_usuario,
+            nombre: nombre,
+            apellidos: apellidos,
+            email: email
+          })
+        });
+
+        alert("Cambios guardados correctamente.");
+        window.location.href = "perfil.php";
+      } else {
+        alert("Error al actualizar: " + (data.error || "Error desconocido"));
+      }
+
+    } catch (err) {
+      console.error(err);
+      alert("Contraseña incorrecta.");
+    }
+  });
+}

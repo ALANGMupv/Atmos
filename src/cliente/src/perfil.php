@@ -45,7 +45,7 @@ $email     = htmlspecialchars($usuario['email'] ?? 'Correo electrónico de Usuar
     <link rel="stylesheet" href="css/perfil.css" />
 
     <!-- JS -->
-    <script src="js/perfil.js" defer></script>
+    <script type="module" src="js/perfil.js"></script>
 
 </head>
 <body>

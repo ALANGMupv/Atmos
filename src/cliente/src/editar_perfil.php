@@ -40,7 +40,10 @@ $email = htmlspecialchars($usuario['email'] ?? '');
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/editar_perfil.css">
 
-    <script src="js/editar_perfil.js" defer></script>
+    <!-- Carga el archivo JavaScript "editar_perfil.js" como un módulo ES6.
+       Esto permite usar import/export dentro del script, asegurando un código
+       más organizado y compatible con Firebase u otros módulos modernos. -->
+    <script type="module" src="js/editar_perfil.js" defer></script>
 </head>
 
 <body>
@@ -60,6 +63,11 @@ $email = htmlspecialchars($usuario['email'] ?? '');
 
         <!-- FORMULARIO -->
         <form class="formulario-editar" id="form-editar">
+
+            <!-- Campo oculto que almacena el ID del usuario obtenido desde PHP.
+            Sirve para que JavaScript pueda acceder al identificador del usuario
+            sin mostrarlo en pantalla. -->
+            <input type="hidden" id="id_usuario" value="<?= htmlspecialchars($usuario['id_usuario'] ?? '') ?>">
 
             <!-- Nombre -->
             <div class="campo">
@@ -100,7 +108,7 @@ $email = htmlspecialchars($usuario['email'] ?? '');
         <p class="popup-text">Se cerrará tu sesión y serás redirigid@ para restablecerla.</p>
 
         <div class="popup-buttons">
-            <a href="restContrasenya.php" class="popup-confirm popup-red">Continuar</a>
+            <a href="logout.php?redir=restContrasenya.php" class="popup-confirm popup-red">Continuar</a>
             <button class="popup-cancel" id="popup-cancel-pass">Cancelar</button>
         </div>
     </div>
