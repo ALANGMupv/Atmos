@@ -226,7 +226,7 @@ function reglasREST(logica) {
         try {
             const { id_usuario, nombre, apellidos, email, contrasena_actual, nueva_contrasena } = req.body;
 
-            if (!id_usuario || !contrasena_actual) {
+            if (!id_usuario) {
                 return res.status(400).json({ error: "Faltan datos obligatorios" });
             }
 
@@ -234,22 +234,11 @@ function reglasREST(logica) {
             const usuario = await logica.obtenerUsuarioPorId(id_usuario);
             if (!usuario) return res.status(404).json({ error: "Usuario no encontrado" });
 
-            // Verificar contraseña actual
-            const ok = await bcrypt.compare(contrasena_actual, usuario.contrasena);
-            if (!ok) return res.status(401).json({ error: "Contraseña actual incorrecta" });
-
-            // Hashear nueva contraseña si se envía
-            let contrasenaFinal = usuario.contrasena;
-            if (nueva_contrasena) {
-                contrasenaFinal = await bcrypt.hash(nueva_contrasena, 10);
-            }
-
             // Actualizar usuario
             const actualizado = await logica.actualizarUsuario(id_usuario, {
                 nombre,
                 apellidos,
                 email,
-                contrasena: contrasenaFinal
             });
 
             if (actualizado) res.json({ status: "ok" });
@@ -296,6 +285,61 @@ function reglasREST(logica) {
             res.status(500).json({ error: err.message });
         }
     });
+
+// -------------------------------------------------------------
+// Endpoint: POST /login
+// Descripción:
+//   - Este endpoint valida el token de Firebase enviado por el frontend.
+//   - Si el token es válido, Firebase devuelve información del usuario (email, uid).
+//   - Con ese email buscamos el usuario en la base de datos MySQL.
+//   - Si existe, retornamos sus datos para crear la sesión PHP.
+//   - Si no existe, devolvemos un error.
+// -------------------------------------------------------------
+router.post("/login", verificarToken, async (req, res) => {
+    try {
+        // ---------------------------------------------------------------------
+        // req.user lo rellena el middleware verificarToken.
+        // Aquí tenemos: uid, email, email_verified...
+        // ---------------------------------------------------------------------
+        const email = req.user.email;
+
+        // ---------------------------------------------------------------------
+        // Buscar en MySQL el usuario cuyo email coincide con el de Firebase.
+        // Si no existe, significa que está registrado en Firebase pero
+        // NO se ha creado en MySQL todavía (caso raro pero posible).
+        // ---------------------------------------------------------------------
+        const usuario = await logica.buscarUsuarioPorEmail(email);
+
+        if (!usuario) {
+            return res.status(404).json({
+                error: "Usuario no registrado en MySQL"
+            });
+        }
+
+        // ---------------------------------------------------------------------
+        // Devolver al frontend los datos necesarios para:
+        //   - guardar la sesión en PHP (guardarSesion.php)
+        //   - sincronizar contraseña si procede
+        // ---------------------------------------------------------------------
+        return res.json({
+            status: "ok",
+            usuario: {
+                id_usuario: usuario.id_Usuario,
+                nombre: usuario.nombre,
+                apellidos: usuario.apellidos,
+                email: usuario.email
+            }
+        });
+
+    } catch (error) {
+        // ---------------------------------------------------------------------
+        // Si ocurre cualquier problema en la lógica interna, logueamos el error
+        // y devolvemos un 500 al cliente.
+        // ---------------------------------------------------------------------
+        console.error("Error en POST /login:", error);
+        return res.status(500).json({ error: "Error interno en login" });
+    }
+});
 
     // --------------------------------------------------------------------------
     //  Devolvemos el router con todas las rutas activas
