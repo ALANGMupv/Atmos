@@ -1,0 +1,215 @@
+/**
+ * --------------------------------------------------------------
+ *  Fichero: headerLogueado.css
+ *  Autor: Alan Guevara Martínez
+ *  Descripción: css header para las páginas del usuario logueado.
+ *  Fecha: 16/11/2025
+ * --------------------------------------------------------------
+ */
+
+/* region --- VARIABLES LOCALES HEADER --- */
+#atm-header {
+    --color-principal: #059669;
+    --color-hover: #04815D;
+    --color-blanco: #ffffff;
+    --color-texto: #333333;
+    --color-gris-borde: #e5e5e5;
+}
+/* endregion */
+
+
+/* region --- RESET LOCAL HEADER --- */
+#atm-header,
+#atm-header * {
+    font-family: 'Open Sans', sans-serif !important;
+    box-sizing: border-box;
+}
+/* endregion */
+
+
+/* region --- CONTENEDOR PRINCIPAL HEADER --- */
+#atm-header .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: var(--color-blanco);
+    border-bottom: 1px solid var(--color-gris-borde);
+}
+
+#atm-header .navbar {
+    height: 72px;
+    max-width: 1920px;
+    margin: 0 auto;
+    padding: 0 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+/* endregion */
+
+
+/* region --- LOGO --- */
+#atm-header .brand-logo {
+    height: 48px;
+    width: auto;
+}
+/* endregion */
+
+
+/* region --- MENÚ PRINCIPAL --- */
+#atm-header .nav-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 22px;
+}
+
+#atm-header .nav-link {
+    display: inline-flex;
+    align-items: center;
+    height: 40px;
+    padding: 0 14px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.90rem;
+    color: var(--color-texto);
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+#atm-header .nav-link:hover {
+    color: var(--color-principal);
+    background: rgba(5,150,105,0.08);
+}
+
+#atm-header .nav-link.is-active {
+    color: var(--color-principal);
+    background: rgba(5,150,105,0.12);
+}
+/* endregion */
+
+
+/* region --- ICONOS CABECERA (NOTIFICACIONES + PERFIL) --- */
+#atm-header .icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 38px;
+    width: 38px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+#atm-header .icon-btn:hover {
+    background: rgba(5,150,105,0.10);
+}
+
+#atm-header .icon {
+    width: 30px;
+    height: 30px;
+}
+
+/* region --- ICONO PERFIL MÁS GRANDE --- */
+#atm-header .account .icon {
+    width: 36px;
+    height: 36px;
+    margin-bottom: 0.1em;
+}
+
+/* ICONO PERFIL (HOVER PROPORCIONAL) */
+#atm-header .account {
+    width: 46px;
+    height: 46px;
+}
+
+#atm-header .account.is-active {
+    background: rgba(5,150,105,0.15);
+}
+/* endregion */
+
+
+/* region --- BOTÓN HAMBURGUESA --- */
+#atm-header .menu-toggle {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    width: 40px;
+    height: 40px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    z-index: 1100;
+}
+
+#atm-header .menu-toggle span {
+    width: 24px;
+    height: 3px;
+    background: var(--color-texto);
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+#atm-header .menu-toggle.open span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+}
+#atm-header .menu-toggle.open span:nth-child(2) {
+    opacity: 0;
+}
+#atm-header .menu-toggle.open span:nth-child(3) {
+    transform: rotate(-45deg) translate(5px, -5px);
+}
+/* endregion */
+
+/* region --- Links activos --- */
+#atm-header .nav-link.is-active {
+    font-weight: 700;
+    color: #059669 !important;
+    background: transparent !important;
+}
+
+/* --- PERFIL ACTIVO --- */
+#atm-header .account.is-active {
+    background: rgba(5,150,105,0.12);
+    border-radius: 50%;
+}
+
+#atm-header .account.is-active:hover {
+    background: rgba(5,150,105,0.18);
+}
+/* endregion */
+
+/* region --- RESPONSIVE --- */
+@media (max-width: 906px) {
+    #atm-header .menu-toggle {
+        display: flex;
+    }
+
+    #atm-header .nav-right {
+        position: absolute;
+        top: 72px;
+        left: 0;
+        width: 100%;
+        background: var(--color-blanco);
+        flex-direction: column;
+        padding: 2rem 0;
+        gap: 1.4rem;
+        border-top: 1px solid var(--color-gris-borde);
+        transform: translateY(-100%);
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+
+    #atm-header .nav-right.open {
+        transform: translateY(0);
+        opacity: 1;
+        visibility: visible;
+    }
+
+    #atm-header .icon-btn {
+        height: 48px;
+        width: 48px;
+    }
+}
+/* endregion */

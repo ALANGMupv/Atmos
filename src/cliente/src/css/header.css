@@ -69,11 +69,6 @@
   background: rgba(5, 150, 105, 0.08);
 }
 
-#atm-header .nav-link.is-active {
-  color: var(--color-principal);
-  background: rgba(5, 150, 105, 0.12);
-}
-
 /* ======= BOTONES ======= */
 #atm-header .btn {
   padding: 8px 22px;
@@ -155,6 +150,14 @@
   transform: rotate(-45deg) translate(5px, -5px);
 }
 
+/* region --- LINK ACTIVO --- */
+#atm-header .nav-link.is-active {
+  font-weight: 700;             /* bold */
+  color: #059669 !important;    /* verde principal */
+  background: rgba(5, 150, 105, 0.12);
+}
+
+
 /* ======= RESPONSIVE ======= */
 @media (max-width: 906px) {
   #atm-header .menu-toggle {
@@ -203,6 +206,13 @@
     border-width: 1.5px;
   }
 }
+
+#atm-header .nav-link.is-active {
+  font-weight: 700;
+  color: #059669 !important;
+  background: transparent !important;
+}
+
 /* ======= CORRECCIÓN: botones compactos hasta 768px ======= */
 @media (max-width: 768px) {
   #atm-header .btn {
