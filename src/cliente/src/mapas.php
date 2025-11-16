@@ -1,8 +1,14 @@
 <?php
 session_start();
-$isGuest = !isset($_SESSION['usuario']);
+
 $active = 'mapas';
-include __DIR__ . '/partials/header.php';
+$isGuest = !isset($_SESSION['usuario']);
+
+if ($isGuest) {
+    include __DIR__ . '/partials/header.php';
+} else {
+    include __DIR__ . '/partials/headerLogueado.php';
+}
 ?>
 
 <!doctype html>

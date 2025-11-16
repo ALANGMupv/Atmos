@@ -48,7 +48,7 @@ $email = htmlspecialchars($usuario['email'] ?? '');
 
 <body>
 
-<?php include __DIR__ . '/partials/header.php'; ?>
+<?php include __DIR__ . '/partials/headerLogueado.php'; ?>
 
 <main class="ep-main-container">
 
