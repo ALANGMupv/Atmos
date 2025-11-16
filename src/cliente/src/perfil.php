@@ -43,6 +43,10 @@ $email     = htmlspecialchars($usuario['email'] ?? 'Correo electrónico de Usuar
     <link rel="stylesheet" href="css/index.css" />
     <link rel="stylesheet" href="css/header.css" />
     <link rel="stylesheet" href="css/perfil.css" />
+
+    <!-- JS -->
+    <script src="js/perfil.js" defer></script>
+
 </head>
 <body>
 
@@ -84,17 +88,30 @@ include __DIR__ . '/partials/header.php';
             <p class="info-value"><?php echo $email; ?></p>
         </div>
 
-        <!-- Botones de acciones del perfil -->
+        <!-- BOTONES -->
         <div class="perfil-btns">
-            <!-- Enlace para editar perfil -->
             <a href="editar_perfil.php" class="btn-edit">Editar Perfil</a>
 
-            <!-- Enlace para cerrar sesión -->
-            <a href="logout.php" class="btn-logout">Cerrar sesión</a>
+            <!-- Botón que abre el popup -->
+            <a href="#" class="btn-logout" id="btn-open-logout">Cerrar sesión</a>
         </div>
+
     </section>
 
 </main>
+
+<!-- region --- POPUP LOGOUT --- -->
+<div class="popup-overlay" id="popup-logout">
+    <div class="popup-box">
+        <h2 class="popup-title">¿Estás segur@ que quieres cerrar sesión?</h2>
+
+        <div class="popup-buttons">
+            <a href="logout.php" class="popup-confirm">Cerrar sesión</a>
+            <button class="popup-cancel" id="popup-cancel">Cancelar</button>
+        </div>
+    </div>
+</div>
+<!-- endregion -->
 
 </body>
 </html>
