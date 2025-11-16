@@ -1,0 +1,46 @@
+<!-- res/layout/toolbar_header.xml -->
+<androidx.appcompat.widget.Toolbar
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="56dp"
+    android:background="@color/white"
+    android:elevation="4dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="10dp">
+
+        <!-- Título página -->
+        <TextView
+            android:id="@+id/tituloHeader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Mi sensor"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="#2FA66B"
+            android:layout_centerVertical="true" />
+
+        <!-- Icono Campana -->
+        <ImageView
+            android:id="@+id/btnNotificaciones"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:padding="4dp"
+            android:src="@drawable/ic_bell" />
+
+        <!-- Icono Usuario -->
+        <ImageView
+            android:id="@+id/btnPerfil"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="16dp"
+            android:layout_toLeftOf="@id/btnNotificaciones"
+            android:padding="4dp"
+            android:src="@drawable/ic_user" />
+    </RelativeLayout>
+</androidx.appcompat.widget.Toolbar>
