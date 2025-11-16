@@ -4,6 +4,7 @@
     height: 91.1vh;
     background-color: #F9FAFB;
     justify-content: center;
+    min-height: 100vh;
 }
 
 .rc-container{
