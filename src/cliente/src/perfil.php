@@ -1,69 +1,99 @@
 <?php
+/**
+ * --------------------------------------------------------------
+ *  Fichero: perfil.php
+ *  Autor: Alan Guevara Martínez
+ *  Descripción: Página de perfil del usuario. Muestra los datos
+ *               almacenados en sesión y ofrece enlaces para
+ *               editar el perfil o cerrar sesión.
+ *  Fecha: 16/11/2025
+ * --------------------------------------------------------------
+ */
+
 session_start();
 
-// Solo usuarios logueados pueden acceder
+/*
+ * Comprobación de sesión:
+ * Este bloque normalmente redirige al usuario si no ha iniciado sesión.
+ * Está comentado temporalmente para permitir acceso en local.
+ */
+/*
 if (!isset($_SESSION['usuario'])) {
-  header("Location: mapas.php");
-  exit;
+    header("Location: mapas.php");
+    exit;
 }
+*/
 
-// Datos del usuario desde la sesión
-$usuario = $_SESSION['usuario'] ?? [];
-$nombre  = htmlspecialchars($usuario['nombre'] ?? '—');
-$email   = htmlspecialchars($usuario['email']  ?? '—');
-
-$isGuest = false;   // ya sabemos que está logueado
-$active  = null;    // ninguna pestaña activa
+// Recuperación segura de los datos del usuario almacenados en sesión.
+// Se utiliza el operador ?? para evitar errores si no existen claves,
+// y htmlspecialchars() para prevenir inyecciones XSS.
+$usuario   = $_SESSION['usuario'] ?? [];
+$nombre    = htmlspecialchars($usuario['nombre'] ?? 'Nombre');
+$apellidos = htmlspecialchars($usuario['apellidos'] ?? 'de Usuario');
+$email     = htmlspecialchars($usuario['email'] ?? 'Correo electrónico de Usuario');
 ?>
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Mi Perfil – ATMOS</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mi Perfil – ATMOS</title>
 
-  <!-- Estilos -->
-  <link rel="stylesheet" href="css/index.css" />
-  <link rel="stylesheet" href="css/header.css" />
-  <link rel="stylesheet" href="css/perfil.css" />
+    <!-- Hojas de estilo -->
+    <link rel="stylesheet" href="css/index.css" />
+    <link rel="stylesheet" href="css/header.css" />
+    <link rel="stylesheet" href="css/perfil.css" />
 </head>
 <body>
 
-<?php include __DIR__ . '/partials/header.php'; ?>
+<?php
+// Cabecera general del sitio (menú, logo, etc.)
+include __DIR__ . '/partials/header.php';
+?>
 
-<main class="container">
-  <section class="perfil-card">
-    <div class="perfil-top">
-      <img src="img/usuario.png" alt="Avatar del usuario" class="perfil-avatar" />
-      <div class="perfil-identidad">
-        <h1 class="perfil-nombre"><?php echo $nombre; ?></h1>
-        <p class="perfil-email"><?php echo $email; ?></p>
-      </div>
-    </div>
+<main class="perfil-wrapper"> <!-- Contenedor principal de la página de perfil -->
 
-    <div class="perfil-info">
-      <div class="info-row">
-        <span class="info-label">Nombre</span>
-        <span class="info-value"><?php echo $nombre; ?></span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">Correo</span>
-        <span class="info-value"><?php echo $email; ?></span>
-      </div>
-      <!-- Si quieres mostrar más campos guardados en la sesión, agrégalos aquí -->
-      <!--
-      <div class="info-row">
-        <span class="info-label">ID de usuario</span>
-        <span class="info-value"><?php // echo htmlspecialchars($usuario['id'] ?? '—'); ?></span>
-      </div>
-      -->
-    </div>
+    <!-- COLUMNA IZQUIERDA: Título + imagen ilustrativa -->
+    <section class="perfil-left">
+        <div class="left-image-container">
+            <!-- Título principal de la página -->
+            <h1 class="perfil-titulo">Mi Perfil</h1>
 
-    <div class="perfil-actions">
-      <a class="btn btn-primario" href="editar_perfil.php">Editar perfil</a>
-      <a class="btn btn-secundario" href="logout.php">Cerrar sesión</a>
-    </div>
-  </section>
+            <!-- Imagen ilustrativa del perfil -->
+            <img src="img/imgPerfil.png" class="perfil-ilustracion" alt="Imagen Perfil">
+        </div>
+    </section>
+
+    <!-- Línea vertical separadora entre izquierda y derecha -->
+    <div class="perfil-divider"></div>
+
+    <!-- COLUMNA DERECHA: Información del usuario + botones -->
+    <section class="perfil-right">
+
+        <!-- Avatar o ícono representativo del usuario -->
+        <img src="img/icnPagPerfil.svg" class="perfil-avatar" alt="Avatar">
+
+        <!-- Bloque que muestra los datos del usuario -->
+        <div class="perfil-info">
+            <h3>Usuario</h3>
+            <!-- Nombre completo obtenido desde PHP -->
+            <p class="info-value"><?php echo $nombre . " " . $apellidos; ?></p>
+
+            <h3>Correo electrónico</h3>
+            <!-- Correo del usuario -->
+            <p class="info-value"><?php echo $email; ?></p>
+        </div>
+
+        <!-- Botones de acciones del perfil -->
+        <div class="perfil-btns">
+            <!-- Enlace para editar perfil -->
+            <a href="editar_perfil.php" class="btn-edit">Editar Perfil</a>
+
+            <!-- Enlace para cerrar sesión -->
+            <a href="logout.php" class="btn-logout">Cerrar sesión</a>
+        </div>
+    </section>
+
 </main>
 
 </body>

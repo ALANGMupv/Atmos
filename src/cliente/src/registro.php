@@ -1,3 +1,13 @@
+<!--
+* --------------------------------------------------------------
+*  Fichero: registro.php
+*  Autor: Alan Guevara Martínez
+*  Descripción: Página de registro del usuario.
+*  Fecha: 14/11/2025
+* --------------------------------------------------------------
+-->
+
+
 <!doctype html>
 <html lang="es">
 <head>
