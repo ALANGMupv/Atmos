@@ -1,6 +1,8 @@
 package org.jordi.btlealumnos2021;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Button;
 
 public class MapasActivity extends FuncionesBaseActivity {
 
@@ -14,5 +16,13 @@ public class MapasActivity extends FuncionesBaseActivity {
 
         //Para funcionamiento del menu inferior
         setupBottomNav(0); // 0 = Mapas
+
+        // Botón temporal que te redirige a perfil (Borrar después)
+        Button irPerfilBtn = findViewById(R.id.perfil);
+
+        irPerfilBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(MapasActivity.this, PerfilActivity.class);
+            startActivity(intent);
+        });
     }
 }
