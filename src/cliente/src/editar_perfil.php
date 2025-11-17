@@ -54,6 +54,11 @@ $email = htmlspecialchars($usuario['email'] ?? '');
 
     <section class="ep-container">
 
+        <!-- Flecha hacia atrás -->
+        <a href="perfil.php" class="ep-back-btn">
+            <img src="img/flechaPerfil.svg" alt="Volver" />
+        </a>
+
         <!-- TÍTULO -->
         <h2 class="ep-titulo">Editar Perfil</h2>
 
