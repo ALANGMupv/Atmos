@@ -1,6 +1,7 @@
 package org.jordi.btlealumnos2021;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.method.PasswordTransformationMethod;
@@ -16,12 +17,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 // Clase para manejar el inicio de sesión de usuarios ya registrados
 public class InicioSesionActivity extends AppCompatActivity {
@@ -30,6 +33,8 @@ public class InicioSesionActivity extends AppCompatActivity {
     private EditText emailCampo, contrasenyaCampo;
     private Button loginBoton;
     private TextView olvidasteContrasenya;
+
+    private RequestQueue queue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
