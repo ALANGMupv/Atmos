@@ -48,4 +48,10 @@
         android:layout_height="wrap_content"
         android:text="LOGIN (TEMPORAL)" />
 
+    <Button
+        android:id="@+id/perfilPage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="PERFIL (TEMPORAL)" />
+
 </android.widget.LinearLayout>

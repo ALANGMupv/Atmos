@@ -70,11 +70,13 @@
 .perfil-avatar {
     width: 10em;
     margin-bottom: 1em;
+    margin-right: 1.7em;
 }
 
 .perfil-info {
     text-align: left;
     width: 15em;
+    margin-left:1em
 }
 
 .perfil-info h3 {
