@@ -1,3 +1,18 @@
+<?php
+session_start();
+
+// -------------------------------
+// 1. Comprobar si hay sesión activa
+// -------------------------------
+if (!isset($_SESSION['usuario'])) {
+    header("Location: login.php");
+    exit();
+}
+
+// 2. Guardar datos del usuario
+$usuario = $_SESSION['usuario'];
+?>
+
 <!doctype html>
 <html lang="es">
 <head>
@@ -15,11 +30,10 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
+
 <?php
 include __DIR__ . '/partials/header.php';
 ?>
@@ -28,7 +42,7 @@ include __DIR__ . '/partials/header.php';
     <section class="home-container">
 
         <section class="saludo-container">
-            <h2>¡Hola, Usuario!</h2>
+            <h2>¡Hola, <?= htmlspecialchars($usuario['nombre']); ?>!</h2>
             <p>así se ve el aire que respiras hoy</p>
         </section>
 
@@ -47,10 +61,9 @@ include __DIR__ . '/partials/header.php';
                             </div>
                         </div>
                     </div>
-                    <button>
-                        Ver Mapa
-                    </button>
+                    <button>Ver Mapa</button>
                 </div>
+
                 <div class="menu-container">
                     <h3>Menú de acciones</h3>
                     <div class="botones-menu-container">
@@ -65,26 +78,19 @@ include __DIR__ . '/partials/header.php';
                 <div class="miSensor-container">
                     <div class="miSensor-titulo-container">
                         <h3>Mi Sensor</h3>
-                        <button class="informacion-icono">
-                            <img src="img/informacionIcon.svg" alt="">
-                        </button>
+                        <button class="informacion-icono"><img src="img/informacionIcon.svg" alt=""></button>
                     </div>
 
                     <div class="info-miSensor-mobile">
                         <div class="distancia_estado-container">
                             <div class="distancia-container">
-
-                                <div class="distancia-titulo-container">
-                                    <h4>Distancia al sensor</h4>
-                                </div>
-
+                                <div class="distancia-titulo-container"><h4>Distancia al sensor</h4></div>
                                 <img class="distancia-icono" src="img/distanciaIcono.svg" alt="">
                                 <p>Señal alta</p>
                             </div>
+
                             <div class="estado-container">
-                                <div class="estado-titulo-container">
-                                    <h4>Estado del aire</h4>
-                                </div>
+                                <div class="estado-titulo-container"><h4>Estado del aire</h4></div>
                                 <img class="estado-icono" src="img/estadoAireIcono.svg" alt="">
                                 <p>Calidad regular</p>
                             </div>
@@ -131,9 +137,7 @@ include __DIR__ . '/partials/header.php';
                         </div>
                     </div>
 
-                    <div class="grafica-container">
-
-                    </div>
+                    <div class="grafica-container"></div>
                 </div>
             </div>
         </section>
