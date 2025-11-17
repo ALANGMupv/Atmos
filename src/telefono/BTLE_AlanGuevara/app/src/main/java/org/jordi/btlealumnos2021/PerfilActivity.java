@@ -48,9 +48,6 @@ public class PerfilActivity extends FuncionesBaseActivity {
         txtNombreUsuario = findViewById(R.id.txtNombreUsuario);
         txtCorreoUsuario = findViewById(R.id.txtCorreoUsuario);
 
-        // Configura el header superior
-        setupHeader("Mi Perfil");
-
         // --- FUNCIONALIDAD FLECHA ATRÁS ---
         // Esta flecha debe volver a la activity anterior (sea cual sea)
         ImageView btnBack = findViewById(R.id.btnBack);
