@@ -150,7 +150,7 @@
                 android:layout_marginTop="20dp"
                 android:background="@android:color/transparent"
                 android:backgroundTint="#CCCCCC"
-                android:drawableEnd="@drawable/ic_eye"
+                android:drawableEnd="@drawable/ic_eye_close"
                 android:fontFamily="@font/roboto_light"
                 android:inputType="textPassword"
                 android:padding="8dp"

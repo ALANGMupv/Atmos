@@ -142,11 +142,11 @@ public class EditarPerfilActivity extends FuncionesBaseActivity {
     /**
      * Nombre Método: habilitarToggleContrasena
      * Descripción:
-     *   Permite mostrar u ocultar la contraseña al pulsar el
-     *   icono del ojo situado en drawableEnd del EditText.
+     *   Permite alternar entre mostrar y ocultar la contraseña.
+     *   Además cambia el icono del ojo (abierto/cerrado).
      *
      * Entradas:
-     *  - editText: Campo EditText al que aplicar el comportamiento.
+     *  - editText: EditText con drawableEnd del ojo.
      */
     private void habilitarToggleContrasena(final EditText editText) {
         if (editText == null) return;
@@ -163,17 +163,28 @@ public class EditarPerfilActivity extends FuncionesBaseActivity {
             int width = drawableEnd.getBounds().width();
             int touchArea = editText.getWidth() - width - editText.getPaddingEnd();
 
-            // ¿Ha pulsado dentro del área del icono?
+            // ¿Ha pulsado en el icono?
             if (event.getX() >= touchArea) {
 
                 int cursor = editText.getSelectionEnd();
 
-                // Si está oculta, la mostramos
+                // Si está oculta → mostrar y poner icono ojo abierto
                 if (editText.getTransformationMethod() instanceof PasswordTransformationMethod) {
                     editText.setTransformationMethod(null);
-                } else {
-                    // Si está visible, la ocultamos
+                    editText.setCompoundDrawablesWithIntrinsicBounds(
+                            null, null,
+                            getResources().getDrawable(R.drawable.ic_eye),  //ojo abierto
+                            null
+                    );
+                }
+                // Si está visible → ocultar y poner icono ojo cerrado
+                else {
                     editText.setTransformationMethod(PasswordTransformationMethod.getInstance());
+                    editText.setCompoundDrawablesWithIntrinsicBounds(
+                            null, null,
+                            getResources().getDrawable(R.drawable.ic_eye_close), //ojo cerrado
+                            null
+                    );
                 }
 
                 editText.setSelection(cursor);
@@ -183,6 +194,7 @@ public class EditarPerfilActivity extends FuncionesBaseActivity {
             return false;
         });
     }
+
 
     /**
      * Nombre Método: actualizarPerfil
