@@ -125,7 +125,7 @@ public class InicioSesionActivity extends AppCompatActivity {
                             guardarSesion(usuario);
 
                             // Ir al menú principal
-                            startActivity(new Intent(this, MainActivity.class));
+                            startActivity(new Intent(this, MapasActivity.class));
                             finish();
                         }
 
