@@ -1,7 +1,6 @@
 package org.jordi.btlealumnos2021;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.method.PasswordTransformationMethod;
@@ -14,19 +13,21 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import org.json.JSONObject;
 
-import java.util.HashMap;
-import java.util.Map;
 
-// Clase para manejar el inicio de sesión de usuarios ya registrados
+/**
+ * Nombre Fichero: InicioSesionActivity.java
+ * Descripción: Pantalla encargada del inicio de sesión de usuarios ya registrados.
+ *              Valida los datos, inicia sesión en Firebase y envía el token al servidor.
+ * Autora: Nerea Aguilar Forés
+ * Fecha: 2025
+ */
 public class InicioSesionActivity extends AppCompatActivity {
 
     // Campos de texto y botón de login
@@ -41,6 +42,7 @@ public class InicioSesionActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.inicio_sesion);
 
+        // Cola de peticiones HTTP (Volley)
         queue = Volley.newRequestQueue(this);
 
         emailCampo = findViewById(R.id.login_email_tv);
@@ -57,12 +59,21 @@ public class InicioSesionActivity extends AppCompatActivity {
         // Listener del botón Iniciar sesión
         loginBoton.setOnClickListener(v -> iniciarSesion());
 
-        //Pulsar ojo para ver contraseña
+        // Pulsar ojo para ver contraseña
         enablePasswordToggle(contrasenyaCampo);
     }
 
-    // Metodo que valida los datos para el login
-
+    /**
+     * Nombre Método: validarLogin
+     * Descripción: Comprueba que los campos de email y contraseña sean válidos.
+     * Entradas:
+     *  - email: Texto introducido en el campo correo.
+     *  - password: Texto introducido en el campo contraseña.
+     * Salidas:
+     *  - true si los datos son válidos.
+     *  - false si falta algún campo o el email no es válido.
+     * Autora: Nerea Aguilar Forés
+     */
     private boolean validarLogin(String email, String password) {
 
         if (email.isEmpty() || password.isEmpty()) {
@@ -78,6 +89,13 @@ public class InicioSesionActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * Nombre Método: iniciarSesion
+     * Descripción: Inicia sesión en Firebase y obtiene el idToken para enviarlo al servidor.
+     * Entradas: Ninguna (obtiene los valores de los campos de la vista).
+     * Salidas: No retorna nada. Llama al método de login del servidor.
+     * Autora: Nerea Aguilar Forés
+     */
     private void iniciarSesion() {
 
         String email = emailCampo.getText().toString().trim();
@@ -108,92 +126,75 @@ public class InicioSesionActivity extends AppCompatActivity {
                 );
     }
 
+    /**
+     * Nombre Método: enviarLoginAlServidor
+     * Descripción: Envía el token de Firebase al servidor usando LogicaFake.
+     * Entradas:
+     *  - idToken: Token de Firebase autenticado.
+     * Salidas:
+     *  - No retorna nada. Gestiona resultados por callback.
+     * Autora: Nerea Aguilar Forés
+     */
     private void enviarLoginAlServidor(String idToken) {
 
-        String url = "https://nagufor.upv.edu.es/login";
+        LogicaFake.loginServidor(
+                idToken,
+                queue,
+                new LogicaFake.LoginCallback() {
+                    @Override
+                    public void onLoginOk(JSONObject usuario) {
+                        // Guardar sesión local
+                        SesionManager.guardarSesion(InicioSesionActivity.this, usuario);
 
-        JsonObjectRequest req = new JsonObjectRequest(
-                Request.Method.POST,
-                url,
-                null,
-                response -> {
-                    try {
-
-                        if (response.getString("status").equals("ok")) {
-
-                            JSONObject usuario = response.getJSONObject("usuario");
-                            guardarSesion(usuario);
-
-                            // Ir al menú principal
-                            startActivity(new Intent(this, MapasActivity.class));
-                            finish();
-                        }
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                },
-                error -> {
-
-                    try {
-                        String body = new String(error.networkResponse.data);
-                        JSONObject json = new JSONObject(body);
-                        String code = json.optString("error");
-
-                        if (code.equals("EMAIL_NO_VERIFICADO")) {
-                            mostrarPantallaEmailNoVerificado();
-                            return;
-                        }
-
-                        if (code.equals("USUARIO_NO_EXISTE")) {
-                            Toast.makeText(this, "Usuario no registrado", Toast.LENGTH_LONG).show();
-                            return;
-                        }
-
-                        Toast.makeText(this, "Error en servidor", Toast.LENGTH_LONG).show();
-
-                    } catch (Exception e) {
-                        Toast.makeText(this, "Error inesperado", Toast.LENGTH_LONG).show();
+                        // Ir al menú principal
+                        startActivity(new Intent(InicioSesionActivity.this, MapasActivity.class));
+                        finish();
                     }
 
+                    @Override
+                    public void onEmailNoVerificado() {
+                        Toast.makeText(InicioSesionActivity.this,
+                                "Verifica tu correo antes de iniciar sesión",
+                                Toast.LENGTH_LONG
+                        ).show();
+                    }
+
+                    @Override
+                    public void onUsuarioNoExiste() {
+                        Toast.makeText(InicioSesionActivity.this,
+                                "Usuario no registrado",
+                                Toast.LENGTH_LONG
+                        ).show();
+                    }
+
+                    @Override
+                    public void onErrorServidor() {
+                        Toast.makeText(InicioSesionActivity.this,
+                                "Error en servidor",
+                                Toast.LENGTH_LONG
+                        ).show();
+                    }
+
+                    @Override
+                    public void onErrorInesperado() {
+                        Toast.makeText(InicioSesionActivity.this,
+                                "Error inesperado",
+                                Toast.LENGTH_LONG
+                        ).show();
+                    }
                 }
-        ) {
-            @Override
-            public Map<String, String> getHeaders() {
-                Map<String, String> headers = new HashMap<>();
-                headers.put("Authorization", "Bearer " + idToken);
-                return headers;
-            }
-        };
-
-        queue.add(req);
+        );
     }
 
-    private void guardarSesion(JSONObject userJson) {
-
-        try {
-            SharedPreferences prefs = getSharedPreferences("SESION", MODE_PRIVATE);
-            SharedPreferences.Editor e = prefs.edit();
-
-            e.putInt("id_usuario", userJson.getInt("id_usuario"));
-            e.putString("nombre", userJson.getString("nombre"));
-            e.putString("apellidos", userJson.getString("apellidos"));
-            e.putString("email", userJson.getString("email"));
-            e.putInt("estado", userJson.getInt("estado"));
-            e.apply();
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    private void mostrarPantallaEmailNoVerificado() {
-        Toast.makeText(this, "Verifica tu correo antes de iniciar sesión", Toast.LENGTH_LONG).show();
-    }
-
-
-
-    // Función para ver contraseña
+    /**
+     * Nombre Método: enablePasswordToggle
+     * Descripción: Permite mostrar u ocultar la contraseña al pulsar el icono del ojo.
+     * Entradas:
+     *  - editText: Campo EditText al que aplicar el comportamiento.
+     * Salidas:
+     *  - No retorna nada. Cambia visualmente la transformación del texto.
+     * Autora: Nerea Aguilar Forés
+     */
     private void enablePasswordToggle(final EditText editText) {
 
         editText.setOnTouchListener((v, event) -> {
