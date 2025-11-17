@@ -9,12 +9,17 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
+import android.widget.TextView;
 
 import androidx.appcompat.widget.AppCompatButton;
 
+import com.google.firebase.auth.FirebaseAuth;
+
 /**
  * Nombre Fichero: PerfilActivity.java
- * Descripción: Muestra la información del perfil del usuario.
+ * Descripción: Muestra la información del perfil del usuario:
+ *              nombre completo y correo electrónico, obtenidos
+ *              de la sesión que viene de la BBDD MySQL.
  * Autor: Alan Guevara Martínez
  * Fecha: 17/11/2025
  */
@@ -22,18 +27,26 @@ import androidx.appcompat.widget.AppCompatButton;
 public class PerfilActivity extends FuncionesBaseActivity {
 
     // Botón cerrar sesión
-    Button btnCerrar;
+    private Button btnCerrar;
     // Botón editar perfil
-    Button btnEditar;
+    private Button btnEditar;
+
+    // TextViews donde se muestran los datos del usuario
+    private TextView txtNombreUsuario;
+    private TextView txtCorreoUsuario;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.perfil);
 
-        // Inicializar botones
-        btnCerrar = findViewById(R.id.btnCerrarSesion);
-        btnEditar = findViewById(R.id.btnEditarPerfil);
+        // --------------------------------------------------
+        // 1. Referencias a vistas del layout
+        // --------------------------------------------------
+        btnCerrar        = findViewById(R.id.btnCerrarSesion);
+        btnEditar        = findViewById(R.id.btnEditarPerfil);
+        txtNombreUsuario = findViewById(R.id.txtNombreUsuario);
+        txtCorreoUsuario = findViewById(R.id.txtCorreoUsuario);
 
         // Configura el header superior
         setupHeader("Mi Perfil");
@@ -45,8 +58,15 @@ public class PerfilActivity extends FuncionesBaseActivity {
             btnBack.setOnClickListener(v -> onBackPressed());
         }
 
-        // --- FUNCIONALIDAD EDITAR PERFIL ---
-        // Abre la Activity donde el usuario puede modificar sus datos
+        // --------------------------------------------------
+        // 2. Cargar datos del usuario desde la sesión local
+        // --------------------------------------------------
+        cargarDatosPerfilDesdeSesion();
+
+        // --------------------------------------------------
+        // 3. FUNCIONALIDAD EDITAR PERFIL
+        //    Abre la Activity donde el usuario puede modificar sus datos
+        // --------------------------------------------------
         if (btnEditar != null) {
             btnEditar.setOnClickListener(v -> {
                 Intent intent = new Intent(PerfilActivity.this, EditarPerfilActivity.class);
@@ -54,14 +74,62 @@ public class PerfilActivity extends FuncionesBaseActivity {
             });
         }
 
-        // --- MOSTRAR POPUP DE CERRAR SESIÓN ---
-        btnCerrar.setOnClickListener(v -> abrirPopupCerrarSesion(v));
+        // --------------------------------------------------
+        // 4. MOSTRAR POPUP DE CERRAR SESIÓN
+        // --------------------------------------------------
+        if (btnCerrar != null) {
+            btnCerrar.setOnClickListener(this::abrirPopupCerrarSesion);
+        }
     }
 
+    /**
+     * Nombre Método: cargarDatosPerfilDesdeSesion
+     * Descripción:
+     *   Obtiene de SesionManager los datos guardados en SharedPreferences
+     *   (nombre, apellidos y email) y los muestra en los TextViews del perfil.
+     *
+     *   Estos datos proceden originalmente de la BBDD MySQL, ya que
+     *   fueron devueltos por el endpoint /login y guardados en la sesión.
+     */
+    private void cargarDatosPerfilDesdeSesion() {
+        // Recuperar nombre, apellidos y correo de la sesión local
+        String nombre    = SesionManager.obtenerNombre(this);
+        String apellidos = SesionManager.obtenerApellidos(this);
+        String email     = SesionManager.obtenerEmail(this);
+
+        // Construir el nombre completo (si faltan apellidos, no pasa nada)
+        String nombreCompleto;
+        if (apellidos == null || apellidos.trim().isEmpty()) {
+            nombreCompleto = nombre;  // Solo nombre
+        } else {
+            nombreCompleto = nombre + " " + apellidos;
+        }
+
+        // Mostrar los datos en pantalla
+        if (txtNombreUsuario != null) {
+            txtNombreUsuario.setText(
+                    nombreCompleto.isEmpty() ? "Nombre de Usuario" : nombreCompleto
+            );
+        }
+
+        if (txtCorreoUsuario != null) {
+            txtCorreoUsuario.setText(
+                    (email == null || email.isEmpty()) ? "Correo electrónico de Usuario" : email
+            );
+        }
+    }
 
     /**
-     * Método que muestra el popup de confirmación para cerrar sesión.
-     * View: v -> abrirPopupCerrarSesion
+     * Nombre Método: abrirPopupCerrarSesion
+     * Descripción:
+     *   Muestra el popup de confirmación para cerrar sesión.
+     *   Desde el popup, el usuario puede:
+     *     - Cancelar → se cierra el popup.
+     *     - Confirmar → se cierra sesión (Firebase + SharedPreferences) y
+     *                   se redirige a la pantalla de inicio de sesión.
+     *
+     * Entradas:
+     *  - v: Vista desde la que se ha hecho clic (botón "Cerrar sesión").
      */
     private void abrirPopupCerrarSesion(View v) {
 
@@ -89,5 +157,26 @@ public class PerfilActivity extends FuncionesBaseActivity {
         // --- BOTÓN CANCELAR - Cierra el popup ---
         AppCompatButton btnCancelar = popupView.findViewById(R.id.btnCancelarCerrar);
         btnCancelar.setOnClickListener(view -> popup.dismiss());
+
+        // --- BOTÓN CONFIRMAR - Cierra sesión y vuelve al login ---
+        AppCompatButton btnConfirmar = popupView.findViewById(R.id.btnConfirmarCerrar);
+        if (btnConfirmar != null) {
+            btnConfirmar.setOnClickListener(view -> {
+                // 1. Cerrar sesión en Firebase (usuario actual)
+                FirebaseAuth.getInstance().signOut();
+
+                // 2. Limpiar la sesión local (SharedPreferences)
+                SesionManager.cerrarSesion(PerfilActivity.this);
+
+                // 3. Ir a la pantalla de inicio de sesión y limpiar el back stack
+                Intent intent = new Intent(PerfilActivity.this, InicioSesionActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+
+                // 4. Cerrar el popup y esta Activity
+                popup.dismiss();
+                finish();
+            });
+        }
     }
 }
