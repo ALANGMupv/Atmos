@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#80000000"> <!-- FONDO OSCURO 50% -->
+
+    <!-- TARJETA -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:padding="24dp"
+        android:background="@drawable/bg_popup_white"
+        android:clipToPadding="false">
+
+        <!-- TEXTO PREGUNTA -->
+        <TextView
+            android:id="@+id/txtPreguntaCerrar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="¿Estás segur@ que quieres cerrar sesión?"
+            android:textColor="#0F1F33"
+            android:fontFamily="@font/roboto"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:gravity="center"
+            android:padding="16dp" />
+
+        <!-- BOTÓN CONFIRMAR -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnConfirmarCerrar"
+            android:layout_width="220dp"
+            android:layout_height="52dp"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/boton_confirmar_popup"
+            android:text="Confirmar"
+            android:textColor="#FFFFFF"
+            android:fontFamily="@font/roboto_bold"
+            android:textSize="15sp"
+            android:textAllCaps="false"
+            />
+
+        <!-- BOTÓN CANCELAR -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnCancelarCerrar"
+            android:layout_width="220dp"
+            android:layout_height="52dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/boton_cancelar_popup"
+            android:text="Cancelar"
+            android:textColor="#FFFFFF"
+            android:fontFamily="@font/roboto_bold"
+            android:textSize="15sp"
+            android:textAllCaps="false"
+            />
+    </LinearLayout>
+</FrameLayout>

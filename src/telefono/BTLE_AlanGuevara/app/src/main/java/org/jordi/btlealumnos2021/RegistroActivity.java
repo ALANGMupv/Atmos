@@ -1,5 +1,6 @@
 package org.jordi.btlealumnos2021;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.SpannableString;
@@ -20,17 +21,33 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-// Clase que maneja el registro de nuevos usuarios
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.Volley;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
+/**
+ * Nombre Fichero: RegistroActivity.java
+ * Descripción: Pantalla encargada del registro de nuevos usuarios.
+ *              Valida los datos, crea el usuario en Firebase, envía el token al servidor
+ *              y redirige a la pantalla de inicio de sesión.
+ * Autora: Nerea Aguilar Forés
+ * Fecha: 2025
+ */
 public class RegistroActivity extends AppCompatActivity {
 
     // Campos del formulario y el botón
     private EditText nombreCampo, apellidosCampo, emailCampo, contrasenyaCampo, contrasenyaRepCampo;
     private Button registroBoton;
+    private CheckBox check;
+    private RequestQueue queue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.registro);
+
+        queue = Volley.newRequestQueue(this);
 
         nombreCampo = findViewById(R.id.nombre_tv);
         apellidosCampo = findViewById(R.id.apellidos_tv);
@@ -38,34 +55,28 @@ public class RegistroActivity extends AppCompatActivity {
         contrasenyaCampo = findViewById(R.id.contrasenya_tv);
         contrasenyaRepCampo = findViewById(R.id.contrasenyaRep_tv);
         registroBoton = findViewById(R.id.confirmarRegistro_btn);
-
-        // Cuando el usuario pulse el botón de registro, se ejecutará este metodo
         registroBoton.setOnClickListener(v -> registrarUsuario());
 
         //----------------------------------------------------------------------
-        //Check terminos y condiciones
+        //Check términos y condiciones
         //----------------------------------------------------------------------
-        CheckBox check = findViewById(R.id.checkBox);
-
+        check = findViewById(R.id.checkBox);
         String txt = check.getText().toString();
         SpannableString ss = new SpannableString(txt);
 
-        // Localizar "términos de servicio"
         int start = txt.indexOf("términos");
         int end = start + "términos de servicio".length();
 
-        // Poner ese trozo en verde
         ss.setSpan(
                 new ForegroundColorSpan(getColor(R.color.verde_principal)),
                 start, end,
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
         );
 
-        // Hacerlo clicable
         ss.setSpan(new ClickableSpan() {
             @Override
             public void onClick(@NonNull View widget) {
-                // Abrir pantalla terminos y servicos
+                // Abrir pantalla terminos
                 // startActivity(new Intent(RegistroActivity.this, TerminosActivity.class));
             }
 
@@ -76,50 +87,158 @@ public class RegistroActivity extends AppCompatActivity {
             }
         }, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-        // Aplicar el texto enriquecido al CheckBox
         check.setText(ss);
-
-        // Necesario para que los spans se puedan pulsar
         check.setMovementMethod(LinkMovementMethod.getInstance());
         check.setHighlightColor(Color.TRANSPARENT);
 
         //----------------------------------------------------
-
-        // Ver contraseña al pulsar ojo
+        // Mostrar/ocultar contraseña al pulsar ojo
         enablePasswordToggle(contrasenyaCampo);
         enablePasswordToggle(contrasenyaRepCampo);
-
     }
 
-    // Metodo que recoge los datos, valida y los envía al servidor
+    /**
+     * Nombre Método: registrarUsuario
+     * Descripción: Valida los datos del formulario, crea el usuario en Firebase,
+     *              obtiene el token ID y lo envía al servidor.
+     * Entradas:
+     *  - Ninguna (lee directamente los campos de la vista)
+     * Salidas:
+     *  - No retorna nada. Muestra mensajes o invoca el flujo de registro.
+     * Autora: Nerea Aguilar Forés
+     */
     private void registrarUsuario() {
-        // Obtiene el texto que el usuario escribió en los campos
+
         String nombre = nombreCampo.getText().toString().trim();
         String apellidos = apellidosCampo.getText().toString().trim();
         String email = emailCampo.getText().toString().trim();
         String password = contrasenyaCampo.getText().toString().trim();
         String passwordRep = contrasenyaRepCampo.getText().toString().trim();
+        boolean aceptaTerminos = check.isChecked();
 
-        // Validaciones básicas antes de enviar
+        // --------------------------
+        // VALIDACIONES LOCALES
+        // --------------------------
         if (nombre.isEmpty() || apellidos.isEmpty() || email.isEmpty() || password.isEmpty() || passwordRep.isEmpty()) {
             Toast.makeText(this, "Rellena todos los campos", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Comprobar si las contraseñas coinciden
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            Toast.makeText(this, "Correo electrónico no válido", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         if (!password.equals(passwordRep)) {
             Toast.makeText(this, "Las contraseñas no coinciden", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Verificar formato del correo
-        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            Toast.makeText(this, "Correo electrónico no válido", Toast.LENGTH_SHORT).show();
+        if (!password.matches("^(?=.*[0-9])(?=.*[a-zA-Z]).{6,}$")) {
+            Toast.makeText(this, "La contraseña debe tener mínimo 6 caracteres con letras y números", Toast.LENGTH_LONG).show();
             return;
         }
+
+        if (!aceptaTerminos) {
+            Toast.makeText(this, "Debes aceptar los términos y condiciones", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // --------------------------
+        // 1) CREAR USUARIO EN FIREBASE
+        // --------------------------
+        FirebaseAuth.getInstance()
+                .createUserWithEmailAndPassword(email, password)
+                .addOnSuccessListener(authResult -> {
+
+                    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+                    if (user == null) {
+                        Toast.makeText(this, "Error inesperado", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    // 2) ENVIAR EMAIL DE VERIFICACIÓN
+                    user.sendEmailVerification();
+
+                    // 3) OBTENER TOKEN ID
+                    user.getIdToken(true).addOnSuccessListener(result -> {
+
+                        String idToken = result.getToken();
+
+                        // 4) ENVIAR AL SERVIDOR (AHORA USANDO LOGICAFAKE)
+                        enviarRegistroAlServidor(idToken, nombre, apellidos, password);
+                    });
+
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Error creando usuario: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
     }
 
-    //
+    /**
+     * Nombre Método: enviarRegistroAlServidor
+     * Descripción: Llama a la lógica de negocio (LogicaFake) para registrar el usuario
+     *              en el backend usando el token de Firebase.
+     * Entradas:
+     *  - idToken: Token de Firebase ya autenticado
+     *  - nombre: Nombre introducido
+     *  - apellidos: Apellidos introducidos
+     *  - password: Contraseña
+     * Salidas:
+     *  - No retorna nada. Procesa el resultado mediante callbacks.
+     * Autora: Nerea Aguilar Forés
+     */
+    private void enviarRegistroAlServidor(String idToken, String nombre, String apellidos, String password) {
+
+        LogicaFake.registroServidor(
+                idToken,
+                nombre,
+                apellidos,
+                password,
+                queue,
+
+                new LogicaFake.RegistroCallback() {
+                    @Override
+                    public void onRegistroOk() {
+                        Toast.makeText(RegistroActivity.this,
+                                "Registro completado. Verifica tu correo antes de iniciar sesión.",
+                                Toast.LENGTH_LONG
+                        ).show();
+
+                        startActivity(new Intent(RegistroActivity.this, InicioSesionActivity.class));
+                        finish();
+                    }
+
+                    @Override
+                    public void onErrorServidor() {
+                        Toast.makeText(RegistroActivity.this,
+                                "Error en servidor",
+                                Toast.LENGTH_LONG
+                        ).show();
+                    }
+
+                    @Override
+                    public void onErrorInesperado() {
+                        Toast.makeText(RegistroActivity.this,
+                                "Error inesperado",
+                                Toast.LENGTH_LONG
+                        ).show();
+                    }
+                }
+        );
+    }
+
+
+    /**
+     * Nombre Método: enablePasswordToggle
+     * Descripción: Permite mostrar u ocultar la contraseña al pulsar el icono del ojo.
+     * Entradas:
+     *  - editText: Campo EditText sobre el que aplicar el comportamiento.
+     * Salidas:
+     *  - No retorna nada. Cambia la visibilidad del texto.
+     * Autora: Nerea Aguilar Forés
+     */
     private void enablePasswordToggle(EditText editText) {
         editText.setOnTouchListener((v, event) -> {
 
@@ -127,7 +246,6 @@ public class RegistroActivity extends AppCompatActivity {
 
             int drawableRight = editText.getWidth() - editText.getCompoundPaddingRight();
 
-            // Si el dedo toca el área del icono
             if (event.getX() >= drawableRight) {
 
                 int cursorPos = editText.getSelectionEnd();
@@ -145,6 +263,4 @@ public class RegistroActivity extends AppCompatActivity {
             return false;
         });
     }
-
-
 }

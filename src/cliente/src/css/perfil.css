@@ -70,11 +70,13 @@
 .perfil-avatar {
     width: 10em;
     margin-bottom: 1em;
+    margin-right: 1.7em;
 }
 
 .perfil-info {
     text-align: left;
     width: 15em;
+    margin-left:1em
 }
 
 .perfil-info h3 {
@@ -190,17 +192,17 @@
     font-weight: 600;
     cursor: pointer;
     transition: 0.2s ease-in-out;
-    border: none;
 }
 
 /* --- CANCELAR (verde) --- */
 .popup-cancel {
-    background: #00966E;
-    color: white;
+    color: #059669;
+    border: 2px solid #059669;
+    background: transparent;
 }
 
 .popup-cancel:hover {
-    background: #007a59;
+    background: #e8f7f2;
 }
 
 /* --- CERRAR SESIÓN (rojo suave) --- */
@@ -216,20 +218,68 @@
 
 
 /* region --- RESPONSIVE --- */
-@media (max-width: 62.5em) {
-    .perfil-wrapper {
-        flex-direction: column;
-        height: auto;
-        padding-top: 2.5em;
-        gap: 2.5em;
-    }
+@media (max-width: 1030px) {
 
-    .perfil-divider {
-        display: none;
-    }
+        /* Ocultar parte izquierda */
+        .perfil-left {
+            display: none;
+        }
 
-    .perfil-info {
-        text-align: center;
+        .perfil-divider {
+            display: none;
+        }
+
+        /* Contenido centrado vertical + horizontal */
+        .perfil-wrapper {
+            flex-direction: column;
+            height: calc(100vh - 72px); /* ocupa casi toda la altura */
+            justify-content: center; /* centra vertical */
+            align-items: center; /* centra horizontal */
+            gap: 2em;
+            padding: 0 1em;
+        }
+
+        .perfil-avatar {
+            width: 7.5em;
+            margin-bottom: 0.8em;
+        }
+        .perfil-info {
+            text-align: center;
+            width: 15em;
+        }
+
+        .perfil-info h3 {
+            font-size: 1.1em;
+            margin-bottom: 0.3em;
+        }
+
+        .info-value {
+            font-size: 1em;
+            margin-bottom: 1em;
+        }
+
+        .btn-edit,
+        .btn-logout {
+            width: 10em;
+            padding: 0.7em 0;
+            font-size: 1em;
+            margin-top: 1em;
+        }
+
+        /* Popup adaptable */
+        .popup-box {
+            width: 85%;
+            padding: 1.8em;
+        }
+
+        .popup-title {
+            font-size: 1.1em;
+        }
+
+        .popup-buttons a,
+        .popup-buttons button {
+            padding: 0.7em 1.3em;
+            font-size: 1em;
+        }
     }
-}
 /* endregion */

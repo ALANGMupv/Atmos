@@ -58,7 +58,7 @@
         </p>
 
         <div class="funciona-grid">
-          <img src="img/Tarjeta Movil.png" alt="App móvil ATMOS" class="funciona-icon">
+          <img src="img/Tarjeta1Landing.jpg" alt="App móvil ATMOS" class="funciona-icon">
           <img src="img/Recolecta Datos.png" alt="Recolección de datos ATMOS" class="funciona-icon">
           <img src="img/Ver Mapas.png" alt="Ver mapas ATMOS" class="funciona-icon">
         </div>

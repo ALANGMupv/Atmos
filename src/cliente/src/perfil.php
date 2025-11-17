@@ -12,6 +12,9 @@
 
 session_start();
 
+// Para poder mostrar el hover del header.
+$active = 'perfil';
+
 /*
  * Comprobación de sesión:
  * Este bloque normalmente redirige al usuario si no ha iniciado sesión.
@@ -45,14 +48,13 @@ $email     = htmlspecialchars($usuario['email'] ?? 'Correo electrónico de Usuar
     <link rel="stylesheet" href="css/perfil.css" />
 
     <!-- JS -->
-    <script src="js/perfil.js" defer></script>
+    <script type="module" src="js/perfil.js"></script>
 
 </head>
 <body>
 
 <?php
-// Cabecera general del sitio (menú, logo, etc.)
-include __DIR__ . '/partials/header.php';
+include __DIR__ . '/partials/headerLogueado.php';
 ?>
 
 <main class="perfil-wrapper"> <!-- Contenedor principal de la página de perfil -->

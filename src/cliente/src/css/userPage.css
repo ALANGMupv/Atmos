@@ -1,0 +1,707 @@
+.home-container{
+    height: 100%;
+    width: 100%;
+    background-color: #F9FAFB;
+    padding: 10px 25px 15px 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.saludo-container{
+    width: 100%;
+    height: 70px;
+    background-image: url('../img/fondoTitulosDegrade.svg');
+    background-size: cover;
+    background-position: center;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.05);
+}
+
+.saludo-container h2{
+    font-family: "Roboto", sans-serif;
+    font-size: clamp(18px, 1.5vw, 25px);
+    font-weight: 400;
+    margin-left: 25px;
+}
+
+.saludo-container p{
+    font-family: "Roboto", sans-serif;
+    font-size: clamp(17px, 1.4vw, 22px);
+    font-weight: 300;
+    margin-left: 10px;
+}
+
+.panel-container{
+    min-height: 555px;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    gap: 15px;
+}
+
+.left-container{
+    width: 55%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.right-container{
+    width: 45%;
+    height: 100%;
+}
+
+/* Inicio Container del Mapa con el título, mapa, indice de calidad del mapa y el botón para ver eñ mapa */
+
+.mapa-container{
+    width: 100%;
+    height: 65%;
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.11);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 15px 15px 15px;
+}
+
+.mapa-container h3{
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(13px, 1vw, 14px);
+    font-weight: 500;
+
+}
+
+.mapa{
+    width: 100%;
+    height: 75%;
+    background-color: #cccccc;
+    border-radius: 15px;
+    position: relative;
+    background-image: url('../img/mapaGandia.svg');
+    background-size: cover;
+    background-position: center;
+
+}
+
+.mapa-container button{
+    width: clamp(150px, 1vw, 160px);
+    height: clamp(38px, 1vw, 40px);
+    border: 2px solid #059669;
+    border-radius: 50px;
+    align-self: center;
+    background-color: transparent;
+    color: #059669;
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(11px, 1vw, 0.8rem);
+    cursor: pointer;
+    margin-top: 5px;
+}
+
+.mapa-container button:hover{
+    background-color: #059669;
+    color: white;
+}
+
+/* Inicio Container del indice de calidad del aire */
+
+.mapa-indice-container{
+    min-width: 160px;
+    width: 20%;
+    height: 62%;
+    min-height: 165px;
+    background-color: white;
+    border-radius: 15px;
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.11);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 15px;
+}
+
+.mapa-indice-container h4{
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(11px, 1vw, 0.8rem);
+    text-align: center;
+    font-weight: 600;
+
+}
+
+.leyendas_indices-container{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.leyendas_indices-container span{
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(11px, 1vw, 0.8rem);
+    font-weight: 300;
+
+}
+
+.color-buena{
+    display: inline-block;
+    width: clamp(14px, 1vw, 15px);
+    height: clamp(14px, 1vw, 15px);
+    background-color: #55E249;
+    border-radius: 5px;
+    margin-right: 5px;
+}
+
+.color-moderada{
+    display: inline-block;
+    width: clamp(14px, 1vw, 15px);
+    height: clamp(14px, 1vw, 15px);
+    background-color: #FFF71B;
+    border-radius: 5px;
+    margin-right: 5px;
+}
+
+.color-insalubre{
+    display: inline-block;
+    width: clamp(14px, 1vw, 15px);
+    height: clamp(14px, 1vw, 15px);;
+    background-color: #FF9D00;
+    border-radius: 5px;
+    margin-right: 5px;
+}
+
+.color-mala{
+    display: inline-block;
+    width: clamp(14px, 1vw, 15px);
+    height: clamp(14px, 1vw, 15px);
+    background-color: #FF0004;
+    border-radius: 5px;
+    margin-right: 5px;
+}
+
+.fila-indice{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.texto-indice{
+    flex: 1;
+}
+
+/* Fin del Container del indice de calidad del aire */
+
+/* Fin del Container del mapa */
+
+/* Inicio Container del menú de acciones */
+
+.menu-container{
+    width: 100%;
+    height: 35%;
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.11);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 15px 15px 15px;
+}
+
+.menu-container h3{
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(13px, 1vw, 14px);
+    font-weight: 500;
+}
+
+.botones-menu-container{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.menu-btn{
+    width: 170px;
+    height: 100%;
+    border: 2px solid #059669;
+    border-radius: 15px;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+.menu-btn:hover{
+    border: 3px solid #05815b;
+}
+
+.desvincular-btn{
+    width: 170px;
+    height: 100%;
+    border: 2px solid #059669;
+    border-radius: 15px;
+    cursor: pointer;
+    background-color: #059669;
+}
+
+.desvincular-btn:hover{
+    border: 3px solid #05815b;
+}
+
+/* Fin del Container del menu de acciones */
+
+/* Inicio del Container Mi Sensor */
+
+.miSensor-container{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.11);
+    padding: 10px 15px 15px 15px;
+}
+
+.miSensor-titulo-container{
+    display: flex;
+    gap: 5px;
+}
+.miSensor-container h3{
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(13px, 1vw, 14px);
+    margin-bottom: -5px;
+    font-weight: 500;
+}
+
+.info-miSensor-mobile{
+    width: 100%;
+    height: 55%;
+    display: flex;
+    gap: 10px;
+    flex-direction: column;
+    margin-top: -3px;
+}
+
+
+/* Inicio del Container Distancia al sensor */
+
+.distancia_estado-container{
+    width: 100%;
+    height: 50%;
+    max-height: 135px;
+    display: flex;
+    gap: 8px;
+}
+
+.distancia-container{
+    width: 50%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 5px;
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.15);
+    position: relative;
+}
+
+
+
+.distancia-container h4{
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(11px, 1vw, 0.8rem);
+    text-align: center;
+    font-weight: 600;
+
+}
+
+.informacion-icono{
+    width: 15px;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    opacity: 70%;
+    margin-top: 3px;
+
+}
+
+.distancia-icono{
+    width: clamp(35px, 5vw, 50px);
+    margin-top: -2px;
+}
+
+.distancia-container p{
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(11px, 1vw, 0.8rem);
+    font-weight: 400;
+}
+
+/* Fin del Container distancia al sensor */
+
+/* Inicio del Container Estado de aire */
+
+.estado-container{
+    width: 50%;
+    height: 100%;
+    background-color: white;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    gap: 10px;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.15);
+    position: relative;
+}
+
+.estado-titulo-container{
+    display: flex;
+    gap: 5px;
+}
+
+.estado-container h4{
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(11px, 1vw, 0.8rem);
+    text-align: center;
+    font-weight: 600;
+}
+
+.informacion-icono-estado{
+    width: 15px;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    opacity: 70%;
+    margin-top: 2px;
+}
+
+.estado-icono{
+    width: clamp(32px, 5vw, 48px);
+}
+
+.estado-container p{
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(11px, 1vw, 0.8rem);
+    font-weight: 400;
+}
+
+/* Fin del Container estado del aire */
+
+/* Inicio del Container ultima medicion y promedio */
+
+.medicion_promedio-container{
+    width: 100%;
+    height: 50%;
+    max-height: 140px;
+    display: flex;
+    gap: 8px;
+}
+
+.medicion-container{
+    width: 50%;
+    height: 100%;
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 10px;
+}
+
+.medicion-titulo-container{
+    display: flex;
+    flex-direction: column;
+}
+
+.titulo-medicion{
+    display: flex;
+    gap: 5px;
+}
+
+.titulo-medicion h4{
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(11px, 1vw, 0.8rem);
+    font-weight: 600;
+}
+
+.medicion-titulo-container p{
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(10.5px, 1vw, 0.75rem);
+    font-weight: 400;
+    color: #575757;
+}
+
+.medicion-medio-container{
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+}
+
+.medicion-medicion{
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(25px, 4vw, 2.1rem);
+    font-weight: 600;
+}
+
+.detalles-medicion{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.tipo-medicion{
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(9px, 1vw, 0.7rem);
+    font-weight: 400;
+    margin-bottom: -6px;
+}
+
+.unidad-medicion{
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(9.5px, 1vw, 0.8rem);
+    font-weight: 600;
+}
+
+.categoria-medicion-container{
+    display: flex;
+}
+
+.categoria-medicion-container .color-medicion{
+    display: inline-block;
+    width: clamp(14px, 1vw, 15px);
+    height: clamp(14px, 1vw, 15px);
+    background-color: #55E249;
+    border-radius: 5px;
+    margin-right: 5px;
+
+}
+
+.categoria-medicion-container .texto-medicion{
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(11px, 1vw, 0.8rem);
+    font-weight: 300;
+}
+
+/* Fin del Container ultima medicion */
+
+.promedio-container{
+    width: 50%;
+    height: 100%;
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.15);
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.promedio-titulo-container{
+    display: flex;
+    flex-direction: column;
+}
+
+.titulo-promedio{
+    display: flex;
+    gap: 5px;
+}
+
+.titulo-promedio h4{
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(11px, 1vw, 0.8rem);
+    font-weight: 600;
+}
+
+.promedio-titulo-container p{
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(10.5px, 1vw, 0.75rem);
+    font-weight: 400;
+    color: #575757;
+}
+
+.promedio-medio-container{
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+}
+
+.medicion-promedio{
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(25px, 4vw, 2.1rem);
+    font-weight: 600;
+}
+
+.detalles-medicion-promedio{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.tipo-promedio{
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(9px, 1vw, 0.7rem);
+    font-weight: 400;
+    margin-bottom: -6px;
+}
+
+.unidad-promedio{
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(9.5px, 1vw, 0.8rem);
+    font-weight: 600;
+}
+
+.categoria-promedio-container{
+    display: flex;
+}
+
+.categoria-promedio-container .color-promedio{
+    display: inline-block;
+    width: clamp(14px, 1vw, 15px);
+    height: clamp(14px, 1vw, 15px);
+    background-color: #ff9955;
+    border-radius: 5px;
+    margin-right: 5px;
+
+}
+
+.categoria-promedio-container .texto-promedio{
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(11px, 1vw, 0.8rem);
+    font-weight: 300;
+}
+
+.grafica-container{
+    width: 100%;
+    height: 45%;
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.15);
+}
+
+
+@media (max-width: 904px) {
+
+    .home-container{
+        padding: 10px 15px 10px 15px;
+    }
+
+
+    .menu-container{
+        display: none;
+    }
+
+    .saludo-container{
+        height: 50px;
+    }
+
+    .panel-container{
+        flex-direction: column;
+        gap: 10px;
+
+    }
+
+    .left-container{
+        width: 100%;
+        height: 36%;
+    }
+
+    .right-container{
+        width: 100%;
+        height: 64%;
+    }
+
+    .mapa-container{
+        height: 100%;
+        position: relative;
+    }
+
+    .mapa{
+        height: 100%;
+    }
+
+    .mapa-container button{
+        background-color: white;
+        position: absolute;
+        left: 25px;
+        bottom: 25px;
+    }
+
+    .mapa-indice-container{
+        min-width: 140px;
+        min-height: 140px;
+        top: 9px;
+        right: 8.5px;
+        gap: 10px;
+    }
+
+    .leyendas_indices-container{
+        gap: 8px;
+    }
+
+    .miSensor-container{
+        gap: 10px;
+    }
+
+    .distancia_estado-container{
+        width: 50%;
+        height: 100%;
+    }
+
+
+    .medicion_promedio-container{
+        width: 50%;
+        height: 100%;
+    }
+
+    .info-miSensor-mobile{
+        flex-direction: row;
+        height: 32%;
+        gap: 8px;
+    }
+
+    .estado-container p{
+        margin-top: -2px;
+    }
+
+    .grafica-container{
+        height: 70%;
+    }
+
+
+}
+
+@media (max-width: 564px) {
+
+    .distancia-titulo-container h4{
+        font-size: clamp(9px, 1vw, 0.8rem);
+    }
+
+    .medicion-titulo-container h4{
+        font-size: clamp(10.5px, 1vw, 0.8rem);
+    }
+
+    .promedio-titulo-container h4{
+        font-size: clamp(10.2px, 1vw, 0.8rem);
+    }
+
+}
+
+@media (max-width: 495px) {
+
+}
+
+
+

@@ -10,11 +10,11 @@ if (!isset($isGuest)) { $isGuest = true; }
     <nav class="navbar" aria-label="Navegación principal">
 
       <!-- LOGO -->
-      <div class="brand no-link">
-        <img src="img/logoHeader.svg" alt="ATMOS" class="brand-logo">
-      </div>
+        <a href="landing.php" class="brand">
+            <img src="img/logoHeader.svg" alt="ATMOS" class="brand-logo">
+        </a>
 
-      <!-- Botón Hamburguesa -->
+        <!-- Botón Hamburguesa -->
       <button class="menu-toggle" aria-label="Abrir menú">
         <span></span><span></span><span></span>
       </button>
@@ -22,8 +22,8 @@ if (!isset($isGuest)) { $isGuest = true; }
       <!-- Menú -->
       <div class="nav-right">
         <a href="mapas.php"
-           class="nav-link <?php echo $active === 'mapa' ? 'is-active' : ''; ?>"
-           <?php echo $active === 'mapa' ? 'aria-current="page"' : ''; ?>>
+           class="nav-link <?php echo $active === 'mapas' ? 'is-active' : ''; ?>"
+           <?php echo $active === 'mapas' ? 'aria-current="page"' : ''; ?>>
            MAPA CONTAMINACIÓN
         </a>
 

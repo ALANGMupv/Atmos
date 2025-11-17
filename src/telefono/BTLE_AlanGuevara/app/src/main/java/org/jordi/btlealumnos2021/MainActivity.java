@@ -402,6 +402,14 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, InicioSesionActivity.class);
             startActivity(intent);
         });
+
+        // Botón temporal que te redirige a perfil (Borrar después)
+        Button irPerfilBtn = findViewById(R.id.perfilPage);
+
+        irPerfilBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, PerfilActivity.class);
+            startActivity(intent);
+        });
         // -------------------------------------- (Borrar después)
 
 
