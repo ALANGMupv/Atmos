@@ -21,19 +21,19 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-import org.json.JSONObject;
-
-import java.util.HashMap;
-import java.util.Map;
-
-// Clase que maneja el registro de nuevos usuarios
+/**
+ * Nombre Fichero: RegistroActivity.java
+ * Descripción: Pantalla encargada del registro de nuevos usuarios.
+ *              Valida los datos, crea el usuario en Firebase, envía el token al servidor
+ *              y redirige a la pantalla de inicio de sesión.
+ * Autora: Nerea Aguilar Forés
+ * Fecha: 2025
+ */
 public class RegistroActivity extends AppCompatActivity {
 
     // Campos del formulario y el botón
@@ -57,33 +57,26 @@ public class RegistroActivity extends AppCompatActivity {
         registroBoton = findViewById(R.id.confirmarRegistro_btn);
         registroBoton.setOnClickListener(v -> registrarUsuario());
 
-        // Cuando el usuario pulse el botón de registro, se ejecutará este metodo
-        registroBoton.setOnClickListener(v -> registrarUsuario());
-
         //----------------------------------------------------------------------
-        //Check terminos y condiciones
+        //Check términos y condiciones
         //----------------------------------------------------------------------
         check = findViewById(R.id.checkBox);
-
         String txt = check.getText().toString();
         SpannableString ss = new SpannableString(txt);
 
-        // Localizar "términos de servicio"
         int start = txt.indexOf("términos");
         int end = start + "términos de servicio".length();
 
-        // Poner ese trozo en verde
         ss.setSpan(
                 new ForegroundColorSpan(getColor(R.color.verde_principal)),
                 start, end,
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
         );
 
-        // Hacerlo clicable
         ss.setSpan(new ClickableSpan() {
             @Override
             public void onClick(@NonNull View widget) {
-                // Abrir pantalla terminos y servicos
+                // Abrir pantalla terminos
                 // startActivity(new Intent(RegistroActivity.this, TerminosActivity.class));
             }
 
@@ -94,22 +87,26 @@ public class RegistroActivity extends AppCompatActivity {
             }
         }, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-        // Aplicar el texto enriquecido al CheckBox
         check.setText(ss);
-
-        // Necesario para que los spans se puedan pulsar
         check.setMovementMethod(LinkMovementMethod.getInstance());
         check.setHighlightColor(Color.TRANSPARENT);
 
         //----------------------------------------------------
-
-        // Ver contraseña al pulsar ojo
+        // Mostrar/ocultar contraseña al pulsar ojo
         enablePasswordToggle(contrasenyaCampo);
         enablePasswordToggle(contrasenyaRepCampo);
-
     }
 
-    // Metodo que recoge los datos, valida y los envía al servidor
+    /**
+     * Nombre Método: registrarUsuario
+     * Descripción: Valida los datos del formulario, crea el usuario en Firebase,
+     *              obtiene el token ID y lo envía al servidor.
+     * Entradas:
+     *  - Ninguna (lee directamente los campos de la vista)
+     * Salidas:
+     *  - No retorna nada. Muestra mensajes o invoca el flujo de registro.
+     * Autora: Nerea Aguilar Forés
+     */
     private void registrarUsuario() {
 
         String nombre = nombreCampo.getText().toString().trim();
@@ -169,7 +166,7 @@ public class RegistroActivity extends AppCompatActivity {
 
                         String idToken = result.getToken();
 
-                        // 4) ENVIAR AL SERVIDOR
+                        // 4) ENVIAR AL SERVIDOR (AHORA USANDO LOGICAFAKE)
                         enviarRegistroAlServidor(idToken, nombre, apellidos, password);
                     });
 
@@ -179,48 +176,69 @@ public class RegistroActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Nombre Método: enviarRegistroAlServidor
+     * Descripción: Llama a la lógica de negocio (LogicaFake) para registrar el usuario
+     *              en el backend usando el token de Firebase.
+     * Entradas:
+     *  - idToken: Token de Firebase ya autenticado
+     *  - nombre: Nombre introducido
+     *  - apellidos: Apellidos introducidos
+     *  - password: Contraseña
+     * Salidas:
+     *  - No retorna nada. Procesa el resultado mediante callbacks.
+     * Autora: Nerea Aguilar Forés
+     */
     private void enviarRegistroAlServidor(String idToken, String nombre, String apellidos, String password) {
 
-        String url = "https://nagufor.upv.edu.es/usuario";
+        LogicaFake.registroServidor(
+                idToken,
+                nombre,
+                apellidos,
+                password,
+                queue,
 
-        JSONObject json = new JSONObject();
-        try {
-            json.put("nombre", nombre);
-            json.put("apellidos", apellidos);
-            json.put("contrasena", password);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return;
-        }
+                new LogicaFake.RegistroCallback() {
+                    @Override
+                    public void onRegistroOk() {
+                        Toast.makeText(RegistroActivity.this,
+                                "Registro completado. Verifica tu correo antes de iniciar sesión.",
+                                Toast.LENGTH_LONG
+                        ).show();
 
-        JsonObjectRequest req = new JsonObjectRequest(
-                Request.Method.POST,
-                url,
-                json,
-                response -> {
-                    Toast.makeText(this, "Registro completado. Verifica tu correo antes de iniciar sesión.", Toast.LENGTH_LONG).show();
+                        startActivity(new Intent(RegistroActivity.this, InicioSesionActivity.class));
+                        finish();
+                    }
 
-                    startActivity(new Intent(this, InicioSesionActivity.class));
-                    finish();
-                },
-                error -> {
-                    Toast.makeText(this, "Error en servidor", Toast.LENGTH_LONG).show();
+                    @Override
+                    public void onErrorServidor() {
+                        Toast.makeText(RegistroActivity.this,
+                                "Error en servidor",
+                                Toast.LENGTH_LONG
+                        ).show();
+                    }
+
+                    @Override
+                    public void onErrorInesperado() {
+                        Toast.makeText(RegistroActivity.this,
+                                "Error inesperado",
+                                Toast.LENGTH_LONG
+                        ).show();
+                    }
                 }
-        ) {
-            @Override
-            public Map<String, String> getHeaders() {
-                Map<String, String> headers = new HashMap<>();
-                headers.put("Authorization", "Bearer " + idToken);
-                headers.put("Content-Type", "application/json");
-                return headers;
-            }
-        };
-
-        queue.add(req);
+        );
     }
 
 
-    //
+    /**
+     * Nombre Método: enablePasswordToggle
+     * Descripción: Permite mostrar u ocultar la contraseña al pulsar el icono del ojo.
+     * Entradas:
+     *  - editText: Campo EditText sobre el que aplicar el comportamiento.
+     * Salidas:
+     *  - No retorna nada. Cambia la visibilidad del texto.
+     * Autora: Nerea Aguilar Forés
+     */
     private void enablePasswordToggle(EditText editText) {
         editText.setOnTouchListener((v, event) -> {
 
@@ -228,7 +246,6 @@ public class RegistroActivity extends AppCompatActivity {
 
             int drawableRight = editText.getWidth() - editText.getCompoundPaddingRight();
 
-            // Si el dedo toca el área del icono
             if (event.getX() >= drawableRight) {
 
                 int cursorPos = editText.getSelectionEnd();
@@ -246,6 +263,4 @@ public class RegistroActivity extends AppCompatActivity {
             return false;
         });
     }
-
-
 }
