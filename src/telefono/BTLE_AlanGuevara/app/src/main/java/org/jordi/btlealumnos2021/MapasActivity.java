@@ -9,10 +9,10 @@ public class MapasActivity extends FuncionesBaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mapas);
 
-        // DESCOMENTAR cuando se añada el header
-        //setupHeader("Mapas");
+        //Poner título de página en el header
+        setupHeader("Mapas");
 
-        //DESCOMENTAR cuando se añada el menú inferior
-        //setupBottomNav(0); // 0 = Mapas
+        //Para funcionamiento del menu inferior
+        setupBottomNav(0); // 0 = Mapas
     }
 }
