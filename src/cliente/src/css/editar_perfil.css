@@ -278,7 +278,39 @@
 .toggle-pass.active {
   background-image: url('../img/icono-ojo-abierto.svg');
 }
+/* endregion */
 
+/* region --- Flecha volver atrás --- */
+.ep-back-btn {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+
+  width: 32px;
+  height: 32px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.ep-back-btn img {
+  width: 100%;
+  height: 100%;
+  margin-top:1em;
+}
+
+.ep-back-btn:hover {
+  transform: translateX(-3px);
+}
+
+/* Para asegurar que el contenedor permite posición absoluta dentro */
+.ep-container {
+  position: relative;
+}
 /* endregion */
 
 /* region --- RESPONSIVE --- */
