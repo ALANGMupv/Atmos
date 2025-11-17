@@ -27,7 +27,7 @@
 }
 
 #atm-header .navbar {
-  height: 72px;
+  height: 60px;
   max-width: 1920px;
   margin: 0 auto;
   padding: 0 40px;
@@ -166,7 +166,7 @@
 
   #atm-header .nav-right {
     position: absolute;
-    top: 72px;
+    top: 60px;
     left: 0;
     width: 100%;
     background: var(--color-blanco);
