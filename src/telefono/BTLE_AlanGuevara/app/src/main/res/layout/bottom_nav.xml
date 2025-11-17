@@ -8,28 +8,6 @@
     android:gravity="center"
     android:padding="5dp">
 
-    <!-- MAPAS -->
-    <LinearLayout
-        android:id="@+id/nav_mapas"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:orientation="vertical"
-        android:gravity="center">
-
-        <ImageView
-            android:layout_width="24dp"
-            android:layout_height="29dp"
-            android:src="@drawable/ic_map" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/roboto"
-            android:text="Mapas"
-            android:textSize="12sp" />
-    </LinearLayout>
-
     <!-- USER / MI SENSOR -->
     <LinearLayout
         android:id="@+id/nav_user"
@@ -49,6 +27,28 @@
             android:layout_height="wrap_content"
             android:fontFamily="@font/roboto"
             android:text="Mi sensor"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <!-- MAPAS -->
+    <LinearLayout
+        android:id="@+id/nav_mapas"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="29dp"
+            android:src="@drawable/ic_map" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/roboto"
+            android:text="Mapas"
             android:textSize="12sp" />
     </LinearLayout>
 

@@ -9,6 +9,38 @@
     <!-- HEADER -->
     <include layout="@layout/toolbar_header"/>
 
+    <!-- CARTEL BIENVENIDA -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:gravity="center_vertical"
+        android:background="@drawable/fondo_degradado">
+
+        <TextView
+            android:id="@+id/textBienvenida"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="¡Hola, Usuario!"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- ICONO DE INFORMACIÓN -->
+    <ImageView
+        android:id="@+id/iconoInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="0dp"
+        android:contentDescription="Información"
+        android:padding="4dp"
+        android:src="@drawable/ic_info" />
+
     <!-- CONTENIDO DESLIZABLE -->
     <ScrollView
         android:layout_width="match_parent"
@@ -53,10 +85,10 @@
                             android:textSize="14sp" />
 
                         <ImageView
-                            android:layout_width="28dp"
-                            android:layout_height="28dp"
+                            android:layout_width="80dp"
+                            android:layout_height="80dp"
                             android:layout_marginTop="10dp"
-                            android:src="@drawable/ic_gps" />
+                            android:src="@drawable/ic_wifi" />
 
                         <LinearLayout
                             android:layout_width="wrap_content"
@@ -70,16 +102,8 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:fontFamily="@font/roboto_bold"
-                                android:text="9.41"
-                                android:textSize="36sp" />
-
-                            <TextView
-                                android:id="@+id/tv_distancia_unidad"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="4dp"
-                                android:text="m"
-                                android:textSize="16sp" />
+                                android:text="Señal alta"
+                                android:textSize="14sp" />
                         </LinearLayout>
 
                     </LinearLayout>
@@ -190,8 +214,8 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="4dp"
-                                android:text="ppm NO₂"
-                                android:textSize="16sp"/>
+                                android:text="NO₂ \nppm"
+                                android:textSize="16sp" />
                         </LinearLayout>
 
                         <LinearLayout
@@ -268,8 +292,8 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="4dp"
-                                android:text="ppm NO₂"
-                                android:textSize="16sp"/>
+                                android:text="NO₂ \nppm"
+                                android:textSize="16sp" />
                         </LinearLayout>
 
                         <LinearLayout
