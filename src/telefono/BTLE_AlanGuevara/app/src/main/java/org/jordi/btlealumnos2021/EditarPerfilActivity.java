@@ -63,9 +63,6 @@ public class EditarPerfilActivity extends FuncionesBaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.editar_perfil);
 
-        // Establece el título del header
-        setupHeader("Editar Perfil");
-
         // Inicializar cola de Volley
         queue = Volley.newRequestQueue(this);
 

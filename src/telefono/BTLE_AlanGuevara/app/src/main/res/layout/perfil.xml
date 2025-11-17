@@ -29,7 +29,6 @@
             android:textStyle="bold"
             android:textSize="20sp"
             android:layout_marginStart="20dp"/>
-
     </LinearLayout>
 
     <!-- CONTENIDO SCROLL -->
