@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF">
+
+    <!-- HEADER -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+
+        <ImageView
+            android:id="@+id/btnBack"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/icn_volver_atras"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:text="Vincular Sensor"
+            android:textColor="#00916E"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:fontFamily="@font/roboto_bold" />
+    </LinearLayout>
+
+    <!-- SCROLL GENERAL -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <!-- TÍTULO PRINCIPAL -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="¿Cómo prefieres vincular tu sensor?"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/roboto_bold"
+                android:textColor="#000000"/>
+
+            <!-- SUBTÍTULO -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Elige el método que te resulte más comodo"
+                android:textSize="16sp"
+                android:fontFamily="@font/roboto"
+                android:textColor="#666666"/>
+
+            <!-- TARJETA QR -->
+            <LinearLayout
+                android:id="@+id/cardQr"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="28dp"
+                android:padding="20dp"
+                android:orientation="vertical"
+                android:gravity="center_vertical"
+                android:background="@drawable/bg_card_sensor"
+                android:foreground="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageView
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_gravity="center_horizontal"
+                    android:src="@drawable/ic_qr"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="Escanear Código QR"
+                    android:textSize="16sp"
+                    android:textColor="#000000"
+                    android:fontFamily="@font/roboto_bold"
+                    android:layout_gravity="center_horizontal"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Usa la cámara de tu dispositivo para escanear el código QR de tu sensor"
+                    android:textSize="15sp"
+                    android:textColor="#666666"
+                    android:fontFamily="@font/roboto"
+                    android:gravity="center"
+                    android:layout_gravity="center_horizontal"/>
+
+            </LinearLayout>
+
+            <!-- TARJETA CÓDIGO -->
+            <LinearLayout
+                android:id="@+id/cardCodigo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:padding="20dp"
+                android:orientation="vertical"
+                android:gravity="center_vertical"
+                android:background="@drawable/bg_card_sensor"
+                android:foreground="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageView
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_gravity="center_horizontal"
+                    android:src="@drawable/ic_teclado"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="Introducir código manual"
+                    android:textSize="16sp"
+                    android:textColor="#000000"
+                    android:fontFamily="@font/roboto_bold"
+                    android:layout_gravity="center_horizontal"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Escribe el código de vinculación único que aparece en el lateral de tu sensor"
+                    android:textSize="15sp"
+                    android:textColor="#666666"
+                    android:fontFamily="@font/roboto"
+                    android:gravity="center"
+                    android:layout_gravity="center_horizontal"/>
+
+                <EditText
+                    android:id="@+id/etCodigo"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="16dp"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:background="@drawable/bg_codigo_input"
+                    android:hint="XXX - XXX - XXXX"
+                    android:textSize="16sp"
+                    android:fontFamily="@font/roboto"
+                    android:gravity="center"/>
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btnVincular"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_marginTop="20dp"
+                    android:background="@drawable/bg_boton_verde"
+                    android:text="Vincular Sensor"
+                    android:textSize="16sp"
+                    android:fontFamily="@font/roboto_bold"
+                    android:textColor="#FFFFFF"
+                    android:textAllCaps="false"/>
+
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- BOTTOM NAV -->
+    <include layout="@layout/bottom_nav"/>
+
+</LinearLayout>

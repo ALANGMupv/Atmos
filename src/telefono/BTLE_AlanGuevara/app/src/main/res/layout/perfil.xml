@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF">
+
+    <!-- HEADER -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+
+        <ImageView
+            android:id="@+id/btnBack"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/icn_volver_atras"/>
+
+        <TextView
+            android:id="@+id/tituloHeader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Mi Perfil"
+            android:textColor="#00916E"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:layout_marginStart="20dp"/>
+    </LinearLayout>
+
+    <!-- CONTENIDO SCROLL -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="65dp">
+
+            <!-- ICONO PERFIL -->
+
+            <!-- TITULO USUARIO -->
+            <ImageView
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_marginTop="20dp"
+                android:src="@drawable/icn_perfil" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:fontFamily="@font/roboto_bold"
+                android:text="Usuario"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <!-- TITULO CORREO -->
+            <TextView
+                android:id="@+id/txtNombreUsuario"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:fontFamily="@font/roboto_light"
+                android:text="Nombre de Usuario"
+                android:textSize="15sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:fontFamily="@font/roboto_bold"
+                android:text="Correo electronico"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtCorreoUsuario"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:fontFamily="@font/roboto_light"
+                android:text="Correo electronico de Usuario"
+                android:textSize="15sp" />
+
+            <!-- BOTÓN EDITAR PERFIL -->
+            <Button
+                android:id="@+id/btnEditarPerfil"
+                android:layout_width="220dp"
+                android:layout_height="52dp"
+                android:layout_marginTop="40dp"
+                android:backgroundTint="#00916E"
+                android:fontFamily="@font/roboto_bold"
+                android:text="Editar Perfil"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp" />
+
+            <!-- BOTÓN CERRAR SESIÓN -->
+            <Button
+                android:id="@+id/btnCerrarSesion"
+                android:layout_width="220dp"
+                android:layout_height="52dp"
+                android:layout_marginTop="20dp"
+                android:backgroundTint="#D36565"
+                android:fontFamily="@font/roboto_bold"
+                android:text="Cerrar sesion"
+                android:textColor="#FFFFFF" />
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- BOTTOM NAV -->
+    <include layout="@layout/bottom_nav"/>
+
+</LinearLayout>

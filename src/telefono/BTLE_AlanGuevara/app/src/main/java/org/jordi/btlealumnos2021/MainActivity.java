@@ -394,6 +394,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // -------------------------------------- (Borrar después)
 
         // Botón temporal que te redirige a Login (Borrar después)
         Button irLoginBtn = findViewById(R.id.irLogin);
@@ -402,6 +403,24 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, InicioSesionActivity.class);
             startActivity(intent);
         });
+
+        // Botón temporal que te redirige a perfil (Borrar después)
+        Button irPerfilBtn = findViewById(R.id.perfilPage);
+
+        irPerfilBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, PerfilActivity.class);
+            startActivity(intent);
+        });
+
+        // Botón temporal que te redirige a vincular código por qr o escrito (Borrar después)
+        Button irPagQR = findViewById(R.id.vincularPage);
+
+        irPagQR.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, VincularSensorActivity.class);
+            startActivity(intent);
+        });
+
+
         // -------------------------------------- (Borrar después)
 
 

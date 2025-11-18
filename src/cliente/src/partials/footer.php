@@ -39,8 +39,4 @@
     </div>
 
   </div>
-
-  <div class="footer-copy">
-    © <?php echo date('Y'); ?> Atmos. Todos los derechos reservados.
-  </div>
 </footer>

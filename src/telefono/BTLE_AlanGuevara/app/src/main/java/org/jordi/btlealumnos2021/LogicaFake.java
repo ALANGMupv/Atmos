@@ -255,74 +255,112 @@ public class LogicaFake {
     }
 
     /**
-     * INTERFAZ CALLBACK
-     * ---------------------------------------------------------
-     * Para devolver al activity si el usuario tiene placa o no,
-     * y en caso afirmativo, sus datos.
+     * Nombre Interfaz: ActualizarUsuarioCallback
+     * Descripción: Define los posibles resultados de la petición de actualización de usuario.
+     * Autor: Alan Guevara Martínez
+     * Fecha: 17/11/2025
      */
-    public interface ResumenUsuarioCallback {
-        void onSinPlaca();
-        void onConPlaca(String placa, double ultima, double promedio);
-        void onErrorServidor();
-        void onErrorInesperado();
+    public interface ActualizarUsuarioCallback {
+        void onActualizacionOk();     // Se llama cuando la actualización en el servidor ha sido correcta
+        void onErrorServidor();       // Se llama cuando el servidor devuelve error o respuesta no válida
+        void onErrorInesperado();     // Se llama cuando ocurre una excepción no controlada
     }
 
     /**
-     * Nombre Método: resumenUsuario
-     * Descripción: Consulta al backend si un usuario tiene una placa vinculada
-     *              y devuelve sus datos resumidos (última medida y promedio).
+     * Nombre Método: actualizarUsuarioServidor
+     * Descripción:
+     *   Realiza la petición PUT /usuario para actualizar nombre, apellidos y/o email
+     *   de un usuario ya existente en la BBDD MySQL.
+     *   Autores: Alan Guevara Martínez
+     *      * Fecha: 17/11/2025
      *
      * Entradas:
-     *   - idUsuario → id del usuario guardado en sesión
-     *   - queue → cola Volley para ejecutar la petición HTTP
-     *   - callback → interface para devolver datos al Activity
+     *  - idToken: Token de Firebase para autenticar la llamada (Bearer).
+     *  - idUsuario: ID del usuario en la tabla usuario de MySQL.
+     *  - nombre: Nuevo nombre.
+     *  - apellidos: Nuevos apellidos.
+     *  - email: Email actual del usuario (no se cambia, pero se envía).
+     *  - contrasenaActual: Contraseña actual introducida por el usuario.
+     *  - nuevaContrasena: Nueva contraseña (aquí será vacío, se usa solo para compatibilidad con el método ya hecho).
+     *  - queue: Cola de Volley para ejecutar la petición.
+     *  - callback: Implementación de ActualizarUsuarioCallback.
      *
      * Salidas:
-     *   - Callback indicando si tiene o no placa
-     *   - Datos del sensor (última medida, promedio)
-     *
-     * Autora: Nerea Aguilar Forés
+     *  - No retorna nada; notifica el resultado por callback.
      */
-    public static void resumenUsuario(
-            int idUsuario,
-            RequestQueue queue,
-            ResumenUsuarioCallback callback
-    ) {
-        String url = "https://nagufor.upv.edu.es/resumenUsuario?id_usuario=" + idUsuario;
 
+    public static void actualizarUsuarioServidor(
+            String idToken,
+            int idUsuario,
+            String nombre,
+            String apellidos,
+            String email,
+            String contrasenaActual,
+            String nuevaContrasena,
+            RequestQueue queue,
+            ActualizarUsuarioCallback callback
+    ) {
+
+        // Construimos el JSON que espera el backend (PUT /usuario)
+        JSONObject json = new JSONObject();
+        try {
+            json.put("id_usuario", idUsuario);               // ID del usuario
+            json.put("nombre", nombre);                      // Nuevo nombre
+            json.put("apellidos", apellidos);                // Nuevos apellidos
+            json.put("email", email);                        // Email actual (no se modifica)
+            json.put("contrasena_actual", contrasenaActual); // La contraseña actual escrita por el usuario
+            json.put("nueva_contrasena", nuevaContrasena);   // Nueva contraseña (vacía en este caso)
+        } catch (Exception e) {
+            // Si ocurre un error construyendo el JSON, se notifica como error inesperado
+            e.printStackTrace();
+            callback.onErrorInesperado();
+            return;
+        }
+
+        // Usamos la misma URL /usuario que en el registro (pero aquí con PUT)
+        final String URL_USUARIO = "https://nagufor.upv.edu.es/usuario";
+
+        // Creamos la petición Volley de tipo PUT, enviando el JSON al backend
         JsonObjectRequest req = new JsonObjectRequest(
-                Request.Method.GET,
-                url,
-                null,
+                Request.Method.PUT,   // Método HTTP PUT
+                URL_USUARIO,          // Endpoint de actualización de usuario
+                json,                 // Cuerpo JSON construido arriba
                 response -> {
                     try {
-                        String status = response.getString("status");
-
-                        if ("sin_placa".equals(status)) {
-                            callback.onSinPlaca();
-                            return;
+                        // Si el backend responde con { "status":"ok" } consideramos que ha ido bien
+                        if ("ok".equals(response.optString("status"))) {
+                            callback.onActualizacionOk();       // Todo correcto
+                        } else {
+                            callback.onErrorServidor();         // Respuesta recibida pero no válida
                         }
-
-                        if ("con_placa".equals(status)) {
-                            String placa = response.getString("id_placa");
-                            double ultima = response.getDouble("ultima_medida");
-                            double promedio = response.getDouble("promedio");
-
-                            callback.onConPlaca(placa, ultima, promedio);
-                            return;
-                        }
-
-                        callback.onErrorInesperado();
-
                     } catch (Exception e) {
+                        // Cualquier excepción durante el análisis de la respuesta se considera inesperada
+                        e.printStackTrace();
                         callback.onErrorInesperado();
                     }
                 },
-                error -> callback.onErrorServidor()
-        );
+                error -> {
+                    // Si ocurre un error HTTP, de red o timeout → error de servidor
+                    try {
+                        callback.onErrorServidor();
+                    } catch (Exception e) {
+                        // Si incluso al llamar al callback hay un fallo, se considera inesperado
+                        callback.onErrorInesperado();
+                    }
+                }
+        ) {
+            @Override
+            public Map<String, String> getHeaders() {
+                // Cabeceras HTTP necesarias para la llamada
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Authorization", "Bearer " + idToken); // Autenticación con token de Firebase
+                headers.put("Content-Type", "application/json");   // Indica que enviamos JSON
+                return headers;
+            }
+        };
 
+        // Finalmente añadimos la petición a la cola de Volley para que se ejecute
         queue.add(req);
     }
-
 }
 
