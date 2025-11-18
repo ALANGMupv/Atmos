@@ -31,6 +31,7 @@ public class LogicaFake {
     private static final String API_URL = "https://nagufor.upv.edu.es/medida";
     private static final String URL_REGISTRO = "https://nagufor.upv.edu.es/usuario";
     private static final String URL_LOGIN    = "https://nagufor.upv.edu.es/login";
+    private static final String URL_VINCULAR = "https://nagufor.upv.edu.es/vincular";
 
 
     // uuid: Texto, gas: Z, valor: R, contador: Z → guardarMedicion() →
@@ -408,7 +409,8 @@ public class LogicaFake {
             RequestQueue queue,
             ResumenUsuarioCallback callback
     ) {
-        String url = "https://nagufor.upv.edu.es/resumenUsuario?id_usuario=" + idUsuario;
+        String url = "https://nagufor.upv.edu.es/resumenUsuario?id_usuario="
+                + idUsuario + "&t=" + System.currentTimeMillis(); // <-- ROMPE CACHÉ
 
         JsonObjectRequest req = new JsonObjectRequest(
                 Request.Method.GET,
@@ -441,7 +443,128 @@ public class LogicaFake {
                 error -> callback.onErrorServidor()
         );
 
+        // DESACTIVAMOS CACHÉ DE VOLLEY
+        req.setShouldCache(false);
+
         queue.add(req);
     }
+
+    // =========================================================
+    // VINCULAR PLACA A USUARIO
+    // =========================================================
+
+    /**
+     * Nombre Interfaz: VincularPlacaCallback
+     * Descripción:
+     *   Define los posibles resultados de la petición de vinculación
+     *   de una placa a un usuario (/vincular).
+     *
+     * Autora: Alan Guevara Martínez
+     * Fecha: 18/11/2025
+     */
+    public interface VincularPlacaCallback {
+        void onVinculacionOk();       // Vinculación correcta
+        void onCodigoNoValido();      // Placa no encontrada o ya asignada
+        void onErrorServidor();       // Error de servidor / HTTP
+        void onErrorInesperado();     // Excepción no controlada al procesar
+    }
+
+    /**
+     * Nombre Método: vincularPlacaServidor
+     * Descripción:
+     *   Llama al endpoint POST /vincular para asociar una placa a un usuario.
+     *   Envía al backend los campos:
+     *      - id_usuario
+     *      - id_placa
+     *
+     * Entradas:
+     *  - idUsuario: ID del usuario en la tabla MySQL.
+     *  - idPlaca:   Código/UUID de la placa a vincular.
+     *  - queue:     Cola de Volley para ejecutar la petición HTTP.
+     *  - callback:  Implementación de VincularPlacaCallback para informar del resultado.
+     *
+     * Salidas:
+     *  - No retorna nada. Informa del resultado mediante callback.
+     *
+     * Autor: Alan Guevara Martínez
+     * Fecha: 18/11/2025
+     */
+
+    public static void vincularPlacaServidor(
+            int idUsuario,                // ID del usuario que quiere vincular la placa
+            String idPlaca,               // ID o código de la placa a vincular
+            RequestQueue queue,           // Cola de peticiones Volley para ejecutar la solicitud HTTP
+            VincularPlacaCallback callback // Callback con los métodos para manejar las respuestas
+    ) {
+
+        // Construimos el JSON que enviaremos al backend
+        JSONObject json = new JSONObject();
+        try {
+            json.put("id_usuario", idUsuario); // Insertamos el ID del usuario dentro del JSON
+            json.put("id_placa", idPlaca);     // Insertamos el ID/código de la placa dentro del JSON
+
+        } catch (Exception e) {                 // Si ocurre cualquier error construyendo el JSON...
+            e.printStackTrace();                // ...imprimimos el error en consola
+            callback.onErrorInesperado();       // ...y notificamos error inesperado al callback
+            return;                             // ...y salimos del método
+        }
+
+        // Creamos la petición HTTP al servidor usando método POST y enviando el JSON creado
+        JsonObjectRequest req = new JsonObjectRequest(
+                Request.Method.POST, // Método HTTP POST
+                URL_VINCULAR,        // URL del backend que realiza la vinculación
+                json,                // Cuerpo JSON enviado en la petición
+                response -> {        // Listener cuando el servidor responde correctamente
+
+                    try {
+                        // Se espera un JSON similar a: { status: "ok", mensaje: "Placa vinculada correctamente" }
+                        String status = response.optString("status", ""); // Obtenemos el campo "status" del JSON
+
+                        if ("ok".equals(status)) {  // Si el servidor devuelve "ok"...
+                            callback.onVinculacionOk(); // ...notificamos vinculación exitosa
+                        } else {                    // Si el servidor no devolvió "ok"
+                            callback.onCodigoNoValido(); // ...tratamos el caso como código no válido
+                        }
+
+                    } catch (Exception e) {          // Si algo falla procesando la respuesta del servidor...
+                        e.printStackTrace();         // ...lo imprimimos
+                        callback.onErrorInesperado(); // ...y notificamos error inesperado
+                    }
+                },
+
+                error -> { // Listener cuando la petición falla o el servidor devuelve error HTTP
+
+                    try {
+                        // Si el servidor ha devuelto un error con contenido (normalmente mensajes como
+                        // "Placa no encontrada" o "La placa ya está asignada a otro usuario")
+                        if (error != null &&
+                                error.networkResponse != null &&
+                                error.networkResponse.data != null) {
+
+                            callback.onCodigoNoValido(); // Consideramos el error como código/placa no válido
+
+                        } else { // Si no hay detalles útiles del error
+                            callback.onErrorServidor(); // Notificamos error genérico del servidor
+                        }
+
+                    } catch (Exception e) { // Si algo falla incluso manejando el error...
+                        callback.onErrorInesperado(); // ...notificamos error inesperado
+                    }
+                }
+        ) {
+
+            @Override
+            public Map<String, String> getHeaders() {
+                // Cabeceras HTTP que se envían al servidor
+                Map<String, String> headers = new HashMap<>();       // Creamos mapa de cabeceras
+                headers.put("Content-Type", "application/json");     // Declaramos que el cuerpo es JSON
+                return headers;                                      // Devolvemos las cabeceras
+            }
+        };
+
+        // Finalmente, añadimos la petición a la cola para que Volley la ejecute
+        queue.add(req);
+    }
+
 }
 

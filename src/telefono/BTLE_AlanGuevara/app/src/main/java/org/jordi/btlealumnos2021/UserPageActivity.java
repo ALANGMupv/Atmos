@@ -1,7 +1,9 @@
 package org.jordi.btlealumnos2021;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -34,6 +36,9 @@ public class UserPageActivity extends FuncionesBaseActivity {
     private TextView txtHolaUsuario;
     private RequestQueue queue;
 
+    private LinearLayout layoutSinSensor, layoutConSensor;
+    private TextView txtUltima, txtPromedio;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,11 +63,12 @@ public class UserPageActivity extends FuncionesBaseActivity {
         // - layoutSinSensor → la vista "Ups..."
         // - layoutConSensor → los datos reales del sensor
         // ---------------------------------------------------------------
-        LinearLayout layoutSinSensor = findViewById(R.id.layoutSinSensor);
-        LinearLayout layoutConSensor = findViewById(R.id.layoutConSensor);
+        layoutSinSensor = findViewById(R.id.layoutSinSensor);
+        layoutConSensor = findViewById(R.id.layoutConSensor);
 
-        TextView txtUltima = findViewById(R.id.tv_ultima_valor);
-        TextView txtPromedio = findViewById(R.id.tv_promedio_valor);
+        txtUltima = findViewById(R.id.tv_ultima_valor);
+        txtPromedio = findViewById(R.id.tv_promedio_valor);
+
         TextView txtUltimaFecha = findViewById(R.id.tv_ultima_fecha);
         TextView txtPromedioFecha = findViewById(R.id.tv_promedio_fecha);
 
@@ -71,38 +77,128 @@ public class UserPageActivity extends FuncionesBaseActivity {
         layoutSinSensor.setVisibility(View.GONE);
         layoutConSensor.setVisibility(View.GONE);
 
-        // ---------------------------------------------------------------
-        // PEDIR DATOS AL SERVIDOR: ¿TIENE USUARIO UNA PLACA?
-        // ---------------------------------------------------------------
+        // Redirige a la página de vincular sensor, cuando no hay un sensor vinculado a ese usario
+        Button ir_a_vincular = findViewById(R.id.btnVincularSensor);
+
+        ir_a_vincular.setOnClickListener(v -> {
+            Intent intent = new Intent(UserPageActivity.this, VincularSensorActivity.class);
+            startActivityForResult(intent, 999);
+        });
+
+        // La lógica que establa implementada aquí, está ahora en un método
+        recargarEstadoUsuario();
+    }
+
+    /**
+     * Nombre Método: onResume
+     * Autor: Alan Guevara Martínez
+     * Fecha: 18/11/2025
+     */
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    /**
+     * Nombre Método: onActivityResult
+     * Descripción:
+     *      Método que recibe el resultado de una Activity que fue abierta
+     *      desde esta pantalla. En este caso, lo usamos para detectar cuándo
+     *      volvemos de la pantalla de "Vincular Sensor".
+     *
+     *      Si el resultado viene con el requestCode 999 y es RESULT_OK,
+     *      significa que se ha realizado algún cambio (como vincular/desvincular
+     *      un sensor) y entonces recargamos los datos del usuario.
+     *
+     * Autor: Alan Guevara Martínez
+     * Fecha: 18/11/2025
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // Llamamos al método padre para mantener el comportamiento estándar de Android
+        super.onActivityResult(requestCode, resultCode, data);
+
+        // Verifica si el resultado proviene de la Activity con código 999
+        // y si terminó correctamente con RESULT_OK
+        if (requestCode == 999 && resultCode == RESULT_OK) {
+
+            // Recarga el estado del usuario para refrescar datos en pantalla
+            recargarEstadoUsuario();
+        }
+    }
+
+    /**
+     * Nombre Método: recargarEstadoUsuario
+     * Descripción:
+     *      Vuelve a consultar al servidor si el usuario tiene una placa vinculada
+     *      y actualiza la interfaz (mostrar layoutSinSensor o layoutConSensor).
+     *
+     * Objetivo: Que tras vincular un sensor se recarge automáticamente el layout
+     *
+     * Autor: Alan Guevara Martínez
+     * Fecha: 18/11/2025
+     */
+    private void recargarEstadoUsuario() {
+
+        // Ocultar ambas mientras cargamos
+        layoutSinSensor.setVisibility(View.GONE);
+        layoutConSensor.setVisibility(View.GONE);
+
         int idUsuario = SesionManager.obtenerIdUsuario(this);
 
+        // ---------------------------------------------------------------
+        // CONSULTAR EN EL SERVIDOR EL RESUMEN DEL USUARIO
+        // ---------------------------------------------------------------
+        // Aquí preguntamos:
+        //   - ¿Tiene una placa vinculada?
+        //   - Si sí → ¿cuál es la última medida y el promedio?
         LogicaFake.resumenUsuario(
                 idUsuario,
                 queue,
                 new LogicaFake.ResumenUsuarioCallback() {
 
+                    // ----------------------------------------------------
+                    // CASO 1: EL USUARIO NO TIENE PLACA VINCULADA
+                    // ----------------------------------------------------
                     @Override
                     public void onSinPlaca() {
-                        layoutSinSensor.setVisibility(View.VISIBLE);
+                        layoutConSensor.setVisibility(View.GONE); // Ocultar tarjeta con datos sensor
+                        layoutSinSensor.setVisibility(View.VISIBLE); // mostrar pantalla "Ups..."
                     }
 
+                    // ----------------------------------------------------
+                    // CASO 2: EL USUARIO SÍ TIENE PLACA VINCULADA
+                    // ----------------------------------------------------
                     @Override
                     public void onConPlaca(String placa, double ultima, double promedio) {
+
+
+                        // Mostrar la tarjeta con datos del sensor
                         layoutConSensor.setVisibility(View.VISIBLE);
+                        layoutSinSensor.setVisibility(View.GONE); // Ocultar "Ups..."
 
-                        txtUltima.setText("Última medida: " +
-                                String.format(Locale.US, "%.2f", ultima));
+                        // Formateamos los decimales a dos cifras
+                        txtUltima.setText(
+                                "Última medida: " + String.format(Locale.US, "%.2f", ultima)
+                        );
 
-                        txtPromedio.setText("Promedio: " +
-                                String.format(Locale.US, "%.2f", promedio));
+                        txtPromedio.setText(
+                                "Promedio: " + String.format(Locale.US, "%.2f", promedio)
+                        );
                     }
 
+                    // ----------------------------------------------------
+                    // CASO 3: ERROR CONTROLADO DESDE EL SERVIDOR
+                    // ----------------------------------------------------
                     @Override
                     public void onErrorServidor() {
                         Toast.makeText(UserPageActivity.this,
                                 "Error en el servidor", Toast.LENGTH_SHORT).show();
                     }
 
+                    // ----------------------------------------------------
+                    // CASO 4: ERROR NO ESPERADO
+                    // ----------------------------------------------------
                     @Override
                     public void onErrorInesperado() {
                         Toast.makeText(UserPageActivity.this,
