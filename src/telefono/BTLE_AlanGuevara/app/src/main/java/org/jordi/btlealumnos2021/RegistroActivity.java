@@ -16,6 +16,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -41,6 +42,7 @@ public class RegistroActivity extends AppCompatActivity {
     private Button registroBoton;
     private CheckBox check;
     private RequestQueue queue;
+    private TextView enlaceLogin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +58,13 @@ public class RegistroActivity extends AppCompatActivity {
         contrasenyaRepCampo = findViewById(R.id.contrasenyaRep_tv);
         registroBoton = findViewById(R.id.confirmarRegistro_btn);
         registroBoton.setOnClickListener(v -> registrarUsuario());
+
+        // Redirección a la página de Login
+        enlaceLogin = findViewById(R.id.tvIrInicio);
+        enlaceLogin.setOnClickListener(v -> {
+            Intent intent = new Intent(RegistroActivity.this, InicioSesionActivity.class);
+            startActivity(intent);
+        });
 
         //----------------------------------------------------------------------
         //Check términos y condiciones
