@@ -45,7 +45,7 @@ public class UserPageActivity extends FuncionesBaseActivity {
 
         queue = Volley.newRequestQueue(this);
 
-        nombre = SesionManager.getNombre(this);
+        nombre = SesionManager.obtenerNombre(this);
 
         // ---------------------------------------------------------------
         // MOSTRAR ¡HOLA, USUARIO!
@@ -74,7 +74,7 @@ public class UserPageActivity extends FuncionesBaseActivity {
         // ---------------------------------------------------------------
         // PEDIR DATOS AL SERVIDOR: ¿TIENE USUARIO UNA PLACA?
         // ---------------------------------------------------------------
-        int idUsuario = SesionManager.getIdUsuario(this);
+        int idUsuario = SesionManager.obtenerIdUsuario(this);
 
         LogicaFake.resumenUsuario(
                 idUsuario,

@@ -362,5 +362,86 @@ public class LogicaFake {
         // Finalmente añadimos la petición a la cola de Volley para que se ejecute
         queue.add(req);
     }
+
+    // =========================================================
+    // RESUMEN USUARIO
+    // =========================================================
+    /**
+     * Nombre Interfaz: ResumenUsuarioCallback
+     * Descripción:
+     *   Define los posibles resultados de la petición que obtiene
+     *   información del sensor asociado al usuario.
+     *
+     * Entradas:
+     *   - Se usa como callback del método resumenUsuario().
+     *
+     * Salidas:
+     *   - No retorna nada; activa un método según el resultado.
+     *
+     * Autores: Nerea Aguilar Forés
+     */
+    public interface ResumenUsuarioCallback {
+        void onSinPlaca();                                    // Usuario no tiene placa asociada
+        void onConPlaca(String placa, double ultima, double promedio);  // Usuario con placa y datos
+        void onErrorServidor();                               // Error en la simulación/petición
+        void onErrorInesperado();                             // Excepción inesperada
+    }
+
+    /**
+     * Nombre Método: resumenUsuario
+     * Descripción: Consulta al backend si un usuario tiene una placa vinculada
+     *              y devuelve sus datos resumidos (última medida y promedio).
+     *
+     * Entradas:
+     *   - idUsuario → id del usuario guardado en sesión
+     *   - queue → cola Volley para ejecutar la petición HTTP
+     *   - callback → interface para devolver datos al Activity
+     *
+     * Salidas:
+     *   - Callback indicando si tiene o no placa
+     *   - Datos del sensor (última medida, promedio)
+     *
+     * Autora: Nerea Aguilar Forés
+     */
+    public static void resumenUsuario(
+            int idUsuario,
+            RequestQueue queue,
+            ResumenUsuarioCallback callback
+    ) {
+        String url = "https://nagufor.upv.edu.es/resumenUsuario?id_usuario=" + idUsuario;
+
+        JsonObjectRequest req = new JsonObjectRequest(
+                Request.Method.GET,
+                url,
+                null,
+                response -> {
+                    try {
+                        String status = response.getString("status");
+
+                        if ("sin_placa".equals(status)) {
+                            callback.onSinPlaca();
+                            return;
+                        }
+
+                        if ("con_placa".equals(status)) {
+                            String placa = response.getString("id_placa");
+                            double ultima = response.getDouble("ultima_medida");
+                            double promedio = response.getDouble("promedio");
+
+                            callback.onConPlaca(placa, ultima, promedio);
+                            return;
+                        }
+
+                        callback.onErrorInesperado();
+
+                    } catch (Exception e) {
+                        callback.onErrorInesperado();
+                    }
+                },
+                error -> callback.onErrorServidor()
+        );
+
+        queue.add(req);
+    }
 }
 
