@@ -1,107 +1,146 @@
 <?php
+/**
+ * --------------------------------------------------------------
+ *  Fichero: editar_perfil.php
+ *  Autor: Alan Guevara Martínez
+ *  Descripción: Página de editar perfil del usuario.
+ *  Fecha: 16/11/2025
+ * --------------------------------------------------------------
+ */
+
 session_start();
 
-// Si el usuario no ha iniciado sesión, redirige a mapas
+/*
+ * Comprobación de sesión:
+ * Este bloque normalmente redirige al usuario si no ha iniciado sesión.
+ * Está comentado temporalmente para permitir acceso en local.
+ */
+/*
 if (!isset($_SESSION['usuario'])) {
-  header("Location: mapas.php");
-  exit;
+    header("Location: mapas.php");
+    exit;
 }
+*/
 
-$usuario = $_SESSION['usuario'];
-$isGuest = false;
-$active  = 'perfil'; // activa el icono del perfil
+$usuario = $_SESSION['usuario'] ?? [];
+$nombre = htmlspecialchars($usuario['nombre'] ?? '');
+$apellidos = htmlspecialchars($usuario['apellidos'] ?? '');
+$email = htmlspecialchars($usuario['email'] ?? '');
 ?>
+
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Editar Perfil - ATMOS</title>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Editar Perfil - ATMOS</title>
 
-  <!-- CSS -->
-  <link rel="stylesheet" href="css/estilos.css">
-  <link rel="stylesheet" href="css/header.css">
-  <link rel="stylesheet" href="css/editar_perfil.css">
+    <link rel="stylesheet" href="css/estilos.css">
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/editar_perfil.css">
+
+    <!-- Carga el archivo JavaScript "editar_perfil.js" como un módulo ES6.
+       Esto permite usar import/export dentro del script, asegurando un código
+       más organizado y compatible con Firebase u otros módulos modernos. -->
+    <script type="module" src="js/editar_perfil.js" defer></script>
 </head>
+
 <body>
 
-<?php include __DIR__ . '/partials/header.php'; ?>
+<?php include __DIR__ . '/partials/headerLogueado.php'; ?>
 
-<main>
-  <section class="editar-container">
+<main class="ep-main-container">
 
-    <!-- Título -->
-    <h1 class="titulo-editar">Editar perfil</h1>
+    <section class="ep-container">
 
-    <!-- Formulario -->
-    <form class="formulario-editar" method="post" action="actualizarPerfil.php">
+        <!-- Flecha hacia atrás -->
+        <a href="perfil.php" class="ep-back-btn">
+            <img src="img/flechaPerfil.svg" alt="Volver" />
+        </a>
 
-      <div class="campo">
-        <label for="nombre">Nombre</label>
-        <input type="text" id="nombre" name="nombre" class="input-base"
-               value="<?php echo htmlspecialchars($usuario['nombre']); ?>" required>
-      </div>
+        <!-- TÍTULO -->
+        <h2 class="ep-titulo">Editar Perfil</h2>
 
-      <div class="campo">
-        <label for="apellidos">Apellido/s</label>
-        <input type="text" id="apellidos" name="apellidos" class="input-base"
-               value="<?php echo htmlspecialchars($usuario['apellidos'] ?? ''); ?>">
-      </div>
+        <p class="ep-intro">
+            Modifica tus datos personales. Tu correo no puede cambiarse por motivos de seguridad.
+        </p>
 
-      <div class="campo">
-        <label for="correo">Correo electrónico</label>
-        <input type="email" id="correo" name="correo" class="input-base"
-               value="<?php echo htmlspecialchars($usuario['email']); ?>" readonly>
-      </div>
+        <!-- FORMULARIO -->
+        <form class="formulario-editar" id="form-editar">
 
-      <div class="campo">
-        <label for="contrasena">Contraseña</label>
-        <input type="password" id="contrasena" name="contrasena" class="input-base" placeholder="Opcional">
-      </div>
+            <!-- Campo oculto que almacena el ID del usuario obtenido desde PHP.
+            Sirve para que JavaScript pueda acceder al identificador del usuario
+            sin mostrarlo en pantalla. -->
+            <input type="hidden" id="id_usuario" value="<?= htmlspecialchars($usuario['id_usuario'] ?? '') ?>">
 
-      <button type="submit" class="btn">Guardar cambios</button>
-    </form>
+            <!-- Nombre -->
+            <div class="campo">
+                <label for="nombre">Nombre</label>
+                <input type="text" id="nombre" name="nombre"
+                       value="<?= $nombre ?>" class="input-base">
+            </div>
 
-  </section>
+            <!-- Apellidos -->
+            <div class="campo">
+                <label for="apellidos">Apellidos</label>
+                <input type="text" id="apellidos" name="apellidos"
+                       value="<?= $apellidos ?>" class="input-base">
+            </div>
+
+            <!-- Correo - SOLO EN MODO LECTURA-->
+            <div class="campo">
+                <label for="correo">Correo electrónico</label>
+                <input type="email" id="correo" name="correo"
+                       value="<?= $email ?>" class="input-base" readonly>
+            </div>
+
+            <!-- Cambiar contraseña -->
+            <a href="#" class="ep-enlace-pass" id="btn-cambiar-pass">Cambiar contraseña</a>
+
+            <!-- Botón -->
+            <button type="submit" class="ep-btn-guardar">Guardar cambios</button>
+        </form>
+    </section>
+
 </main>
 
-<!-- Popup de verificación -->
-<div id="popup-overlay" style="
-  display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-  background:rgba(0,0,0,0.5); z-index:10000; justify-content:center; align-items:center;">
-  <div id="popup" style="
-    background:white; padding:25px 30px; border-radius:12px; width:300px;
-    text-align:center; box-shadow:0 0 20px rgba(0,0,0,0.3); font-family:sans-serif;">
-    <h3 style="margin-bottom:15px;">Confirmar cambios</h3>
-    <p style="margin-bottom:10px;">Introduce tu contraseña actual para guardar los cambios.</p>
-    <input type="password" id="popup-pass" placeholder="Contraseña" style="
-      width:100%; padding:10px; margin-bottom:15px; border:1px solid #ccc;
-      border-radius:6px; font-size:14px;">
-    <div>
-      <button id="popup-confirm" style="
-        background:#0f2940; color:white; border:none; padding:8px 14px;
-        border-radius:6px; cursor:pointer; margin-right:8px;">
-        Confirmar
-      </button>
-      <button id="popup-cancel" style="
-        background:#ccc; color:#333; border:none; padding:8px 14px;
-        border-radius:6px; cursor:pointer;">
-        Cancelar
-      </button>
+
+<!-- POPUP A — Cambiar contraseña -->
+<div class="popup-overlay" id="popup-pass">
+    <div class="popup-box">
+        <h2 class="popup-title">Cambiar contraseña</h2>
+        <p class="popup-text">Se cerrará tu sesión y serás redirigid@ para restablecerla.</p>
+
+        <div class="popup-buttons">
+            <a href="logout.php?redir=restContrasenya.php" class="popup-confirm popup-red">Continuar</a>
+            <button class="popup-cancel" id="popup-cancel-pass">Cancelar</button>
+        </div>
     </div>
-  </div>
 </div>
 
 
+<!-- POPUP B — Confirmar cambios -->
+<div class="popup-overlay" id="popup-confirmar">
+    <div class="popup-box">
+        <h2 class="popup-title">Confirmar cambios</h2>
+        <p class="popup-text">Introduce tu contraseña actual para guardar los cambios.</p>
 
-<script>
-  // Variable global accesible desde editar_perfil.js
-  const id_usuario = <?php echo json_encode($usuario['id'] ?? null); ?>;
-  console.log("ID de usuario cargado desde PHP:", id_usuario);
-</script>
+        <div class="campo campo-popup">
+            <label for="popup-pass-confirm">Contraseña actual</label>
 
-<script type="module" src="js/editar_perfil.js?v=1"></script>
+            <div class="input-password">
+                <input type="password" id="popup-pass-confirm" class="input-base popup-input-linea">
+                <span class="toggle-pass" data-target="popup-pass-confirm"></span>
+            </div>
+        </div>
+
+        <div class="popup-buttons">
+            <button class="popup-confirm" id="popup-confirmar-btn">Confirmar</button>
+            <button class="popup-cancel" id="popup-cancel-confirm">Cancelar</button>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

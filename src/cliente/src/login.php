@@ -58,7 +58,7 @@ include __DIR__ . '/partials/header.php';
 
                     <p class="texto-secundario">
                         ¿No tienes una cuenta?
-                        <a href="registro.php" class="enlace-secundario">Regístrate</a>
+                        <a href="registro.php" class="enlace-secundario" id="go-register">Regístrate</a>
                     </p>
 
                 </div>
@@ -71,7 +71,7 @@ include __DIR__ . '/partials/header.php';
 include __DIR__ . '/partials/footer.php';
 ?>
 
-<!-- ✅ Carga del script de login -->
+<!-- Carga del script de login -->
 <script type="module" src="js/login.js"></script>
 
 </body>

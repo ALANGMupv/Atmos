@@ -1,3 +1,5 @@
+/* CSS ANTIGUO - HAY QUE REEMPLAZARLO PERO VEO QUE NO SE ESTÁ USANDO, MALA PRÁCTICA */
+
 /* region --- RESET (DANIPA) --- */
 * { margin: 0; padding: 0; }
 *, *::before, *::after { box-sizing: border-box; }

@@ -1,140 +1,277 @@
-/* region --- CONTENEDOR PRINCIPAL --- */
-.registro-container {
+/**
+ * --------------------------------------------------------------
+ *  Fichero: registro.css
+ *  Autor: Alan Guevara Martínez
+ *  Fecha: 14/11/2025
+ * --------------------------------------------------------------
+ */
+
+
+/* CONTENEDOR GENERAL */
+.registro-container.registro-solo {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    max-width: 480px;
-    margin: 0 auto;
-    padding: 1.75em 2em;
-    background-color: transparent;
-    position: relative;
-    z-index: 1;
-    height: 90dvh;
+    min-height: 91.1vh;
+    height: auto;
+    background-color: #F9FAFB;
+}
+
+/* FORMULARIO IZQUIERDA */
+.registro-formulario {
+    width: 50%;
+    display: flex;
     justify-content: center;
-}
-/* endregion */
-
-
-/* region --- LOGO Y TEXTO INTRODUCTORIO --- */
-.logo-registro {
-    width: 125px;
-    height: 125px;
-    margin-bottom: 1em;
+    align-items: center;
 }
 
-.texto-intro {
-    color: var(--color-azul-muy-oscuro);
-    font-size: 1.3em;
-    text-align: center;
-    margin-bottom: 1.5em;
-    line-height: 1.4;
-}
-/* endregion */
-
-
-/* region --- FORMULARIO --- */
-.formulario-registro {
+.formulario-registro-pag {
+    max-width: 500px;
+    min-width: 350px;
+    width: 80%;
     display: flex;
     flex-direction: column;
-    width: 90%;
-    gap: 0.8em;
+    gap: 1.8em;
 }
 
-/* Bloque general de cada campo */
-.formulario-registro label {
-    display: block;
-    font-family: var(--fuente-principal);
-    color: var(--color-azul-muy-oscuro);
-    font-size: 0.95em;
-    margin-bottom: 0.4em;
-    text-align: left;
+.formulario-registro-pag h2 {
+    text-align: center;
+    font-family: "Roboto", sans-serif;
+    color: #111827;
 }
 
-/* Campos dobles (nombre + apellidos) */
-.campo-doble {
+/* Campos */
+.campo {
     display: flex;
-    gap: 1em;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.campo label {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1rem;
+}
+
+.campo input {
+    all: unset;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1rem;
+    width: 100%;
+    border-bottom: 1px solid rgba(17, 24, 39, 0.29);
+}
+
+/* Label + texto contraseña en línea */
+.fila-label {
+    display: flex;
+    align-items: center;
     width: 100%;
 }
+.info-contrasena {
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 300;
+    font-size: 0.7rem;
+    color: #6b7280;
+    margin-left: 0.5em;
+    flex-shrink: 0;
+}
 
-.campo-doble .mitad {
+/* Campo doble */
+.campo-doble {
+    display: flex;
+    gap: 20px;
+}
+
+.mitad {
     flex: 1;
 }
 
-/* Botón */
-.btn-registrar {
-    margin-top: 1.5em;
-    width: 100%;
-    padding: 0.6em;
-    font-size: 1.1em;
-}
-/* endregion */
-
-
-/* region --- ENLACE “YA TENGO CUENTA” --- */
-.enlace-login {
-    text-align: center;
-    font-size: 0.95em;
+/* Checkbox política —— MODIFICADO */
+.checkbox-politica {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 0.9rem;
+    margin-top: -10px;
 }
 
-.enlace-login a {
-    color: var(--color-azul-oscuro);
-    text-decoration: underline;
-    font-weight: 500;
-    transition: color 0.2s ease-in-out;
+.checkbox-politica input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
 }
 
-.enlace-login a:hover {
-    color: var(--color-azul-muy-oscuro);
+.checkbox-politica label {
+    cursor: pointer;
+}
+
+.checkbox-politica a {
+    color: #10B981;
     text-decoration: none;
 }
-/* endregion */
 
+.texto-politica {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 0.9rem;
+}
 
-/* region --- FONDO SEMICIRCULAR (FIJO Y CENTRADO ABAJO) --- */
-body {
-    background-color: var(--color-blanco);
+.texto-politica a {
+    color: #10B981;
+    text-decoration: none;
+}
+
+.texto-politica a:hover {
+    text-decoration: underline;
+}
+
+/* Botón */
+.btn-registro {
+    height: 45px;
+    background-color: #059669;
+    border-radius: 15px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1rem;
+    border: none;
+    cursor: pointer;
+    color: white;
+}
+
+.btn-registro:hover {
+    background-color: #058d63;
+}
+
+/* Texto inferior */
+.texto-secundario {
+    text-align: center;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1rem;
+}
+
+.enlace-secundario {
+    color: #10B981;
+    text-decoration: none;
+}
+
+/* IMAGEN DERECHA */
+.registro-imagen {
+    width: 50%;
+    background-image: url('../img/fondoLogin_Registro.svg');
+    background-size: cover;
+    background-position: center;
     position: relative;
-    overflow-x: hidden;
 }
 
-body::before {
-    content: "";
-    position: fixed;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 130vw;
-    height: 90vh;
-    background-color: var(--color-circulo-gris);
-    border-radius: 0 0 50% 50%;
-    z-index: 0;
+.registro-imagen .contenido-imagen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 2em;
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.15);
 }
-/* endregion */
 
+.logo-registro-desk {
+    max-width: 200px;
+    width: 100%;
+    margin-bottom: 2em;
+}
 
-/* region --- RESPONSIVE --- */
-@media (max-width: 768px) {
-    .registro-container {
-        justify-content: center;
-        height: 100dvh;
-        padding-top: 0;
+.texto-registro-imagen {
+    color: white;
+    font-family: "Roboto", sans-serif;
+    font-weight: 500;
+    font-size: 1.25em;
+    max-width: 100%;
+}
+
+/* Contenedor icono + input */
+.input-password {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+/* Icono ojo */
+.toggle-pass {
+    position: absolute;
+    right: 0;
+    cursor: pointer;
+    width: 22px;
+    height: 22px;
+    background-image: url('../img/icono-ojo.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    opacity: 0.6;
+    transition: 0.2s;
+    margin-bottom: 0.3em;
+}
+
+.toggle-pass:hover {
+    opacity: 1;
+}
+
+/* Icono ojo abierto */
+.toggle-pass.active {
+    background-image: url('../img/icono-ojo-abierto.svg');
+}
+
+/* Estado válido */
+.input-base.valid {
+    border-bottom: 2px solid #10B981 !important; /* verde */
+}
+
+/* Estado inválido */
+.input-base.invalid {
+    border-bottom: 2px solid #dc2626 !important; /* rojo */
+}
+
+/* RESPONSIVE */
+@media (max-width: 960px) {
+
+    .registro-container.registro-solo {
+        flex-direction: column-reverse;
+        height: auto;
     }
 
-    .logo-registro {
-        width: 100px;
-        height: 100px;
+    .registro-imagen {
+        width: 100%;
+        height: 200px;
+        display: flex;
     }
 
-    .icono-cerrar {
-        top: 1em;
-        left: 1em;
-        width: 20px;
-        height: 20px;
+    .contenido-imagen h2 {
+        display: none;
     }
 
-    body::before {
-        height: 34vh;
+    .logo-registro-desk {
+        max-width: 150px;
+        margin-bottom: 0;
+    }
+
+    .registro-formulario {
+        width: 100%;
+        margin-top: 45px;
+    }
+
+    .formulario-registro-pag {
+        width: 60%;
+    }
+
+    .fila-label {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+
+    .info-contrasena {
+        max-width: 100%;
+    }
+
+    .texto-secundario {
+        margin-bottom: 0.5em;
     }
 }
-/* endregion */
-

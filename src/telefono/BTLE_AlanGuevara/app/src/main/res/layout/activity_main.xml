@@ -42,4 +42,22 @@
         android:padding="16dp"
         android:background="@android:color/background_light" />
 
+    <Button
+        android:id="@+id/irLogin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="LOGIN (TEMPORAL)" />
+
+    <Button
+        android:id="@+id/perfilPage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="PERFIL (TEMPORAL)" />
+
+    <Button
+        android:id="@+id/vincularPage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="VINCULAR QR (TEMPORAL)" />
+
 </android.widget.LinearLayout>

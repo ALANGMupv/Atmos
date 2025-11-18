@@ -2,4 +2,13 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="verde_principal">#10B981</color>
+    <color name="verde_boton">#059669</color>
+    <color name="verde_boton_oscuro">#047254</color>
+
+    <color name="textoSecundario">#666666</color>
+
+    <!-- Línea gris del campo -->
+    <color name="colorLinea">#CCCCCC</color>
+
 </resources>

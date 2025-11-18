@@ -1,19 +1,39 @@
 <?php
 session_start();
 
+// ---------------------------------------------------------------
+// 1. Leer JSON enviado desde login.js
+// ---------------------------------------------------------------
 $input = file_get_contents("php://input");
 $data = json_decode($input, true);
 
-if (!$data || !isset($data['id_Usuario'])) {
-  http_response_code(400);
-  echo json_encode(['status' => 'error', 'mensaje' => 'Datos inválidos']);
-  exit;
+// ---------------------------------------------------------------
+// 2. Validar que el backend haya enviado los datos correctos
+//    AHORA vienen dentro de $data['usuario']
+// ---------------------------------------------------------------
+if (!$data || !isset($data['id_usuario'])) {
+
+    // SI VIENE EN LA CLAVE "usuario" (nuevo formato)
+    if (isset($data['usuario'])) {
+        $data = $data['usuario']; // reescribir para usarlo igual
+    } else {
+        http_response_code(400);
+        echo json_encode(['status' => 'error', 'mensaje' => 'Datos inválidos']);
+        exit;
+    }
 }
 
+// ---------------------------------------------------------------
+// 3. Crear la sesión PHP con los datos del usuario
+// ---------------------------------------------------------------
 $_SESSION['usuario'] = [
-  'id'     => $data['id_Usuario'],
-  'nombre' => $data['nombre'] ?? '',
-  'email'  => $data['email'] ?? '',
+    'id_usuario' => $data['id_usuario'],
+    'nombre'     => $data['nombre'] ?? '',
+    'apellidos'  => $data['apellidos'] ?? '',
+    'email'      => $data['email'] ?? ''
 ];
 
+// ---------------------------------------------------------------
+// 4. Devolver OK al frontend
+// ---------------------------------------------------------------
 echo json_encode(['status' => 'ok']);

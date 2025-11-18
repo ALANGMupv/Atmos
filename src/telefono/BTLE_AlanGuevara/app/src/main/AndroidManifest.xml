@@ -40,6 +40,32 @@
         <activity android:name=".InicioSesionActivity"
             android:exported="true" />
 
+        <activity android:name=".RestablecerContrasenaActivity"
+            android:exported="true" />
+
+        <activity android:name=".UserPageActivity"
+            android:exported="true" />
+
+        <activity android:name=".PerfilActivity"
+            android:exported="true" />
+
+        <activity android:name=".EditarPerfilActivity"
+            android:exported="true" />
+
+        <activity android:name=".VincularSensorActivity"
+            android:exported="true" />
+
+
+        <meta-data
+            android:name="preloaded_fonts"
+            android:resource="@array/preloaded_fonts" />
+
+        <activity android:name=".MapasActivity"
+            android:exported="true"/>
+
+        <activity android:name=".MenuActivity"
+            android:exported="true"/>
+
     </application>
 
 </manifest>

@@ -1,93 +1,285 @@
-.perfil-card {
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.06);
-  padding: 22px;
-  margin: 28px auto;
-  max-width: 760px;
+/* region --- LAYOUT PRINCIPAL --- */
+.perfil-wrapper {
+    display: flex;
+    height: calc(100vh - 72px);
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    gap: 3.75em;
+}
+/* endregion */
+
+
+
+/* region --- COLUMNA IZQUIERDA --- */
+.perfil-left {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.perfil-top {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 18px;
+.left-image-container {
+    position: relative;
+    width: 60%;
+}
+
+.perfil-titulo {
+    position: absolute;
+    top: 1.25em;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 2.1875em; /* Roboto Bold 35px */
+    font-family: 'Roboto', sans-serif;
+    font-weight: 700;
+    color: #000;
+    z-index: 10;
+}
+
+.perfil-ilustracion {
+    width: 100%;
+    display: block;
+    border-radius: 6px;
+    max-height: 75vh;
+}
+/* endregion */
+
+
+
+/* region --- DIVISOR CENTRAL --- */
+.perfil-divider {
+    width: 0.125em;
+    height: 70%;
+    min-height: 28.125em;
+    background: #000;
+}
+/* endregion */
+
+
+
+/* region --- COLUMNA DERECHA --- */
+.perfil-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center; /* centra columna entera */
+    text-align: center;
 }
 
 .perfil-avatar {
-  width: 84px;
-  height: 84px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid #fff;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-
-.perfil-identidad .perfil-nombre {
-  font-size: 1.4rem;
-  color: #0b1f35; /* mismo navy */
-  margin: 0;
-}
-.perfil-identidad .perfil-email {
-  color: #6b7280;
-  margin: 4px 0 0;
+    width: 10em;
+    margin-bottom: 1em;
+    margin-right: 1.7em;
 }
 
 .perfil-info {
-  margin-top: 8px;
-  border-top: 1px dashed #e5e7eb;
-  padding-top: 14px;
-  display: grid;
-  gap: 10px;
+    text-align: left;
+    width: 15em;
+    margin-left:1em
 }
 
-.info-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.info-label {
-  color: #6b7280;
-  font-size: 0.95rem;
+.perfil-info h3 {
+    margin-bottom: 0.3125em;
+    font-size: 1.25em;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 600;
 }
 
 .info-value {
-  color: #111827;
-  font-weight: 500;
+    margin-bottom: 1.25em;
+    font-size: 1em;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 300;
+}
+/* endregion */
+
+
+
+/* region --- BOTONES --- */
+.perfil-btns {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-right: 1em;
 }
 
-.perfil-actions {
-  margin-top: 18px;
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
+.btn-edit,
+.btn-logout {
+    display: block;
+    width: 11.25em;
+    padding: 0.75em 0;
+    margin-top: 1.25em;
+    border-radius: 30px;
+    font-size: 1em;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    transition: 0.2s ease-in-out;
 }
 
-.btn {
-  display: inline-block;
-  padding: 10px 14px;
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: 600;
-  transition: transform .04s ease, opacity .2s ease;
+.btn-edit {
+    background: #00966E;
+    color: white;
+}
+.btn-edit:hover {
+    background: #007a59;
 }
 
-.btn:hover { opacity: .92; }
-.btn:active { transform: translateY(1px); }
+.btn-logout {
+    color: #00966E;
+    border: 2px solid #00966E;
+}
+.btn-logout:hover {
+    background: #e8f7f2;
+}
+/* endregion */
 
-.btn-primario {
-  background: #143052;   /* azul header hover */
-  color: #fff;
+/* region --- POPUP LOGOUT --- */
+
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.25s ease-in-out;
+    z-index: 2000;
 }
 
-.btn-secundario {
-  background: #e5e7eb;
-  color: #111827;
+.popup-overlay.active {
+    opacity: 1;
+    visibility: visible;
 }
 
-@media (max-width: 640px) {
-  .perfil-card { padding: 18px; }
-  .perfil-avatar { width: 72px; height: 72px; }
+.popup-box {
+    background: white;
+    width: 25em;
+    padding: 2em;
+    border-radius: 1em;
+    text-align: center;
+    font-family: 'Open Sans', sans-serif;
 }
+
+.popup-title {
+    font-size: 1.2em;
+    margin-bottom: 1.5em;
+    font-weight: 600;
+}
+
+.popup-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1.25em;
+}
+
+/* --- ESTILO BASE PARA AMBOS BOTONES (IGUALA TODO) --- */
+.popup-buttons a,
+.popup-buttons button {
+    padding: 0.75em 1.5em;
+    border-radius: 30px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 1em;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease-in-out;
+}
+
+/* --- CANCELAR (verde) --- */
+.popup-cancel {
+    color: #059669;
+    border: 2px solid #059669;
+    background: transparent;
+}
+
+.popup-cancel:hover {
+    background: #e8f7f2;
+}
+
+/* --- CERRAR SESIÓN (rojo suave) --- */
+.popup-confirm {
+    background: #ff6b6b;     /* rojo clarito */
+    color: white;
+}
+
+.popup-confirm:hover {
+    background: #e35858;     /* rojo más oscuro */
+}
+/* endregion */
+
+
+/* region --- RESPONSIVE --- */
+@media (max-width: 1030px) {
+
+        /* Ocultar parte izquierda */
+        .perfil-left {
+            display: none;
+        }
+
+        .perfil-divider {
+            display: none;
+        }
+
+        /* Contenido centrado vertical + horizontal */
+        .perfil-wrapper {
+            flex-direction: column;
+            height: calc(100vh - 72px); /* ocupa casi toda la altura */
+            justify-content: center; /* centra vertical */
+            align-items: center; /* centra horizontal */
+            gap: 2em;
+            padding: 0 1em;
+        }
+
+        .perfil-avatar {
+            width: 7.5em;
+            margin-bottom: 0.8em;
+        }
+        .perfil-info {
+            text-align: center;
+            width: 15em;
+        }
+
+        .perfil-info h3 {
+            font-size: 1.1em;
+            margin-bottom: 0.3em;
+        }
+
+        .info-value {
+            font-size: 1em;
+            margin-bottom: 1em;
+        }
+
+        .btn-edit,
+        .btn-logout {
+            width: 10em;
+            padding: 0.7em 0;
+            font-size: 1em;
+            margin-top: 1em;
+        }
+
+        /* Popup adaptable */
+        .popup-box {
+            width: 85%;
+            padding: 1.8em;
+        }
+
+        .popup-title {
+            font-size: 1.1em;
+        }
+
+        .popup-buttons a,
+        .popup-buttons button {
+            padding: 0.7em 1.3em;
+            font-size: 1em;
+        }
+    }
+/* endregion */
