@@ -237,7 +237,7 @@ public class VincularSensorActivity extends AppCompatActivity {
 
         // Mostramos en el popup el código del sensor vinculado correctamente
         TextView txtCodigo = popupView.findViewById(R.id.txtCodigoSensor);
-        txtCodigo.setText(codigoQueEstesVinculando); // Mostramos el código vinculado
+        txtCodigo.setText("UUID: " + codigoQueEstesVinculando);
 
         // Mostrar el popup centrado en pantalla
         popup.showAtLocation(popupView, Gravity.CENTER, 0, 0);
