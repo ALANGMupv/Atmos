@@ -78,21 +78,20 @@ include __DIR__ . '/partials/header.php';
                 <div class="miSensor-container">
                     <div class="miSensor-titulo-container">
                         <h3>Mi Sensor</h3>
-                        <button class="informacion-icono"><img src="img/informacionIcon.svg" alt=""></button>
+                        <button data-popup="popupMiSensor" class="informacion-icono"><img src="img/informacionIcon.svg" alt=""></button>
                     </div>
 
                     <div class="info-miSensor-mobile">
                         <div class="distancia_estado-container">
+                            <div class="estado-container">
+                                <div class="estado-titulo-container"><h4>Estado del Sensor</h4></div>
+                                <img class="estado-icono" src="img/estadoActivoSensorIcono.svg" alt="">
+                                <p>Sensor activo</p>
+                            </div>
                             <div class="distancia-container">
                                 <div class="distancia-titulo-container"><h4>Distancia al sensor</h4></div>
                                 <img class="distancia-icono" src="img/distanciaIcono.svg" alt="">
                                 <p>Señal alta</p>
-                            </div>
-
-                            <div class="estado-container">
-                                <div class="estado-titulo-container"><h4>Estado del aire</h4></div>
-                                <img class="estado-icono" src="img/estadoAireIcono.svg" alt="">
-                                <p>Calidad regular</p>
                             </div>
                         </div>
 
@@ -130,9 +129,7 @@ include __DIR__ . '/partials/header.php';
                                         <p class="unidad-promedio">ppm</p>
                                     </div>
                                 </div>
-                                <div class="categoria-promedio-container">
-                                    <span class="color-promedio"></span> <span class="texto-promedio">Insalubre</span>
-                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -142,8 +139,43 @@ include __DIR__ . '/partials/header.php';
             </div>
         </section>
 
+        <section id="popupMiSensor" class="popup-info-container">
+            <div class="popup-container">
+                <button class="cerrar-popup">
+                    <img  src="img/cerrarIcono.svg" alt="">
+                </button>
+                <div class="top-containers">
+                    <div class="estado-info-container">
+                        <h2>Estado del Sensor</h2>
+                        <img src="img/estadoSensorInfoPopup.svg" alt="">
+                        <p>Muestra el estado actual del nodo sensor. Este puede estar conectado y <b>activo</b> o desconectado e <b>inactivo</b>.</p>
+                    </div>
+                    <div class="distancia-info-container">
+                        <h2>Distancia del Sensor</h2>
+                        <img src="img/distanciaSensorInfoPopup.svg" alt="">
+                        <p>Indica la potencia de la señal de tu sensor. Una señal <b>alta</b> significa que el sensor está cerca de tu móvil o bien conectado; una señal <b>baja</b> puede indicar más distancia o interferencias.</p>
+                    </div>
+                </div>
+
+                <div class="bottom-containers">
+                    <div class="medicion-info-container">
+                        <h2>Última medición</h2>
+                        <img src="img/medicionInfoPopup.svg" alt="">
+                        <p>Es la medición más reciente de NO₂ captada por tu sensor. Este valor se actualiza periódicamente y permite saber en tiempo real cómo está la calidad del aire justo ahora.</p>
+                    </div>
+                    <div class="promedio-info-container">
+                        <h2>Promedio del día</h2>
+                        <img src="img/promedioInfoPopup.svg" alt="">
+                        <p>Es el valor medio de NO₂ registrado por el sensor a lo largo del día. Ayuda a entender cómo ha sido la calidad del aire durante la jornada, más allá de picos puntuales.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
     </section>
 </main>
+
+<!-- ✅ Carga del script de User Page -->
+<script type="module" src="js/userPage.js"></script>
 
 </body>
 </html>
