@@ -1,5 +1,5 @@
 <?php
-/*session_start();
+session_start();
 
 // -------------------------------
 // 1. Comprobar si hay sesión activa
@@ -10,7 +10,7 @@ if (!isset($_SESSION['usuario'])) {
 }
 
 // 2. Guardar datos del usuario
-$usuario = $_SESSION['usuario'];*/
+$usuario = $_SESSION['usuario'];
 ?>
 
 <!doctype html>
