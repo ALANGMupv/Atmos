@@ -35,7 +35,7 @@ $usuario = $_SESSION['usuario'];
 <body>
 
 <?php
-include __DIR__ . '/partials/header.php';
+include __DIR__ . '/partials/headerLogueado.php';
 ?>
 
 <main>
