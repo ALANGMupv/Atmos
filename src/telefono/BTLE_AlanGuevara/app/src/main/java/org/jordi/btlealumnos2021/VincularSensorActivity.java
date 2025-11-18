@@ -102,7 +102,8 @@ public class VincularSensorActivity extends AppCompatActivity {
         if (cardQr != null) {
             cardQr.setOnClickListener(v -> {
                 Intent i = new Intent(this, EscanearQrActivity.class);
-                startActivity(i);
+                // Lanzamos la activity esperando un resultado
+                startActivityForResult(i, REQ_QR);
             });
         }
 
