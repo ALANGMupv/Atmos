@@ -1,3 +1,10 @@
+*,
+*::before,
+*::after {
+    transition: all 0.25s ease-out;
+    -webkit-transition: all 0.25s ease-out;
+}
+
 .home-container{
     height: 100%;
     width: 100%;
@@ -506,7 +513,8 @@
     padding: 10px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    gap: 10px;
+
 }
 
 .promedio-titulo-container{
@@ -536,12 +544,14 @@
     display: flex;
     justify-content: center;
     gap: 5px;
+
 }
 
 .medicion-promedio{
     font-family: 'Open Sans', sans-serif;
     font-size: clamp(25px, 4vw, 2.1rem);
     font-weight: 600;
+
 }
 
 .detalles-medicion-promedio{
@@ -590,6 +600,124 @@
     border-radius: 15px;
     box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.15);
 }
+
+/* POPUP DE MI SENSOR */
+
+.popup-info-container{
+    display: none;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    background-color: rgba(0, 0, 0, 0.25);
+    position: absolute;
+    top: 0;
+    left: 0;
+
+}
+
+.popup-container{
+    width: 50%;
+    height: auto;
+    max-width: 800px;
+    max-height: 600px;
+    background-color: white;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.11);
+    display: flex;
+    flex-direction: column;
+    padding: 25px;
+    border-radius: 15px;
+    margin: auto;
+    position: relative;
+    gap: 10px;
+
+}
+
+.popup-container button{
+    width: 21px;
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    opacity: 60%;
+}
+
+.popup-container h2{
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(12px, 1vw, 1.2rem);
+    font-weight: 600;
+}
+
+.popup-container p{
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(11px, 1vw, 0.9rem);
+    font-weight: 400;
+}
+
+.top-containers{
+    width: 100%;
+    height: 50%;
+    display: flex;
+    gap: 10px;
+}
+
+.estado-info-container {
+    width: 50%;
+    height: 100%;
+    min-height: 230px;
+    padding: 20px;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.11);
+    text-align: center;
+    border-radius: 15px;
+}
+
+.distancia-info-container{
+    width: 50%;
+    height: 100%;
+    min-height: 230px;
+    padding: 20px;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.11);
+    text-align: center;
+    border-radius: 15px;
+}
+
+.bottom-containers{
+    display: flex;
+    width: 100%;
+    height: 50%;
+    gap: 10px;
+}
+
+.medicion-info-container{
+    width: 50%;
+    height: 100%;
+    min-height: 230px;
+    padding: 20px;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.11);
+    text-align: center;
+    border-radius: 15px;
+}
+
+.promedio-info-container{
+    width: 50%;
+    height: 100%;
+    min-height: 230px;
+    padding: 20px;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.11);
+    text-align: center;
+    border-radius: 15px;
+}
+
+
+
+.popup-container div img{
+    margin: 10px 0 10px 0;
+    height: clamp(25px, 2vw, 30px);
+}
+
+
+
 
 
 @media (max-width: 904px) {
@@ -672,12 +800,20 @@
         gap: 8px;
     }
 
+    .promedio-container{
+        gap: 0;
+    }
+
     .estado-container p{
         margin-top: -2px;
     }
 
     .grafica-container{
         height: 70%;
+    }
+
+    .popup-container{
+        width: 90%;
     }
 
 
@@ -689,12 +825,38 @@
         font-size: clamp(9px, 1vw, 0.8rem);
     }
 
+    .estado-titulo-container h4{
+        font-size: clamp(9.5px, 1vw, 0.8rem);
+
+    }
+
     .medicion-titulo-container h4{
-        font-size: clamp(10.5px, 1vw, 0.8rem);
+        font-size: clamp(9px, 1vw, 0.8rem);
     }
 
     .promedio-titulo-container h4{
-        font-size: clamp(10.2px, 1vw, 0.8rem);
+        font-size: clamp(9px, 1vw, 0.8rem);
+    }
+
+    .medicion-medio-container{
+        margin-top: -3px;
+    }
+
+    .promedio-medio-container{
+        margin-top: 2px;
+    }
+
+    .categoria-medicion-container .color-medicion{
+        width: clamp(12px, 1vw, 15px);
+        height: clamp(12px, 1vw, 15px);
+    }
+
+    .categoria-medicion-container .texto-medicion{
+        margin-top: -2px;
+    }
+
+    .categoria-medicion-container{
+        margin-top: -2px;
     }
 
 }

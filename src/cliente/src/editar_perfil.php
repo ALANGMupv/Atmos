@@ -94,6 +94,8 @@ $active  = 'perfil'; // activa el icono del perfil
   </div>
 </div>
 
+
+
 <script>
   // Variable global accesible desde editar_perfil.js
   const id_usuario = <?php echo json_encode($usuario['id'] ?? null); ?>;
