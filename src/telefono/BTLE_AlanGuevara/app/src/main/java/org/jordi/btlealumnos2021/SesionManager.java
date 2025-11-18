@@ -38,4 +38,28 @@ public class SesionManager {
             ex.printStackTrace();
         }
     }
+
+    public static String getNombre(Context ctx) {
+        SharedPreferences prefs = ctx.getSharedPreferences("SESION", Context.MODE_PRIVATE);
+        return prefs.getString("nombre", "");
+    }
+
+    /**
+     * Nombre Método: getIdUsuario
+     * Descripción: Devuelve el id del usuario guardado en la sesión local.
+     *
+     * Entradas:
+     *   - ctx → contexto para acceder a SharedPreferences
+     *
+     * Salidas:
+     *   - int → ID del usuario (o -1 si no existe)
+     *
+     * Autora: Nerea Aguilar Forés
+     */
+    public static int getIdUsuario(Context ctx) {
+        SharedPreferences prefs = ctx.getSharedPreferences("SESION", Context.MODE_PRIVATE);
+        return prefs.getInt("id_usuario", -1);
+    }
+
+
 }

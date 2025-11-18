@@ -8,6 +8,7 @@ import android.util.Patterns;
 import android.view.MotionEvent;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,8 +34,7 @@ public class InicioSesionActivity extends AppCompatActivity {
     // Campos de texto y botón de login
     private EditText emailCampo, contrasenyaCampo;
     private Button loginBoton;
-    private TextView olvidasteContrasenya;
-
+    private TextView olvidasteContrasenya, enlaceRegistro;
     private RequestQueue queue;
 
     @Override
@@ -53,6 +53,13 @@ public class InicioSesionActivity extends AppCompatActivity {
         olvidasteContrasenya = findViewById(R.id.enlaceReestablecer);
         olvidasteContrasenya.setOnClickListener(v -> {
             Intent intent = new Intent(InicioSesionActivity.this, RestablecerContrasenaActivity.class);
+            startActivity(intent);
+        });
+
+        // Redirección a la página de Registro
+        enlaceRegistro = findViewById(R.id.tvRegistrarme);
+        enlaceRegistro.setOnClickListener(v -> {
+            Intent intent = new Intent(InicioSesionActivity.this, RegistroActivity.class);
             startActivity(intent);
         });
 

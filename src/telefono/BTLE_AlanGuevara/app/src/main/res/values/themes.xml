@@ -3,6 +3,9 @@
     <style name="Base.Theme.BTLE_AlanGuevara" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="android:statusBarColor">@color/white</item>
+        <item name="android:windowLightStatusBar">true</item>
+
     </style>
 
     <style name="Theme.BTLE_AlanGuevara" parent="Base.Theme.BTLE_AlanGuevara" />
