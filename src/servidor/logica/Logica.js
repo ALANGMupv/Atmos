@@ -2,7 +2,12 @@
  * Logica.js
  * -------------------------
  * Capa de LÓGICA DE NEGOCIO.
+ *
  * Define cómo la aplicación interactúa con la base de datos MySQL.
+ * Sus responsabilidades principales son:
+ *   - Crear y gestionar el pool de conexiones.
+ *   - Ejecutar las consultas SQL necesarias.
+ *   - Proveer métodos reutilizables para la capa REST (ReglasREST.js).
  *
  * Autores: Alan Guevara Martínez y Santiago Fuenmayor Ruiz
  */
@@ -11,8 +16,18 @@ const mysql = require("mysql2/promise");
 const bcrypt = require("bcrypt");
 
 class Logica {
+
     // --------------------------------------------------------------------------
     // Constructor
+    // --------------------------------------------------------------------------
+    // Descripción:
+    //   Inicializa la clase y crea un pool de conexiones MySQL.
+    //
+    // Parámetros:
+    //   - config {object} : configuración de conexión MySQL.
+    //
+    // Devuelve:
+    //   - Instancia inicializada de la clase Logica.
     // --------------------------------------------------------------------------
     constructor(config) {
         this.config = config;
@@ -20,230 +35,405 @@ class Logica {
     }
 
     // --------------------------------------------------------------------------
-    // MÉTODOS DE MEDIDAS
+    // Método: guardarMedida()
     // --------------------------------------------------------------------------
-    async guardarMedida(id_placa, tipo, valor, latitud = 0, longitud = 0) {
+    // Descripción:
+    //   Inserta una nueva medida en la base de datos.
+    //
+    // Parámetros:
+    //   - id_placa {string}   : identificador único del sensor.
+    //   - tipo {number}       : tipo de medida.
+    //   - valor {number}      : valor numérico registrado.
+    //   - latitud {number}    : latitud GPS (opcional).
+    //   - longitud {number}   : longitud GPS (opcional).
+    //
+    // Devuelve:
+    //   - {Promise<Object>} : objeto con la fila insertada.
+    // --------------------------------------------------------------------------
+    async guardarMedida(id_placa, tipo, valor, latitud = 0.0, longitud = 0.0) {
         const conn = await this.pool.getConnection();
         try {
+            // Insertar en base de datos
             const sqlInsert = `
-        INSERT INTO medida (id_placa, tipo, valor, latitud, longitud, fecha_hora)
-        VALUES (?, ?, ?, ?, ?, NOW())
-      `;
+                INSERT INTO medida (id_placa, tipo, valor, latitud, longitud, fecha_hora)
+                VALUES (?, ?, ?, ?, ?, NOW())
+            `;
             const [resultado] = await conn.execute(sqlInsert, [
-                id_placa,
-                tipo,
-                valor,
-                latitud,
-                longitud
+                id_placa, tipo, valor, latitud, longitud
             ]);
 
+            // Recuperar la fila recién insertada
             const sqlSelect = `SELECT * FROM medida WHERE id_medida = ?`;
             const [filas] = await conn.execute(sqlSelect, [resultado.insertId]);
+
             return filas[0];
+
         } finally {
             conn.release();
         }
     }
 
+    // --------------------------------------------------------------------------
+    // Método: listarMedidas()
+    // --------------------------------------------------------------------------
+    // Descripción:
+    //   Devuelve las últimas medidas registradas.
+    //
+    // Parámetros:
+    //   - limit {number} : número máximo de filas a devolver (máx. 500).
+    //
+    // Devuelve:
+    //   - {Promise<Array>} : lista de medidas.
+    // --------------------------------------------------------------------------
     async listarMedidas(limit = 50) {
         const conn = await this.pool.getConnection();
         try {
-            const lim = Math.max(1, Math.min(parseInt(limit || 50, 10), 500));
+            const lim = Math.max(1, Math.min(parseInt(limit) || 50, 500));
+
             const sql = `
-        SELECT id_medida, id_placa, tipo, valor, latitud, longitud, fecha_hora
-        FROM medida
-        ORDER BY fecha_hora DESC, id_medida DESC
-        LIMIT ?
-      `;
-            const [filas] = await conn.execute(sql, [lim]);
-            return filas;
+                SELECT id_medida, id_placa, tipo, valor, latitud, longitud, fecha_hora
+                FROM medida
+                ORDER BY fecha_hora DESC, id_medida DESC
+                LIMIT ?
+            `;
+            const [rows] = await conn.execute(sql, [lim]);
+
+            return rows;
+
         } finally {
             conn.release();
         }
     }
 
     // --------------------------------------------------------------------------
-    // MÉTODOS DE USUARIOS
+    // Método: guardarUsuario()
+    // --------------------------------------------------------------------------
+    // Descripción:
+    //   Inserta un nuevo usuario autenticado con Firebase.
+    //
+    // Parámetros:
+    //   - uid_firebase {string} : identificador del usuario en Firebase.
+    //   - nombre {string}       : nombre del usuario.
+    //   - apellidos {string}    : apellidos del usuario.
+    //   - email {string}        : correo electrónico.
+    //   - contrasenaPlano {string} : contraseña sin cifrar.
+    //
+    // Devuelve:
+    //   - {Promise<Object>} : registro insertado del usuario.
     // --------------------------------------------------------------------------
     async guardarUsuario(uid_firebase, nombre, apellidos, email, contrasenaPlano) {
+
         const conn = await this.pool.getConnection();
         try {
             const hash = await bcrypt.hash(contrasenaPlano, 10);
-            const rolPorDefecto = 1;
 
             const sql = `
-        INSERT INTO usuario (uid_firebase, nombre, apellidos, email, contrasena, id_rol, fecha_registro, estado)
-        VALUES (?, ?, ?, ?, ?, ?, NOW(), 0)
-      `;
+                INSERT INTO usuario (uid_firebase, nombre, apellidos, email, contrasena, id_rol, fecha_registro, estado)
+                VALUES (?, ?, ?, ?, ?, 1, NOW(), 0)
+            `;
+
             const [resultado] = await conn.execute(sql, [
-                uid_firebase,
-                nombre,
-                apellidos,
-                email,
-                hash,
-                rolPorDefecto
+                uid_firebase, nombre, apellidos, email, hash
             ]);
 
             const [filas] = await conn.execute(
                 "SELECT * FROM usuario WHERE id_usuario = ?",
                 [resultado.insertId]
             );
+
             return filas[0];
+
         } finally {
             conn.release();
         }
     }
 
+    // --------------------------------------------------------------------------
+    // Método: actualizarEstadoVerificado()
+    // --------------------------------------------------------------------------
+    // Descripción:
+    //   Establece estado = 1 para un usuario verificado.
+    //
+    // Parámetros:
+    //   - uid_firebase {string} : identificador del usuario en Firebase.
+    //
+    // Devuelve:
+    //   - {Promise<void>}
+    // --------------------------------------------------------------------------
     async actualizarEstadoVerificado(uid_firebase) {
         const conn = await this.pool.getConnection();
         try {
-            const sql = `
-        UPDATE usuario
-        SET estado = 1
-        WHERE uid_firebase = ?
-      `;
-            await conn.execute(sql, [uid_firebase]);
-            console.log("Usuario marcado como verificado en MySQL:", uid_firebase);
+            await conn.execute(
+                `UPDATE usuario SET estado = 1 WHERE uid_firebase = ?`,
+                [uid_firebase]
+            );
         } finally {
             conn.release();
         }
     }
 
+    // --------------------------------------------------------------------------
+    // Método: buscarUsuarioPorEmail()
+    // --------------------------------------------------------------------------
+    // Descripción:
+    //   Busca un usuario por su email.
+    //
+    // Parámetros:
+    //   - email {string}
+    //
+    // Devuelve:
+    //   - {Promise<Object|null>} : usuario o null.
+    // --------------------------------------------------------------------------
     async buscarUsuarioPorEmail(email) {
         const conn = await this.pool.getConnection();
         try {
-            const [filas] = await conn.execute(
+            const [rows] = await conn.execute(
                 "SELECT * FROM usuario WHERE email = ? LIMIT 1",
                 [email]
             );
-            return filas[0];
+
+            return rows[0] || null;
+
         } finally {
             conn.release();
         }
     }
 
     // --------------------------------------------------------------------------
-    // Actualización y verificación de contraseña
-    // Autor: Nerea Aguilar Forés
-    // -----------------------------------------------------------------------------
+    // Método: buscarUsuarioPorUID()
+    // --------------------------------------------------------------------------
     // Descripción:
-    //   Actualiza los datos de un usuario en la base de datos.
+    //   Busca un usuario por UID de Firebase.
     //
     // Parámetros:
-    //   {N} id_usuario - Identificador único del usuario a actualizar.
-    //   {object} datos      - Objeto con los nuevos valores del usuario:
-    //                                { nombre, apellidos, email, contrasena }
+    //   - uid {string}
     //
     // Devuelve:
-    //   {Promise<boolean>} - true si se actualiza correctamente, false en caso contrario.
+    //   - {Promise<Object|null>}
     // --------------------------------------------------------------------------
-    async actualizarUsuario(id_usuario, { nombre, apellidos, email, contrasena }) {
+    async buscarUsuarioPorUID(uid) {
         const conn = await this.pool.getConnection();
         try {
-            let sql, params;
-            if (contrasena) {
-                sql =
-                    "UPDATE usuario SET nombre=?, apellidos=?, email=?, contrasena=? WHERE id_usuario=?";
-                params = [nombre, apellidos, email, contrasena, id_usuario];
-            } else {
-                sql =
-                    "UPDATE usuario SET nombre=?, apellidos=?, email=? WHERE id_usuario=?";
-                params = [nombre, apellidos, email, id_usuario];
-            }
+            const [rows] = await conn.execute(
+                "SELECT * FROM usuario WHERE uid_firebase = ? LIMIT 1",
+                [uid]
+            );
 
-            const [result] = await conn.query(sql, params);
-            return result.affectedRows > 0;
-        } catch (err) {
-            console.error("Error actualizando usuario:", err);
-            throw err;
+            return rows[0] || null;
+
         } finally {
             conn.release();
         }
     }
 
-    // -----------------------------------------------------------------------------
-    // Obtener usuario por ID
-    // Autor: Nerea Aguilar Forés
-    // -----------------------------------------------------------------------------
+    // --------------------------------------------------------------------------
+    // Método: actualizarUsuario()
+    // --------------------------------------------------------------------------
     // Descripción:
-    //   Recupera todos los datos de un usuario a partir de su identificador.
-    //   Este método se usa principalmente para comprobar la contraseña actual
-    //   antes de permitir una actualización.
+    //   Actualiza campos de un usuario.
     //
     // Parámetros:
-    //   {N} id_usuario - Identificador único del usuario a buscar.
+    //   - id_usuario {number}
+    //   - datos {object} : { nombre, apellidos, email }
     //
     // Devuelve:
-    //   {Promise<Object|null>} - Objeto usuario si existe, o null si no se encuentra.
-    // -----------------------------------------------------------------------------
+    //   - {Promise<boolean>} : true si se actualizó correctamente.
+    // --------------------------------------------------------------------------
+    async actualizarUsuario(id_usuario, { nombre, apellidos, email }) {
+        const conn = await this.pool.getConnection();
+        try {
+            const sql = `
+                UPDATE usuario
+                SET nombre = ?, apellidos = ?, email = ?
+                WHERE id_usuario = ?
+            `;
+
+            const [result] = await conn.execute(sql, [
+                nombre, apellidos, email, id_usuario
+            ]);
+
+            return result.affectedRows > 0;
+
+        } finally {
+            conn.release();
+        }
+    }
+
+    // --------------------------------------------------------------------------
+    // Método: obtenerUsuarioPorId()
+    // --------------------------------------------------------------------------
+    // Descripción:
+    //   Recupera un usuario por su ID.
+    //
+    // Parámetros:
+    //   - id_usuario {number}
+    //
+    // Devuelve:
+    //   - {Promise<Object|null>}
+    // --------------------------------------------------------------------------
     async obtenerUsuarioPorId(id_usuario) {
         const conn = await this.pool.getConnection();
         try {
-            const [rows] = await conn.query(
+            const [rows] = await conn.execute(
                 "SELECT * FROM usuario WHERE id_usuario = ?",
                 [id_usuario]
             );
+
             return rows[0] || null;
+
         } finally {
             conn.release();
         }
     }
 
-    // -----------------------------------------------------------------------------
-    // Funcionalidad: Vincular una placa a un usuario
-    // Autor: Nerea Aguilar Forés
-    // -----------------------------------------------------------------------------
+    // --------------------------------------------------------------------------
+    // Método: vincularPlacaAUsuario()
+    // --------------------------------------------------------------------------
     // Descripción:
-    //   Asocia una placa existente a un usuario determinado en la base de datos.
-    //   Si la placa ya está asignada a otro usuario, la operación no se realiza.
+    //   Asocia una placa a un usuario.
     //
     // Parámetros:
-    //  {N} id_usuario - ID del usuario que desea vincular la placa.
-    //  {string} id_placa   - ID o código único de la placa.
+    //   - id_usuario {number}
+    //   - id_placa {string}
     //
     // Devuelve:
-    //   {Promise<Object>} - Objeto con el estado de la operación.
-    //                               { status: "ok", mensaje: "..." } o error 
-    // -----------------------------------------------------------------------------
-    //
+    //   - {Promise<Object>} : { status, mensaje }
+    // --------------------------------------------------------------------------
     async vincularPlacaAUsuario(id_usuario, id_placa) {
+
         const conn = await this.pool.getConnection();
         try {
-            // Verificar si la placa existe
+            // Verificar placa
             const [placas] = await conn.query(
                 "SELECT asignada FROM placa WHERE id_placa = ?",
                 [id_placa]
             );
+
             if (placas.length === 0) throw new Error("Placa no encontrada");
-
-            // Comprobar si ya está asignada
             if (placas[0].asignada === 1)
-                throw new Error("La placa ya está asignada a otro usuario");
+                throw new Error("La placa ya está asignada");
 
-            // Insertar la relación usuario placa
+            // Insertar relación
             await conn.query(
                 "INSERT INTO usuarioplaca (id_placa, id_usuario) VALUES (?, ?)",
                 [id_placa, id_usuario]
             );
 
-            // Actualizar el estado de la placa a asignada
+            // Marcar placa como asignada
             await conn.query(
                 "UPDATE placa SET asignada = 1 WHERE id_placa = ?",
                 [id_placa]
             );
 
-            // Resultado correcto
             return { status: "ok", mensaje: "Placa vinculada correctamente" };
 
-        } catch (err) {
-            console.error("Error vinculando placa:", err);
-            throw err;
         } finally {
             conn.release();
         }
-    
     }
 
-}
+    // --------------------------------------------------------------------------
+    // Método: obtenerPlacaDeUsuario()
+    // --------------------------------------------------------------------------
+    // Descripción:
+    //   Devuelve la placa vinculada a un usuario.
+    //
+    // Parámetros:
+    //   - id_usuario {number}
+    //
+    // Devuelve:
+    //   - {Promise<string|null>} : id de la placa o null.
+    // --------------------------------------------------------------------------
+    async obtenerPlacaDeUsuario(id_usuario) {
+        const conn = await this.pool.getConnection();
+        try {
+            const sql = `
+                SELECT id_placa
+                FROM usuarioplaca
+                WHERE id_usuario = ?
+                LIMIT 1
+            `;
 
+            const [rows] = await conn.query(sql, [id_usuario]);
+
+            return rows.length ? rows[0].id_placa : null;
+
+        } finally {
+            conn.release();
+        }
+    }
+
+    // --------------------------------------------------------------------------
+    // Método: obtenerUltimaMedidaPorGas()
+    // --------------------------------------------------------------------------
+    // Descripción:
+    //   Recupera la última medición registrada de un TIPO DE GAS concreto para
+    //   una placa determinada.
+    //
+    // Parámetros:
+    //   - id_placa {string} : identificador único de la placa.
+    //   - tipo     {number} : código del tipo de gas (11,12,13,14).
+    //
+    // Devuelve:
+    //   - {Promise<Object|null>} : objeto con valor y fecha_hora,
+    //                              o null si no existen mediciones.
+    // --------------------------------------------------------------------------
+        async obtenerUltimaMedidaPorGas(id_placa, tipo) {
+            const conn = await this.pool.getConnection();
+            try {
+                const sql = `
+                SELECT valor, fecha_hora
+                  FROM medida
+                 WHERE id_placa = ? 
+                   AND tipo = ?
+              ORDER BY fecha_hora DESC, id_medida DESC
+                 LIMIT 1
+            `;
+
+                const [rows] = await conn.query(sql, [id_placa, tipo]);
+
+                return rows.length ? rows[0] : null;
+            } finally {
+                conn.release();
+            }
+        }
+
+    // --------------------------------------------------------------------------
+    // Método: obtenerPromedioPorGasHoy()
+    // --------------------------------------------------------------------------
+    // Descripción:
+    //   Calcula el promedio de las mediciones de un gas concreto (por tipo)
+    //   registradas HOY para una placa determinada.
+    //
+    // Parámetros:
+    //   - id_placa {string} : identificador único de la placa.
+    //   - tipo     {number} : código del tipo de gas (11,12,13,14).
+    //
+    // Devuelve:
+    //   - {Promise<number|null>} : promedio numérico o null si no hay datos hoy.
+    // --------------------------------------------------------------------------
+        async obtenerPromedioPorGasHoy(id_placa, tipo) {
+            const conn = await this.pool.getConnection();
+            try {
+                const sql = `
+                SELECT AVG(valor) AS promedio
+                  FROM medida
+                 WHERE id_placa = ?
+                   AND tipo = ?
+                   AND DATE(fecha_hora) = CURDATE()
+            `;
+
+                const [rows] = await conn.query(sql, [id_placa, tipo]);
+
+                return rows[0].promedio !== null ? Number(rows[0].promedio) : null;
+            } finally {
+                conn.release();
+            }
+        }
+
+    }
+
+// --------------------------------------------------------------------------
+// Exportación de la clase
+// --------------------------------------------------------------------------
 module.exports = Logica;
