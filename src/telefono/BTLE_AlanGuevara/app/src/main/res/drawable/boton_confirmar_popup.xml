@@ -2,6 +2,8 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
 
+    <solid android:color="#D36565"/> <!-- ROJO DEL POPUP -->
+
     <corners android:radius="28dp"/>
-    <solid android:color="#D55757"/>
+
 </shape>
