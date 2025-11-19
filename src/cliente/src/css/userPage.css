@@ -280,12 +280,46 @@
 .miSensor-titulo-container{
     display: flex;
     gap: 5px;
+    margin: 2px 0 0 2px;
 }
 .miSensor-container h3{
     font-family: 'Open Sans', sans-serif;
     font-size: clamp(13px, 1vw, 14px);
-    margin-bottom: -5px;
     font-weight: 500;
+}
+
+/* Selector de gases contaminantes */
+
+.selector-gases-container{
+    width: 100%;
+    height: 36px;
+    display: flex;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.11);
+    padding: 5px 10px;
+    margin: -5px 0 2px 0;
+}
+
+.selector-gases-container select{
+    width: 100%;
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(12px, 1vw, 13px);
+    font-weight: 400;
+    color: #6c6c6c;
+    border: none;
+}
+
+.selector-gases-container select option{
+    border: none;
+    border-radius: 15px;
+    font-weight: 600;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.11);
+}
+
+.selector-gases-container select:focus{
+    outline: none;
+    border: none;
 }
 
 .info-miSensor-mobile{

@@ -1,4 +1,5 @@
 <?php
+
 session_start();
 
 // -------------------------------
@@ -11,6 +12,7 @@ if (!isset($_SESSION['usuario'])) {
 
 // 2. Guardar datos del usuario
 $usuario = $_SESSION['usuario'];
+
 ?>
 
 <!doctype html>
@@ -35,19 +37,24 @@ $usuario = $_SESSION['usuario'];
 <body>
 
 <?php
-include __DIR__ . '/partials/header.php';
+include __DIR__ . '/partials/headerLogueado.php';
 ?>
 
 <main>
+
     <section class="home-container">
 
+        <!--Sección de saludo al usuario -->
         <section class="saludo-container">
             <h2>¡Hola, <?= htmlspecialchars($usuario['nombre']); ?>!</h2>
             <p>así se ve el aire que respiras hoy</p>
         </section>
 
+        <!--Sección de Paneles informativos -->
         <section class="panel-container">
             <div class="left-container">
+
+                <!--Sección de Mapas -->
                 <div class="mapa-container">
                     <h3>Mapa</h3>
                     <div class="mapa">
@@ -64,6 +71,7 @@ include __DIR__ . '/partials/header.php';
                     <button>Ver Mapa</button>
                 </div>
 
+                <!--Sección de Menú de acciones -->
                 <div class="menu-container">
                     <h3>Menú de acciones</h3>
                     <div class="botones-menu-container">
@@ -75,19 +83,34 @@ include __DIR__ . '/partials/header.php';
             </div>
 
             <div class="right-container">
+
+                <!--Sección de panel de Mi Sensor -->
                 <div class="miSensor-container">
                     <div class="miSensor-titulo-container">
                         <h3>Mi Sensor</h3>
                         <button data-popup="popupMiSensor" class="informacion-icono"><img src="img/informacionIcon.svg" alt=""></button>
                     </div>
 
+                    <div class="selector-gases-container">
+                            <select id="gasSelector">
+                                <option value="" disabled selected hidden>Selecciona un gas contaminante</option>
+                                <option value="NO₂">NO₂</option>
+                                <option value="CO">CO</option>
+                                <option value="O₃">O₃</option>
+                                <option value="SO₂">SO₂</option>
+                            </select>
+                    </div>
+
                     <div class="info-miSensor-mobile">
+
+                        <!--Sección de contenedor de distancia y estado del sensor -->
                         <div class="distancia_estado-container">
                             <div class="estado-container">
                                 <div class="estado-titulo-container"><h4>Estado del Sensor</h4></div>
                                 <img class="estado-icono" src="img/estadoActivoSensorIcono.svg" alt="">
                                 <p>Sensor activo</p>
                             </div>
+
                             <div class="distancia-container">
                                 <div class="distancia-titulo-container"><h4>Distancia al sensor</h4></div>
                                 <img class="distancia-icono" src="img/distanciaIcono.svg" alt="">
@@ -95,7 +118,9 @@ include __DIR__ . '/partials/header.php';
                             </div>
                         </div>
 
+                        <!--Sección de contenedor de última medicion del sensor y promedio de contaminación del día -->
                         <div class="medicion_promedio-container">
+
                             <div class="medicion-container">
                                 <div class="medicion-titulo-container">
                                     <div class="titulo-medicion">
@@ -106,7 +131,7 @@ include __DIR__ . '/partials/header.php';
                                 <div class="medicion-medio-container">
                                     <p class="medicion-medicion">0.02</p>
                                     <div class="detalles-medicion">
-                                        <p class="tipo-medicion">NO2</p>
+                                        <p class="tipo-medicion" id="gasUltima">NO2</p>
                                         <p class="unidad-medicion">ppm</p>
                                     </div>
                                 </div>
@@ -125,20 +150,21 @@ include __DIR__ . '/partials/header.php';
                                 <div class="promedio-medio-container">
                                     <p class="medicion-promedio">0.10</p>
                                     <div class="detalles-medicion-promedio">
-                                        <p class="tipo-promedio">NO2</p>
+                                        <p class="tipo-promedio" id="gasPromedio">NO2</p>
                                         <p class="unidad-promedio">ppm</p>
                                     </div>
                                 </div>
-
                             </div>
                         </div>
                     </div>
 
+                    <!--Sección de contenedor de gráfica de calidad del aire -->
                     <div class="grafica-container"></div>
                 </div>
             </div>
         </section>
 
+        <!--POPUP DE INFORMACIÓN DE MI SENSOR -->
         <section id="popupMiSensor" class="popup-info-container">
             <div class="popup-container">
                 <button class="cerrar-popup">
@@ -171,10 +197,13 @@ include __DIR__ . '/partials/header.php';
                 </div>
             </div>
         </section>
+
+        <!--POPUP DE INFORMACIÓN GRÁFICA DE CALIDAD DEL AIRE -->
+
     </section>
 </main>
 
-<!-- ✅ Carga del script de User Page -->
+<!-- Carga del script de User Page -->
 <script type="module" src="js/userPage.js"></script>
 
 </body>
