@@ -3,6 +3,7 @@ package org.jordi.btlealumnos2021;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -71,6 +72,20 @@ public class UserPageActivity extends FuncionesBaseActivity {
 
         spinner.setAdapter(adapter);
 
+        // =========================================================
+        // Cada vez que el usuario cambie el gas en el spinner,
+        // refrescamos los valores automáticamente
+        // =========================================================
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+                recargarEstadoUsuario();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
+
 
         // ---------------------------------------------------------------
         // POPUP
@@ -120,6 +135,36 @@ public class UserPageActivity extends FuncionesBaseActivity {
     }
 
     /**
+     * Nombre Método: tipoSeleccionado
+     * Descripción: Este método devuelve el tipo correcto según la posición del spinner
+     * Autor: Alan Guevara Martínez
+     * Fecha: 19/11/2025
+     */
+    private int tipoSeleccionado() {
+
+        int pos = spinner.getSelectedItemPosition();
+
+        switch (pos) {
+
+            case 0:
+                return 11; // NO2
+
+            case 1:
+                return 12; // CO
+
+            case 2:
+                return 13; // O3
+
+            case 3:
+                return 14; // SO3
+
+            default:
+                return 11; // Valor seguro
+        }
+    }
+
+
+    /**
      * Nombre Método: onResume
      * Autor: Alan Guevara Martínez
      * Fecha: 18/11/2025
@@ -127,6 +172,7 @@ public class UserPageActivity extends FuncionesBaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        recargarEstadoUsuario();;
     }
 
     /**
@@ -184,6 +230,7 @@ public class UserPageActivity extends FuncionesBaseActivity {
         //   - Si sí → ¿cuál es la última medida y el promedio?
         LogicaFake.resumenUsuario(
                 idUsuario,
+                tipoSeleccionado(),   // ← GAS SELECCIONADO
                 queue,
                 new LogicaFake.ResumenUsuarioCallback() {
 

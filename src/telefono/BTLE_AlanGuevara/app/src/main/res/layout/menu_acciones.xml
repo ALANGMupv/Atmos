@@ -43,6 +43,7 @@
 
             <!-- CARD MANUAL USUARIO -->
             <LinearLayout
+                android:id="@+id/cardManualUsuario"
                 android:layout_width="match_parent"
                 android:layout_height="84dp"
                 android:orientation="horizontal"
@@ -84,6 +85,7 @@
 
             <!-- CARD INCIDENCIAS -->
             <LinearLayout
+                android:id="@+id/cardIncidencias"
                 android:layout_width="match_parent"
                 android:layout_height="84dp"
                 android:orientation="horizontal"
@@ -125,6 +127,7 @@
 
             <!-- CARD DESVINCULAR SENSOR -->
             <LinearLayout
+                android:id="@+id/cardDesvincularSensor"
                 android:layout_width="match_parent"
                 android:layout_height="84dp"
                 android:orientation="horizontal"
