@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#80000000">
+
+    <!-- TARJETA PRINCIPAL -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_gravity="center"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:padding="24dp"
+        android:background="@drawable/bg_popup_white">
+
+        <!-- ICONO -->
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@drawable/sensor_no_vinculado"
+            android:contentDescription="icono alerta" />
+
+        <!-- TITULO -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="¿Estás seguro que deseas\ndesvincular el sensor?"
+            android:textColor="#0F1F33"
+            android:textSize="20sp"
+            android:fontFamily="@font/roboto_bold"
+            android:gravity="center"
+            android:layout_marginTop="20dp" />
+
+        <!-- TEXTO SUBTITULO -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Dejarás de tener acceso a su\ninformación hasta volver a conectarlo"
+            android:textColor="#555555"
+            android:textSize="16sp"
+            android:fontFamily="@font/roboto"
+            android:gravity="center"
+            android:layout_marginTop="10dp" />
+
+        <!-- BOTÓN DESVINCULAR (ROJO) -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnDesvincularConfirmar"
+            android:layout_width="220dp"
+            android:layout_height="52dp"
+            android:layout_marginTop="24dp"
+            android:backgroundTint="#D36565"
+            android:background="@drawable/boton_confirmar_popup"
+            android:text="Desvincular"
+            android:textColor="#FFFFFF"
+            android:fontFamily="@font/roboto_bold"
+            android:textSize="16sp"
+            android:textAllCaps="false" />
+
+        <!-- BOTÓN CANCELAR (BORDE VERDE) -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnDesvincularCancelar"
+            android:layout_width="220dp"
+            android:layout_height="52dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/boton_cancelar_popup"
+            android:text="Cancelar"
+            android:textColor="#059669"
+            android:fontFamily="@font/roboto_bold"
+            android:textSize="16sp"
+            android:textAllCaps="false" />
+
+    </LinearLayout>
+
+</FrameLayout>
