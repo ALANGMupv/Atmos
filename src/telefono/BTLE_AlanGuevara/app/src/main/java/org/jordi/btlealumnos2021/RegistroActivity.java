@@ -35,7 +35,7 @@ import com.google.firebase.auth.FirebaseUser;
  * Autora: Nerea Aguilar Forés
  * Fecha: 2025
  */
-public class RegistroActivity extends AppCompatActivity {
+public class RegistroActivity extends FuncionesBaseActivity {
 
     // Campos del formulario y el botón
     private EditText nombreCampo, apellidosCampo, emailCampo, contrasenyaCampo, contrasenyaRepCampo;
@@ -102,8 +102,8 @@ public class RegistroActivity extends AppCompatActivity {
 
         //----------------------------------------------------
         // Mostrar/ocultar contraseña al pulsar ojo
-        enablePasswordToggle(contrasenyaCampo);
-        enablePasswordToggle(contrasenyaRepCampo);
+        habilitarToggleContrasena(contrasenyaCampo);
+        habilitarToggleContrasena(contrasenyaRepCampo);
     }
 
     /**
@@ -236,40 +236,5 @@ public class RegistroActivity extends AppCompatActivity {
                     }
                 }
         );
-    }
-
-
-    /**
-     * Nombre Método: enablePasswordToggle
-     * Descripción: Permite mostrar u ocultar la contraseña al pulsar el icono del ojo.
-     * Entradas:
-     *  - editText: Campo EditText sobre el que aplicar el comportamiento.
-     * Salidas:
-     *  - No retorna nada. Cambia la visibilidad del texto.
-     * Autora: Nerea Aguilar Forés
-     */
-    private void enablePasswordToggle(EditText editText) {
-        editText.setOnTouchListener((v, event) -> {
-
-            if (event.getAction() != MotionEvent.ACTION_UP) return false;
-
-            int drawableRight = editText.getWidth() - editText.getCompoundPaddingRight();
-
-            if (event.getX() >= drawableRight) {
-
-                int cursorPos = editText.getSelectionEnd();
-
-                if (editText.getTransformationMethod() instanceof PasswordTransformationMethod) {
-                    editText.setTransformationMethod(null); // Mostrar
-                } else {
-                    editText.setTransformationMethod(PasswordTransformationMethod.getInstance()); // Ocultar
-                }
-
-                editText.setSelection(cursorPos);
-                return true;
-            }
-
-            return false;
-        });
     }
 }

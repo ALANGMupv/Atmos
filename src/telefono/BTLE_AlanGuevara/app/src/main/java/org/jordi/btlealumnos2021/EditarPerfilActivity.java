@@ -137,63 +137,6 @@ public class EditarPerfilActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * Nombre Método: habilitarToggleContrasena
-     * Descripción:
-     *   Permite alternar entre mostrar y ocultar la contraseña.
-     *   Además cambia el icono del ojo (abierto/cerrado).
-     *
-     * Entradas:
-     *  - editText: EditText con drawableEnd del ojo.
-     */
-    private void habilitarToggleContrasena(final EditText editText) {
-        if (editText == null) return;
-
-        editText.setOnTouchListener((v, event) -> {
-
-            if (event.getAction() != MotionEvent.ACTION_UP) return false;
-
-            final int DRAWABLE_END = 2;
-            Drawable drawableEnd = editText.getCompoundDrawables()[DRAWABLE_END];
-
-            if (drawableEnd == null) return false;
-
-            int width = drawableEnd.getBounds().width();
-            int touchArea = editText.getWidth() - width - editText.getPaddingEnd();
-
-            // ¿Ha pulsado en el icono?
-            if (event.getX() >= touchArea) {
-
-                int cursor = editText.getSelectionEnd();
-
-                // Si está oculta → mostrar y poner icono ojo abierto
-                if (editText.getTransformationMethod() instanceof PasswordTransformationMethod) {
-                    editText.setTransformationMethod(null);
-                    editText.setCompoundDrawablesWithIntrinsicBounds(
-                            null, null,
-                            getResources().getDrawable(R.drawable.ic_eye),  //ojo abierto
-                            null
-                    );
-                }
-                // Si está visible → ocultar y poner icono ojo cerrado
-                else {
-                    editText.setTransformationMethod(PasswordTransformationMethod.getInstance());
-                    editText.setCompoundDrawablesWithIntrinsicBounds(
-                            null, null,
-                            getResources().getDrawable(R.drawable.ic_eye_close), //ojo cerrado
-                            null
-                    );
-                }
-
-                editText.setSelection(cursor);
-                return true;
-            }
-
-            return false;
-        });
-    }
-
-
-    /**
      * Nombre Método: actualizarPerfil
      * Descripción:
      *   Método principal llamado al pulsar el botón

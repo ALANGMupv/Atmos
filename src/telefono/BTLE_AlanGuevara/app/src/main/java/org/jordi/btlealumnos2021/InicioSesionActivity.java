@@ -29,7 +29,7 @@ import org.json.JSONObject;
  * Autora: Nerea Aguilar Forés
  * Fecha: 2025
  */
-public class InicioSesionActivity extends AppCompatActivity {
+public class InicioSesionActivity extends FuncionesBaseActivity {
 
     // Campos de texto y botón de login
     private EditText emailCampo, contrasenyaCampo;
@@ -67,7 +67,7 @@ public class InicioSesionActivity extends AppCompatActivity {
         loginBoton.setOnClickListener(v -> iniciarSesion());
 
         // Pulsar ojo para ver contraseña
-        enablePasswordToggle(contrasenyaCampo);
+        habilitarToggleContrasena(contrasenyaCampo);
     }
 
     /**
@@ -192,46 +192,4 @@ public class InicioSesionActivity extends AppCompatActivity {
                 }
         );
     }
-
-    /**
-     * Nombre Método: enablePasswordToggle
-     * Descripción: Permite mostrar u ocultar la contraseña al pulsar el icono del ojo.
-     * Entradas:
-     *  - editText: Campo EditText al que aplicar el comportamiento.
-     * Salidas:
-     *  - No retorna nada. Cambia visualmente la transformación del texto.
-     * Autora: Nerea Aguilar Forés
-     */
-    private void enablePasswordToggle(final EditText editText) {
-
-        editText.setOnTouchListener((v, event) -> {
-
-            if (event.getAction() != MotionEvent.ACTION_UP) return false;
-
-            final int DRAWABLE_END = 2;
-            Drawable drawableEnd = editText.getCompoundDrawables()[DRAWABLE_END];
-
-            if (drawableEnd == null) return false;
-
-            int width = drawableEnd.getBounds().width();
-            int touchArea = editText.getWidth() - width - editText.getPaddingEnd();
-
-            if (event.getX() >= touchArea) {
-
-                int cursor = editText.getSelectionEnd();
-
-                if (editText.getTransformationMethod() instanceof PasswordTransformationMethod) {
-                    editText.setTransformationMethod(null); // mostrar
-                } else {
-                    editText.setTransformationMethod(PasswordTransformationMethod.getInstance()); // ocultar
-                }
-
-                editText.setSelection(cursor);
-                return true;
-            }
-
-            return false;
-        });
-    }
-
 }

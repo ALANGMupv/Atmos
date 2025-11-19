@@ -3,8 +3,10 @@ package org.jordi.btlealumnos2021;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,6 +40,7 @@ public class UserPageActivity extends FuncionesBaseActivity {
 
     private LinearLayout layoutSinSensor, layoutConSensor;
     private TextView txtUltima, txtPromedio;
+    private Spinner spinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +54,19 @@ public class UserPageActivity extends FuncionesBaseActivity {
         queue = Volley.newRequestQueue(this);
 
         nombre = SesionManager.obtenerNombre(this);
+
+        // SPINNER
+        spinner = findViewById(R.id.spinnerContaminante);
+
+        String[] gases = {"NO₂", "CO₂", "O₃"};
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_spinner_dropdown_item,
+                gases
+        );
+
+        spinner.setAdapter(adapter);
 
         // ---------------------------------------------------------------
         // MOSTRAR ¡HOLA, USUARIO!
@@ -179,11 +195,11 @@ public class UserPageActivity extends FuncionesBaseActivity {
 
                         // Formateamos los decimales a dos cifras
                         txtUltima.setText(
-                                "Última medida: " + String.format(Locale.US, "%.2f", ultima)
+                                String.format(Locale.US, "%.2f", ultima)
                         );
 
                         txtPromedio.setText(
-                                "Promedio: " + String.format(Locale.US, "%.2f", promedio)
+                                String.format(Locale.US, "%.2f", promedio)
                         );
                     }
 

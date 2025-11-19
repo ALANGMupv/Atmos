@@ -7,7 +7,6 @@
                  - Vista con sensor (tarjetas y gráfica)
 
     Autora: Nerea Aguilar Forés
-    Año: 2025
 -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -91,6 +90,27 @@
 
     </LinearLayout>
 
+    <!-- SELECTOR DE CONTAMINANTE (Spinner tipo botón) -->
+    <LinearLayout
+        android:id="@+id/layoutSelector"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp">
+
+        <Spinner
+            android:id="@+id/spinnerContaminante"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@drawable/spinner_borde"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:spinnerMode="dropdown"/>
+    </LinearLayout>
+
     <!-- *************************************************************
          VISTA CON SENSOR
          ************************************************************* -->
@@ -114,14 +134,57 @@
                 android:layout_height="wrap_content">
 
                 <!-- =====================================================
-                     FILA 1: Distancia + Estado Actual
-                     ===================================================== -->
+     FILA 1: Estado del Sensor + Distancia al Sensor
+     ===================================================== -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
-                    <!-- Distancia al sensor -->
+                    <!-- Estado del Sensor (IZQUIERDA) -->
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="0dp"
+                        android:layout_height="200dp"
+                        android:layout_weight="1"
+                        app:cardCornerRadius="18dp"
+                        app:cardElevation="6dp"
+                        app:cardUseCompatPadding="true">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center_horizontal"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/roboto_bold"
+                                android:text="Estado del Sensor"
+                                android:textSize="14sp" />
+
+                            <!-- Icono del estado del sensor (ID corregido) -->
+                            <ImageView
+                                android:id="@+id/iv_estado_sensor"
+                                android:layout_width="80dp"
+                                android:layout_height="80dp"
+                                android:layout_marginTop="10dp"
+                                android:src="@drawable/ic_sensor_activo" />
+
+                            <TextView
+                                android:id="@+id/tv_estado_texto"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="10dp"
+                                android:fontFamily="@font/roboto_bold"
+                                android:text="Sensor activo"
+                                android:textColor="@color/black"
+                                android:textSize="14sp" />
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+
+                    <!-- Distancia al Sensor (DERECHA) -->
                     <androidx.cardview.widget.CardView
                         android:layout_width="0dp"
                         android:layout_height="200dp"
@@ -155,53 +218,12 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:fontFamily="@font/roboto_bold"
-                                android:text="Señal alta"
+                                android:textColor="@color/black"
+                                android:text="Señal Alta"
                                 android:textSize="14sp"
-                                android:layout_marginTop="10dp"/>
+                                android:layout_marginTop="10dp" />
                         </LinearLayout>
 
-                    </androidx.cardview.widget.CardView>
-
-                    <!-- Estado Actual -->
-                    <androidx.cardview.widget.CardView
-                        android:layout_width="0dp"
-                        android:layout_height="200dp"
-                        android:layout_weight="1"
-                        app:cardCornerRadius="18dp"
-                        app:cardElevation="6dp"
-                        app:cardUseCompatPadding="true">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:gravity="center_horizontal"
-                            android:orientation="vertical"
-                            android:padding="16dp">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="@font/roboto_bold"
-                                android:text="Estado Actual"
-                                android:textSize="14sp" />
-
-                            <ImageView
-                                android:id="@+id/iv_estado"
-                                android:layout_width="80dp"
-                                android:layout_height="80dp"
-                                android:layout_marginTop="10dp"
-                                android:src="@drawable/ic_estdo_mejorable" />
-
-                            <TextView
-                                android:id="@+id/tv_estado_texto"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="6dp"
-                                android:fontFamily="@font/roboto_bold"
-                                android:text="Mejorable"
-                                android:textColor="#FD941A"
-                                android:textSize="16sp" />
-                        </LinearLayout>
                     </androidx.cardview.widget.CardView>
 
                 </LinearLayout>
@@ -268,6 +290,28 @@
                                     android:text="NO₂ \nppm"
                                     android:textSize="16sp" />
                             </LinearLayout>
+
+                            <!-- Icono calidad promedio -->
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center"
+                                android:layout_marginTop="10dp">
+
+                                <ImageView
+                                    android:layout_width="16dp"
+                                    android:layout_height="16dp"
+                                    android:layout_marginEnd="4dp"
+                                    android:src="@drawable/ic_estado_bueno" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Buena"
+                                    android:textSize="14sp"/>
+                            </LinearLayout>
+
                         </LinearLayout>
                     </androidx.cardview.widget.CardView>
 
@@ -325,6 +369,28 @@
                                     android:text="NO₂ \nppm"
                                     android:textSize="16sp" />
                             </LinearLayout>
+
+                            <!-- Icono calidad última medida -->
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center"
+                                android:layout_marginTop="10dp">
+
+                                <ImageView
+                                    android:layout_width="16dp"
+                                    android:layout_height="16dp"
+                                    android:layout_marginEnd="4dp"
+                                    android:src="@drawable/ic_estado_bueno" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Buena"
+                                    android:textSize="14sp"/>
+                            </LinearLayout>
+
                         </LinearLayout>
                     </androidx.cardview.widget.CardView>
 
@@ -368,6 +434,7 @@
             </LinearLayout>
         </ScrollView>
     </LinearLayout>
+
 
     <!-- =============================================================
          MENÚ INFERIOR
