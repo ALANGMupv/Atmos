@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -55,7 +56,9 @@ public class UserPageActivity extends FuncionesBaseActivity {
 
         nombre = SesionManager.obtenerNombre(this);
 
+        // ---------------------------------------------------------------
         // SPINNER
+        // ---------------------------------------------------------------
         spinner = findViewById(R.id.spinnerContaminante);
 
         String[] gases = {"NO₂", "CO₂", "O₃"};
@@ -67,6 +70,17 @@ public class UserPageActivity extends FuncionesBaseActivity {
         );
 
         spinner.setAdapter(adapter);
+
+
+        // ---------------------------------------------------------------
+        // POPUP
+        // ---------------------------------------------------------------
+        ImageView iconoInfo = findViewById(R.id.iconoInfo);
+
+        iconoInfo.setOnClickListener(v -> {
+            Intent intent = new Intent(UserPageActivity.this, InfoPopupActivity.class);
+            startActivity(intent);
+        });
 
         // ---------------------------------------------------------------
         // MOSTRAR ¡HOLA, USUARIO!
