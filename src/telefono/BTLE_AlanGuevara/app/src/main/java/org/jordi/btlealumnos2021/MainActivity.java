@@ -420,6 +420,15 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        // Botón temporal que te redirige a menú
+        Button irMenu = findViewById(R.id.irMenu);
+
+        irMenu.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, MenuActivity.class);
+            startActivity(intent);
+        });
+
+
 
         // -------------------------------------- (Borrar después)
 
