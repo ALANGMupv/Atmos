@@ -1,17 +1,21 @@
 // --------------------------------------------------------------------------
-// popup_info.js
+// userPage.js
 // --------------------------------------------------------------------------
-// Script encargado de mostrar y ocultar múltiples POPUPS simples
-// dentro de la interfaz de usuario.
+// Script que gestiona diferentes interacciones de la interfaz del usuario
+// dentro de la sección "Mi Sensor" de la aplicación Atmos.
 //
-// Flujo general:
-//    - Cada botón lleva el atributo data-popup con el ID del popup a abrir.
-//    - Al pulsarlo, se muestra el popup correspondiente.
-//    - Cada popup tiene un botón con la clase .cerrar-popup para ocultarlo.
-//    - También se cierra haciendo click fuera de la caja.
+// Funcionalidades incluidas:
+//    1. Mostrar y ocultar múltiples POPUPS informativos mediante atributos
+//       data-popup.
+//    2. Cerrar los popups desde sus botones de cierre o pulsando sobre el
+//       fondo oscuro que los rodea.
+//    3. Gestionar el selector de gas contaminante, actualizando dinámicamente
+//       el tipo de gas mostrado en las tarjetas de "Última medición" y
+//       "Promedio del día".
 //
 // Autor: Santiago Fuenmayor Ruiz
 // --------------------------------------------------------------------------
+
 
 // --------------------------------------------------------------------------
 // 1. Mostrar el popup correspondiente al botón pulsado
@@ -29,7 +33,7 @@ document.querySelectorAll("[data-popup]").forEach(boton => {
 document.querySelectorAll(".cerrar-popup").forEach(botonCerrar => {
     botonCerrar.addEventListener("click", () => {
         const popup = botonCerrar.closest(".popup-info-container");    // popup actual
-        popup.style.display = "none";
+        if (popup) popup.style.display = "none";
     });
 });
 
@@ -44,3 +48,30 @@ document.querySelectorAll(".popup-info-container").forEach(popup => {
         }
     });
 });
+
+
+// --------------------------------------------------------------------------
+// 4. Selector de gas
+// --------------------------------------------------------------------------
+// Cambia dinámicamente el tipo de gas mostrado en:
+//
+//    - Última medición
+//    - Promedio del día
+//
+// Cada vez que se selecciona un gas distinto en el <select>,
+// este bloque actualiza los textos de ambas tarjetas.
+//
+// --------------------------------------------------------------------------
+
+const gasSelector = document.getElementById("gasSelector");
+const gasUltima = document.getElementById("gasUltima");
+const gasPromedio = document.getElementById("gasPromedio");
+
+if (gasSelector && gasUltima && gasPromedio) {
+    gasSelector.addEventListener("change", () => {
+        const gasSeleccionado = gasSelector.value;      // Ej: "NO₂", "CO", "O₃", "SO₂"
+
+        gasUltima.textContent = gasSeleccionado;        // Actualiza Última medición
+        gasPromedio.textContent = gasSeleccionado;      // Actualiza Promedio del día
+    });
+}
