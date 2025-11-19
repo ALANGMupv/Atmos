@@ -17,6 +17,7 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.volley.RequestQueue;
@@ -45,7 +46,7 @@ import com.android.volley.toolbox.Volley;
  * Autor: Alan Guevara Martínez
  * Fecha: 18/11/2025
  */
-public class VincularSensorActivity extends AppCompatActivity {
+public class VincularSensorActivity extends FuncionesBaseActivity {
 
     // Vistas principales
     private ImageView btnBack;
@@ -65,6 +66,9 @@ public class VincularSensorActivity extends AppCompatActivity {
 
         // Inicializar cola de Volley
         queue = Volley.newRequestQueue(this);
+
+        // Configurar header y bottom nav
+        setupHeader("Mi sensor");
 
         inicializarVistas();
         configurarListeners();

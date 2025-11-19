@@ -5,6 +5,11 @@
     android:layout_height="match_parent"
     android:background="#FFFFFF">
 
+    <!-- =============================================================
+         HEADER SUPERIOR
+         ============================================================= -->
+    <include layout="@layout/toolbar_header"/>
+
     <!-- HEADER -->
     <LinearLayout
         android:layout_width="match_parent"
