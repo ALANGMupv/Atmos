@@ -36,6 +36,29 @@ import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 
+
+    private static final int CODIGO_PERMISOS_BT = 123;
+
+    private void pedirPermisosBluetooth() {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            // ANDROID 12+
+            String[] permisos = {
+                    Manifest.permission.BLUETOOTH_SCAN,
+                    Manifest.permission.BLUETOOTH_CONNECT
+            };
+            requestPermissions(permisos, CODIGO_PERMISOS_BT);
+
+        } else {
+            // ANDROID 6–11
+            String[] permisos = {
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+            };
+            requestPermissions(permisos, CODIGO_PERMISOS_BT);
+        }
+    }
+
     // --------------------------------------------------------------
     // --------------------------------------------------------------
     private static final String ETIQUETA_LOG = ">>>>";
@@ -393,7 +416,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        pedirPermisosBluetooth();
         // -------------------------------------- (Borrar después)
 
         // Botón temporal que te redirige a Login (Borrar después)
@@ -469,6 +492,8 @@ public class MainActivity extends AppCompatActivity {
         // Other 'case' lines to check for other
         // permissions this app might request.
     } // ()
+
+
 
 } // class
 // --------------------------------------------------------------
