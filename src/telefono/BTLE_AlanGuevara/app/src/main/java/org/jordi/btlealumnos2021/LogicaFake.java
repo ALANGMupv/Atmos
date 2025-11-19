@@ -27,11 +27,12 @@ import java.util.Map;
 public class LogicaFake {
     private static final String TAG = ">>>>";
 
-    // Deja tu endpoint tal cual lo tenías para no tocar nada más
+    // Endpoints
     private static final String API_URL = "https://nagufor.upv.edu.es/medida";
     private static final String URL_REGISTRO = "https://nagufor.upv.edu.es/usuario";
     private static final String URL_LOGIN    = "https://nagufor.upv.edu.es/login";
     private static final String URL_VINCULAR = "https://nagufor.upv.edu.es/vincular";
+    private static final String URL_DESVINCULAR = "https://nagufor.upv.edu.es/desvincular";
 
 
     // uuid: Texto, gas: Z, valor: R, contador: Z → guardarMedicion() →
@@ -390,50 +391,72 @@ public class LogicaFake {
 
     /**
      * Nombre Método: resumenUsuario
-     * Descripción: Consulta al backend si un usuario tiene una placa vinculada
-     *              y devuelve sus datos resumidos (última medida y promedio).
+     * Descripción:
+     *      Consulta al backend si el usuario tiene placa y devuelve
+     *      la última medida + promedio del gas seleccionado.
      *
      * Entradas:
-     *   - idUsuario → id del usuario guardado en sesión
-     *   - queue → cola Volley para ejecutar la petición HTTP
-     *   - callback → interface para devolver datos al Activity
+     *   - idUsuario : ID del usuario
+     *   - tipoGas   : código del gas (11, 12, 13, 14)
+     *   - queue     : cola Volley
+     *   - callback  : interface con los 4 posibles resultados
      *
-     * Salidas:
-     *   - Callback indicando si tiene o no placa
-     *   - Datos del sensor (última medida, promedio)
-     *
-     * Autora: Nerea Aguilar Forés
+     * Autor: Nerea Aguilar Forés
+     * Modificado por: Alan Guevara Martínez (20/11/2025)
      */
     public static void resumenUsuario(
             int idUsuario,
+            int tipoGas,
             RequestQueue queue,
             ResumenUsuarioCallback callback
     ) {
-        String url = "https://nagufor.upv.edu.es/resumenUsuario?id_usuario="
-                + idUsuario + "&t=" + System.currentTimeMillis(); // <-- ROMPE CACHÉ
 
+        // URL actualizada
+        String url = "https://nagufor.upv.edu.es/resumenUsuarioPorGas"
+                + "?id_usuario=" + idUsuario
+                + "&tipo=" + tipoGas
+                + "&t=" + System.currentTimeMillis();  // ← Rompe caché
+
+        // Petición GET
         JsonObjectRequest req = new JsonObjectRequest(
                 Request.Method.GET,
                 url,
                 null,
                 response -> {
                     try {
-                        String status = response.getString("status");
+                        // Leemos el campo "status"
+                        String status = response.optString("status", "");
 
+                        // Caso: usuario sin placa
                         if ("sin_placa".equals(status)) {
                             callback.onSinPlaca();
                             return;
                         }
 
+                        // Caso: usuario con placa
                         if ("con_placa".equals(status)) {
-                            String placa = response.getString("id_placa");
-                            double ultima = response.getDouble("ultima_medida");
-                            double promedio = response.getDouble("promedio");
 
-                            callback.onConPlaca(placa, ultima, promedio);
+                            // Leer última medida
+                            double ultima = 0;
+                            JSONObject objUltima = response.optJSONObject("ultima_medida");
+
+                            if (objUltima != null) {
+                                ultima = objUltima.optDouble("valor", 0);
+                            }
+
+                            // Leer promedio
+                            double promedio = response.optDouble("promedio", 0);
+
+                            // Devolver datos
+                            callback.onConPlaca(
+                                    response.optString("id_placa", ""),
+                                    ultima,
+                                    promedio
+                            );
                             return;
                         }
 
+                        // Cualquier cosa rara
                         callback.onErrorInesperado();
 
                     } catch (Exception e) {
@@ -443,11 +466,13 @@ public class LogicaFake {
                 error -> callback.onErrorServidor()
         );
 
-        // DESACTIVAMOS CACHÉ DE VOLLEY
+        // Desactivar caché de Volley
         req.setShouldCache(false);
 
+        // Ejecutar petición
         queue.add(req);
     }
+
 
     // =========================================================
     // VINCULAR PLACA A USUARIO
@@ -566,5 +591,108 @@ public class LogicaFake {
         queue.add(req);
     }
 
+    // =========================================================
+    // DESVINCULAR PLACA DE USUARIO
+    // =========================================================
+
+    /**
+     * Nombre Interfaz: DesvincularPlacaCallback
+     * Descripción:
+     *   Define los posibles resultados de la petición de
+     *   desvinculación de una placa para un usuario.
+     *
+     * Autor: Alan Guevara Martínez
+     * Fecha: 19/11/2025
+     */
+    public interface DesvincularPlacaCallback {
+        void onDesvinculacionOk();    // Se ha desvinculado correctamente
+        void onUsuarioSinPlaca();     // El usuario no tenía placa vinculada
+        void onErrorServidor();       // Error HTTP / servidor
+        void onErrorInesperado();     // Excepción al procesar la respuesta
+    }
+
+    /**
+     * Nombre Método: desvincularPlacaServidor
+     * Descripción:
+     *   Llama al endpoint POST /desvincular para eliminar la relación
+     *   entre un usuario y su placa (tabla usuarioplaca) y poner
+     *   asignada = 0 en la tabla placa.
+     *
+     * Entradas:
+     *   - idUsuario: ID del usuario en MySQL.
+     *   - queue:     Cola Volley para ejecutar la petición HTTP.
+     *   - callback:  Implementación de DesvincularPlacaCallback.
+     *
+     * Salidas:
+     *   - No retorna nada, pero notificará el resultado mediante callback.
+     *
+     * Autor: Alan Guevara Martínez
+     * Fecha: 19/11/2025
+     */
+    public static void desvincularPlacaServidor(
+            int idUsuario,                          // ID del usuario logueado
+            RequestQueue queue,                     // Cola de peticiones Volley
+            DesvincularPlacaCallback callback       // Callback con el resultado
+    ) {
+
+        // Construimos el JSON con el id_usuario que espera el backend
+        JSONObject json = new JSONObject();
+        try {
+            json.put("id_usuario", idUsuario);      // Inserta el id_usuario en el objeto JSON
+        } catch (Exception e) {                     // Si algo falla construyendo el JSON...
+            e.printStackTrace();                    // ...mostramos error en Logcat
+            callback.onErrorInesperado();           // ...y avisamos al callback
+            return;                                 // ...y salimos del método
+        }
+
+        // Creamos la petición HTTP POST a /desvincular
+        JsonObjectRequest req = new JsonObjectRequest(
+                Request.Method.POST,                // Método HTTP POST
+                URL_DESVINCULAR,                   // URL del endpoint
+                json,                              // Cuerpo JSON con id_usuario
+                response -> {                      // Listener de respuesta OK (código 2xx)
+
+                    try {
+                        // Se espera algo del estilo: { "status":"ok", "mensaje":"..." }
+                        String status = response.optString("status", "");
+
+                        if ("ok".equals(status)) {                 // Caso éxito
+                            callback.onDesvinculacionOk();
+                        } else if ("sin_placa".equals(status)) {   // Usuario sin placa
+                            callback.onUsuarioSinPlaca();
+                        } else {                                   // Cualquier otro status
+                            callback.onErrorServidor();
+                        }
+
+                    } catch (Exception e) {         // Si falla el parseo del JSON...
+                        e.printStackTrace();
+                        callback.onErrorInesperado();
+                    }
+                },
+                error -> {                          // Listener de error HTTP / red
+
+                    try {
+                        // Aquí consideramos cualquier error de red como error de servidor
+                        callback.onErrorServidor();
+                    } catch (Exception e) {
+                        // Si al notificar el error algo más falla, lo marcamos como inesperado
+                        callback.onErrorInesperado();
+                    }
+                }
+        ) {
+            @Override
+            public Map<String, String> getHeaders() {
+                // En este endpoint no estamos usando token, solo indicamos JSON
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Content-Type", "application/json");
+                return headers;
+            }
+        };
+
+        // Añadimos la petición a la cola de Volley para que se ejecute
+        queue.add(req);
+    }
 }
+
+
 
