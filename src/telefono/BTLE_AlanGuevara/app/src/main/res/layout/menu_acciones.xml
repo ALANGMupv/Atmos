@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FFFFFF">
+
+    <!-- CONTENIDO SCROLLEABLE -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="40dp">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <!-- TITULO -->
+            <TextView
+                android:id="@+id/tituloMenuAcciones"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Menu de Acciones"
+                android:textColor="#059669"
+                android:textSize="20sp"
+                android:fontFamily="@font/roboto_bold"
+                android:layout_gravity="center_horizontal" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="28dp" />
+
+            <!-- CARD MANUAL USUARIO -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="84dp"
+                android:orientation="horizontal"
+                android:padding="16dp"
+                android:background="@drawable/card_accion_menu"
+                android:elevation="6dp"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
+
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/manual_usuario"
+                    android:layout_marginEnd="18dp" />
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Manual de Usuario"
+                        android:textSize="14sp"
+                        android:fontFamily="@font/roboto_bold"
+                        android:textColor="#059669" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Consulte la guía completa"
+                        android:textSize="14sp"
+                        android:fontFamily="@font/roboto"
+                        android:textColor="#555555"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- CARD INCIDENCIAS -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="84dp"
+                android:orientation="horizontal"
+                android:padding="16dp"
+                android:background="@drawable/card_accion_menu"
+                android:elevation="6dp"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
+
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/incidencias"
+                    android:layout_marginEnd="18dp" />
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Incidencias"
+                        android:textSize="14sp"
+                        android:fontFamily="@font/roboto_bold"
+                        android:textColor="#059669" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Reporta problemas técnicos"
+                        android:textSize="14sp"
+                        android:fontFamily="@font/roboto"
+                        android:textColor="#555555"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- CARD DESVINCULAR SENSOR -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="84dp"
+                android:orientation="horizontal"
+                android:padding="16dp"
+                android:background="@drawable/card_accion_menu"
+                android:elevation="6dp"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/desvincular"
+                    android:layout_marginEnd="18dp" />
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Desvincular sensor"
+                        android:textSize="14sp"
+                        android:fontFamily="@font/roboto_bold"
+                        android:textColor="#059669" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Desconectar dispositivo"
+                        android:textSize="14sp"
+                        android:fontFamily="@font/roboto"
+                        android:textColor="#555555"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- BOTTOM NAV -->
+    <include layout="@layout/bottom_nav"/>
+
+</LinearLayout>

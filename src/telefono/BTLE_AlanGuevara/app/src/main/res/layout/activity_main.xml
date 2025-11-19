@@ -60,4 +60,10 @@
         android:layout_height="wrap_content"
         android:text="VINCULAR QR (TEMPORAL)" />
 
+    <Button
+        android:id="@+id/irMenu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="IR A MENU (TEMPORAL - ESTOY CANSADO)" />
+
 </android.widget.LinearLayout>
