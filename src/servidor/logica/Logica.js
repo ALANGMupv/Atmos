@@ -657,6 +657,130 @@ class Logica {
         }
     }
 
+    // --------------------------------------------------------------------------
+    // Método: obtenerPromedios7Dias()
+    // --------------------------------------------------------------------------
+    // Descripción:
+    //   Devuelve una lista de 7 promedios, uno por cada día desde hace 6 días
+    //   hasta hoy, SOLO del tipo de gas indicado para una placa.
+    //   Si un día no tiene medidas → se devuelve 0.
+    // --------------------------------------------------------------------------
+    async obtenerPromedios7Dias(id_placa, tipo) {
+        const conn = await this.pool.getConnection();
+        try {
+            const sql = `
+				SELECT DATE(fecha_hora) AS fecha, AVG(valor) AS promedio
+				FROM medida
+				WHERE id_placa = ?
+				  AND tipo = ?
+				  AND fecha_hora >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+				GROUP BY DATE(fecha_hora)
+			`;
+
+            const [rows] = await conn.query(sql, [id_placa, tipo]);
+
+            // Convertimos resultado a un mapa: { "2025-11-15": 0.08, ... }
+            const mapa = {};
+            rows.forEach(r => {
+                mapa[r.fecha.toISOString().substring(0,10)] = Number(r.promedio);
+            });
+
+            // Construimos salida en orden cronológico
+            const hoy = new Date();
+            const valores = [];
+
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(hoy.getDate() - i);
+
+                // Convertir fecha a AAAA-MM-DD en zona local (no UTC)
+                const clave = d.getFullYear() + "-" +
+                    String(d.getMonth() + 1).padStart(2, "0") + "-" +
+                    String(d.getDate()).padStart(2, "0");
+
+
+                valores.push(mapa[clave] ? mapa[clave] : 0);
+            }
+
+            return valores;
+
+        } finally {
+            conn.release();
+        }
+    }
+
+
+    // --------------------------------------------------------------------------
+    // Método: obtenerPromedios8HorasPorGas()
+    // --------------------------------------------------------------------------
+    // Descripción:
+    //   Devuelve un arreglo con 8 promedios horarios del gas indicado,
+    //   desde hace 7 horas hasta la hora actual.
+    //
+    // Parámetros:
+    //   - id_placa {string} : identificador del sensor
+    //   - tipo     {number} : tipo del gas
+    //
+    // Devuelve:
+    //   - {Promise<Array<number>>} : 8 valores (hora -7 → hora actual).
+    // --------------------------------------------------------------------------
+    async obtenerPromedios8HorasPorGas(id_placa, tipo) {
+        const conn = await this.pool.getConnection();
+        try {
+            const sql = `
+				SELECT 
+					fecha_hora,
+					HOUR(fecha_hora) AS hora,
+					AVG(valor) AS promedio
+				FROM medida
+				WHERE id_placa = ?
+				  AND tipo = ?
+				  AND fecha_hora >= DATE_SUB(NOW(), INTERVAL 8 HOUR)
+				GROUP BY HOUR(fecha_hora)
+				ORDER BY hora;
+			`;
+
+            const [rows] = await conn.query(sql, [id_placa, tipo]);
+
+            console.log("\n\n============= DEBUG SQL (ULTIMAS 8 HORAS) =============");
+            console.log("NOW() local del servidor:", new Date().toString());
+            console.log("Registros encontrados por MySQL:\n", rows);
+
+            const resultado = [];
+            const ahora = new Date();
+
+            console.log("\nHoras generadas por Node para comparar:");
+            for (let i = 7; i >= 0; i--) {
+                const fecha = new Date(ahora.getTime() - i * 3600000);
+                const horaNode = fecha.getHours();
+
+                console.log(` - Hora generada: ${horaNode}`);
+
+                // Buscar en rows
+                const fila = rows.find(r => Number(r.hora) === horaNode);
+
+                if (fila) {
+                    console.log(`   ✔ Coincidencia encontrada: MySQL hora=${fila.hora}, promedio=${fila.promedio}`);
+                    resultado.push(Number(fila.promedio));
+                } else {
+                    console.log(`   ✖ Sin coincidencia para esa hora -> se añade 0`);
+                    resultado.push(0);
+                }
+            }
+
+            console.log("\nResultado final (8 valores):", resultado);
+            console.log("======================================================\n\n");
+
+            return resultado;
+
+        } finally {
+            conn.release();
+        }
+    }
+
+
+
+
 }
 
 // --------------------------------------------------------------------------

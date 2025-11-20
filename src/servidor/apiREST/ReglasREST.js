@@ -450,6 +450,120 @@ function reglasREST(logica) {
         }
     });
 
+    // -----------------------------------------------------------------------------
+    // Endpoint: GET /resumen7Dias
+    // -----------------------------------------------------------------------------
+    // Devuelve promedios diarios de los últimos 7 días del gas seleccionado.
+    // -----------------------------------------------------------------------------
+    router.get("/resumen7Dias", async (req, res) => {
+        try {
+            const id_usuario = req.query.id_usuario;
+            const tipo = parseInt(req.query.tipo, 10);
+
+            if (!id_usuario || !tipo) {
+                return res.status(400).json({ error: "Faltan id_usuario o tipo" });
+            }
+
+            // Obtener placa
+            const placa = await logica.obtenerPlacaDeUsuario(id_usuario);
+            if (!placa) {
+                return res.json({ status: "sin_placa" });
+            }
+
+            // Obtener valores
+            const valores = await logica.obtenerPromedios7Dias(placa, tipo);
+
+            // =========================================================================
+            // Corrección: desplazar 1 día hacia la DERECHA
+            // (el backend devuelve un día atrasado por timezone)
+            // =========================================================================
+            if (Array.isArray(valores) && valores.length === 7) {
+                const ultimo = valores.pop();
+                valores.unshift(ultimo);
+            };
+
+            // Generar labels de días (últimos 7)
+            const dias = ["Dom","Lun","Mar","Mie","Jue","Vie","Sab"];
+            const hoy = new Date();
+            const labels = [];
+
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(hoy.getDate() - i);
+                labels.push(dias[d.getDay()]);
+            }
+
+            // Calcular promedio general
+            const promedio = valores.reduce((a,b) => a+b, 0) / 7;
+
+            res.json({
+                status: "con_placa",
+                labels,
+                valores,
+                promedio
+            });
+
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ error: "Error interno en resumen7Dias" });
+        }
+    });
+
+
+    // -----------------------------------------------------------------------------
+    // Endpoint: GET /resumen8Horas
+    // -----------------------------------------------------------------------------
+    // Descripción:
+    //   Devuelve 8 promedios horarios del gas seleccionado.
+    //
+    // Parámetros esperados:
+    //   - id_usuario
+    //   - tipo
+    //
+    // Respuesta:
+    //   {
+    //     status: "con_placa",
+    //     labels: ["08","09","10","11","12","13","14","15"],
+    //     valores: [...],
+    //     promedio: number
+    //   }
+    // -----------------------------------------------------------------------------
+    router.get("/resumen8Horas", async (req, res) => {
+        try {
+            const id_usuario = req.query.id_usuario;
+            const tipo = parseInt(req.query.tipo, 10);
+
+            if (!id_usuario || !tipo) {
+                return res.status(400).json({ error: "Faltan datos: id_usuario o tipo" });
+            }
+
+            const placa = await logica.obtenerPlacaDeUsuario(id_usuario);
+            if (!placa) return res.json({ status: "sin_placa" });
+
+            const valores = await logica.obtenerPromedios8HorasPorGas(placa, tipo);
+            const promedio = valores.reduce((a, b) => a + b, 0) / valores.length;
+
+            const labels = [];
+            const ahora = new Date();
+            for (let i = 7; i >= 0; i--) {
+                const fecha = new Date(ahora.getTime() - i * 3600000);
+                labels.push(fecha.getHours().toString().padStart(2, "0"));
+            }
+
+            return res.json({
+                status: "con_placa",
+                labels,
+                valores,
+                promedio
+            });
+
+        } catch (err) {
+            console.error("Error en GET /resumen8Horas:", err);
+            res.status(500).json({ error: "Error interno servidor" });
+        }
+    });
+
+
     // --------------------------------------------------------------------------
     //  Devolvemos el router con todas las rutas activas
     // --------------------------------------------------------------------------
