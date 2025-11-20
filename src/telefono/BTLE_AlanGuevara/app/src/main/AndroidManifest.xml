@@ -88,6 +88,9 @@
         <activity android:name=".MenuActivity"
             android:exported="true"/>
 
+        <activity android:name=".InfoContaminantesActivity"
+            android:exported="true"/>
+
         <activity
             android:name=".InfoPopupActivity"
             android:theme="@style/PopupTarjetaReal"/>
