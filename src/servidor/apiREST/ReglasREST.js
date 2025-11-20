@@ -562,6 +562,51 @@ function reglasREST(logica) {
             res.status(500).json({ error: "Error interno servidor" });
         }
     });
+    // -----------------------------------------------------------------------------
+    // GET /notificacionesUsuario
+    // -----------------------------------------------------------------------------
+    // Descripción:
+    //   Devuelve las notificaciones calculadas "al vuelo" para un usuario.
+    //
+    // Parámetros (query):
+    //   - id_usuario
+    //
+    // Respuesta:
+    //   {
+    //     status: "ok",
+    //     notificaciones: [
+    //       {
+    //         tipo: "CO2_CRITICO",
+    //         titulo: "...",
+    //         texto: "...",
+    //         icono: "alerta",
+    //         fecha_hora: "...",
+    //         leido: false
+    //       },
+    //       ...
+    //     ]
+    //   }
+    // -----------------------------------------------------------------------------
+    router.get("/notificacionesUsuario", async (req, res) => {
+        try {
+            const id_usuario = req.query.id_usuario;
+
+            if (!id_usuario) {
+                return res.status(400).json({ error: "Falta id_usuario" });
+            }
+
+            const notis = await logica.obtenerNotificacionesUsuario(Number(id_usuario));
+
+            return res.json({
+                status: "ok",
+                notificaciones: notis
+            });
+
+        } catch (err) {
+            console.error("Error en GET /notificacionesUsuario:", err);
+            return res.status(500).json({ error: "Error interno al obtener notificaciones" });
+        }
+    });
 
 
     // --------------------------------------------------------------------------

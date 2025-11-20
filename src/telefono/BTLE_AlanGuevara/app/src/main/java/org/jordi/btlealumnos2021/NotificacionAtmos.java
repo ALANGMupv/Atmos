@@ -14,38 +14,28 @@ package org.jordi.btlealumnos2021;
  * Fecha: 20/11/2025
  */
 
-
 public class NotificacionAtmos {
 
+    private String tipo;     // CO2_CRITICO, SENSOR_INACTIVO, etc.
     private String titulo;
     private String texto;
-    private String hora;
+    private String hora;     // "18:20", "08:05", etc.
     private boolean leida;
 
-    public NotificacionAtmos(String titulo, String texto, String hora, boolean leida) {
+    public NotificacionAtmos(String tipo, String titulo, String texto, String hora, boolean leida)
+    {
+        this.tipo = tipo;
         this.titulo = titulo;
         this.texto = texto;
         this.hora = hora;
         this.leida = leida;
     }
 
-    public String getTitulo() {
-        return titulo;
-    }
+    public String getTipo() { return tipo; }
+    public String getTitulo() { return titulo; }
+    public String getTexto() { return texto; }
+    public String getHora() { return hora; }
+    public boolean isLeida() { return leida; }
 
-    public String getTexto() {
-        return texto;
-    }
-
-    public String getHora() {
-        return hora;
-    }
-
-    public boolean isLeida() {
-        return leida;
-    }
-
-    public void setLeida(boolean leida) {
-        this.leida = leida;
-    }
+    public void setLeida(boolean leida) { this.leida = leida; }
 }

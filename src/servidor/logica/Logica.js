@@ -777,6 +777,322 @@ class Logica {
             conn.release();
         }
     }
+// ==========================================================================
+// NOTIFICACIONES — MÉTODOS AUXILIARES + MÉTODO PRINCIPAL
+// ==========================================================================
+
+
+/* --------------------------------------------------------------------------
+ * Método: obtenerUltimaMedidaPlaca()
+ * --------------------------------------------------------------------------
+ * Descripción:
+ *   Devuelve la última medida registrada (de cualquier tipo) asociada a una
+ *   placa. Útil para evaluar actividad reciente e inactividad del sensor.
+ *
+ * Parámetros:
+ *   - id_placa {number} : identificador de la placa
+ *
+ * Devuelve:
+ *   - {Promise<Object|null>} : la fila completa de la tabla medida o null
+ * -------------------------------------------------------------------------- */
+async obtenerUltimaMedidaPlaca(id_placa) {
+    const conn = await this.pool.getConnection();
+    try {
+        const sql = `
+            SELECT *
+            FROM medida
+            WHERE id_placa = ?
+            ORDER BY fecha_hora DESC, id_medida DESC
+            LIMIT 1
+        `;
+        const [rows] = await conn.query(sql, [id_placa]);
+        return rows.length ? rows[0] : null;
+    } finally {
+        conn.release();
+    }
+}
+
+
+/* --------------------------------------------------------------------------
+ * Método: obtenerUltimaMedidaCO2()
+ * --------------------------------------------------------------------------
+ * Descripción:
+ *   Devuelve la última medida de tipo CO₂ (tipo = 11) para una placa.
+ *
+ * Parámetros:
+ *   - id_placa {number}
+ *
+ * Devuelve:
+ *   - {Promise<Object|null>}
+ * -------------------------------------------------------------------------- */
+async obtenerUltimaMedidaCO2(id_placa) {
+    const TIPO_CO2 = 11;
+    return this.obtenerUltimaMedidaPorGas(id_placa, TIPO_CO2);
+}
+
+
+/* --------------------------------------------------------------------------
+ * Método: obtenerMinutosDesdeUltimaMedida()
+ * --------------------------------------------------------------------------
+ * Descripción:
+ *   Calcula cuántos minutos han pasado desde la última medida registrada de
+ *   una placa. Sirve para detectar sensores inactivos.
+ *
+ * Parámetros:
+ *   - id_placa {number}
+ *
+ * Devuelve:
+ *   - {Promise<number|null>} : minutos transcurridos o null si no hay datos
+ * -------------------------------------------------------------------------- */
+async obtenerMinutosDesdeUltimaMedida(id_placa) {
+    const conn = await this.pool.getConnection();
+    try {
+        const sql = `
+            SELECT TIMESTAMPDIFF(MINUTE, MAX(fecha_hora), NOW()) AS minutos
+            FROM medida
+            WHERE id_placa = ?
+        `;
+        const [rows] = await conn.query(sql, [id_placa]);
+        return rows[0].minutos !== null ? Number(rows[0].minutos) : null;
+    } finally {
+        conn.release();
+    }
+}
+
+
+/* --------------------------------------------------------------------------
+ * Método: contarLecturasFueraDeRango()
+ * --------------------------------------------------------------------------
+ * Descripción:
+ *   Cuenta cuántas lecturas de un gas están fuera de un rango esperado dentro
+ *   de una ventana de tiempo determinada.
+ *
+ * Parámetros:
+ *   - id_placa     {number}
+ *   - tipo         {number} : tipo de gas
+ *   - minValor     {number}
+ *   - maxValor     {number}
+ *   - horasVentana {number} : horas hacia atrás a evaluar
+ *
+ * Devuelve:
+ *   - {Promise<number>} : número de lecturas fuera de rango
+ * -------------------------------------------------------------------------- */
+async contarLecturasFueraDeRango(id_placa, tipo, minValor, maxValor, horasVentana) {
+    const conn = await this.pool.getConnection();
+    try {
+        const sql = `
+            SELECT COUNT(*) AS num
+            FROM medida
+            WHERE id_placa = ?
+              AND tipo = ?
+              AND (valor < ? OR valor > ?)
+              AND fecha_hora >= DATE_SUB(NOW(), INTERVAL ? HOUR)
+        `;
+        const [rows] = await conn.query(sql, [
+            id_placa,
+            tipo,
+            minValor,
+            maxValor,
+            horasVentana
+        ]);
+        return Number(rows[0].num);
+    } finally {
+        conn.release();
+    }
+}
+
+
+/* --------------------------------------------------------------------------
+ * Método: contarPicosAltosHoy()
+ * --------------------------------------------------------------------------
+ * Descripción:
+ *   Cuenta cuántas veces un gas supera cierto umbral dentro del día actual.
+ *
+ * Parámetros:
+ *   - id_placa     {number}
+ *   - tipo         {number}
+ *   - umbralAlto   {number}
+ *
+ * Devuelve:
+ *   - {Promise<number>}
+ * -------------------------------------------------------------------------- */
+async contarPicosAltosHoy(id_placa, tipo, umbralAlto) {
+    const conn = await this.pool.getConnection();
+    try {
+        const sql = `
+            SELECT COUNT(*) AS num
+            FROM medida
+            WHERE id_placa = ?
+              AND tipo = ?
+              AND valor > ?
+              AND DATE(fecha_hora) = CURDATE()
+        `;
+        const [rows] = await conn.query(sql, [id_placa, tipo, umbralAlto]);
+        return Number(rows[0].num);
+    } finally {
+        conn.release();
+    }
+}
+
+
+/* --------------------------------------------------------------------------
+ * Método: obtenerDistanciaPlaca()
+ * --------------------------------------------------------------------------
+ * Descripción:
+ *   Devuelve la última distancia registrada para una placa (si existe), usada
+ *   para generar notificaciones de proximidad entre sensor y teléfono.
+ *
+ * Parámetros:
+ *   - id_placa {number}
+ *
+ * Devuelve:
+ *   - {Promise<string|null>}
+ * -------------------------------------------------------------------------- */
+async obtenerDistanciaPlaca(id_placa) {
+    const conn = await this.pool.getConnection();
+    try {
+        const sql = `SELECT distancia FROM placa WHERE id_placa = ? LIMIT 1`;
+        const [rows] = await conn.query(sql, [id_placa]);
+        return rows.length ? rows[0].distancia : null;
+    } finally {
+        conn.release();
+    }
+}
+
+
+/* --------------------------------------------------------------------------
+ * Método: obtenerNotificacionesUsuario()
+ * --------------------------------------------------------------------------
+ * Descripción:
+ *   Genera una lista de notificaciones “al vuelo” basadas en el estado
+ *   actual de la placa asociada al usuario.
+ *
+ *   Incluye:
+ *     - Nivel crítico de CO₂
+ *     - Sensor inactivo
+ *     - Lecturas erróneas
+ *     - Resumen diario
+ *     - Distancia con el sensor
+ *
+ * Parámetros:
+ *   - id_usuario {number}
+ *
+ * Devuelve:
+ *   - {Promise<Array<Object>>} : lista de notificaciones con formato:
+ *         {
+ *           tipo: "CO2_CRITICO",
+ *           titulo: "...",
+ *           texto: "...",
+ *           icono: "...",
+ *           fecha_hora: "...",
+ *           leido: false
+ *         }
+ * -------------------------------------------------------------------------- */
+async obtenerNotificacionesUsuario(id_usuario) {
+    const notificaciones = [];
+
+    // 1) Identificar la placa asociada al usuario
+    const id_placa = await this.obtenerPlacaDeUsuario(id_usuario);
+    if (!id_placa) return notificaciones;
+
+    // Configuración rápida de umbrales
+    const TIPO_CO2 = 11;
+    const UMBRAL_CO2_CRITICO = 2000;    // ppm
+    const UMBRAL_CO2_PICO_ALTO = 1000;  // para resumen diario
+    const MINUTOS_SENSOR_INACTIVO = 5;  // prueba / demo
+    const MIN_CO2_ESPERADO = 0;
+    const MAX_CO2_ESPERADO = 5000;
+
+    // -------------------------------------
+    // Notificación 1 — Nivel crítico CO2
+    // -------------------------------------
+    const ultimaCO2 = await this.obtenerUltimaMedidaCO2(id_placa);
+    if (ultimaCO2 && ultimaCO2.valor > UMBRAL_CO2_CRITICO) {
+        notificaciones.push({
+            tipo: "CO2_CRITICO",
+            titulo: "Nivel crítico",
+            texto: `Nivel de CO₂ crítico: ${Math.round(ultimaCO2.valor)} ppm.`,
+            icono: "alerta",
+            fecha_hora: ultimaCO2.fecha_hora,
+            leido: false
+        });
+    }
+
+    // -------------------------------------
+    // Notificación 2 — Sensor inactivo
+    // -------------------------------------
+    const minutosSinDatos = await this.obtenerMinutosDesdeUltimaMedida(id_placa);
+    if (minutosSinDatos !== null && minutosSinDatos > MINUTOS_SENSOR_INACTIVO) {
+        notificaciones.push({
+            tipo: "SENSOR_INACTIVO",
+            titulo: "Sensor inactivo",
+            texto: "Tu sensor dejó de enviar datos. Revisa si está encendido.",
+            icono: "desconexion",
+            fecha_hora: new Date(),
+            leido: false
+        });
+    }
+
+    // -------------------------------------
+    // Notificación 3 — Lecturas erróneas
+    // -------------------------------------
+    const lecturasFuera = await this.contarLecturasFueraDeRango(
+        id_placa,
+        TIPO_CO2,
+        MIN_CO2_ESPERADO,
+        MAX_CO2_ESPERADO,
+        4
+    );
+
+    if (lecturasFuera > 0) {
+        notificaciones.push({
+            tipo: "LECTURAS_ERRONEAS",
+            titulo: "Lecturas inconsistentes",
+            texto: "Detectamos lecturas inconsistentes. Podría haber un fallo en el sensor.",
+            icono: "warning",
+            fecha_hora: new Date(),
+            leido: false
+        });
+    }
+
+    // -------------------------------------
+    // Notificación 4 — Resumen diario
+    // -------------------------------------
+    const promedioHoy = await this.obtenerPromedioPorGasHoy(id_placa, TIPO_CO2);
+    const numPicos = await this.contarPicosAltosHoy(id_placa, TIPO_CO2, UMBRAL_CO2_PICO_ALTO);
+
+    if (promedioHoy !== null) {
+        let nivel = "baja";
+        if (promedioHoy > 1500) nivel = "alta";
+        else if (promedioHoy > 800) nivel = "moderada";
+
+        notificaciones.push({
+            tipo: "RESUMEN_DIARIO",
+            titulo: "Resumen del día",
+            texto: `Tu exposición al aire hoy fue ${nivel}. ${numPicos} picos altos detectados.`,
+            icono: "resumen",
+            fecha_hora: new Date(),
+            leido: false
+        });
+    }
+
+    // -------------------------------------
+    // Notificación 5 — Distancia con el sensor
+    // -------------------------------------
+    const distanciaBD = await this.obtenerDistanciaPlaca(id_placa);
+    if (distanciaBD) {
+        notificaciones.push({
+            tipo: "DISTANCIA_SENSOR",
+            titulo: "Distancia con el sensor",
+            texto: `Tu sensor estuvo a ${distanciaBD} durante la última conexión.`,
+            icono: "ubicacion",
+            fecha_hora: new Date(),
+            leido: false
+        });
+    }
+
+    return notificaciones;
+}
 
 
 

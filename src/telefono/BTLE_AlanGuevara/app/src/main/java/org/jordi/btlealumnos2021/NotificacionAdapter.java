@@ -33,8 +33,8 @@ public class NotificacionAdapter extends RecyclerView.Adapter<NotificacionAdapte
         void onDeleteClick(int position);   // tocar la X → borrar
     }
 
-    private List<NotificacionAtmos> notificaciones;
-    private OnItemClickListener listener;
+    private final List<NotificacionAtmos> notificaciones;
+    private final OnItemClickListener listener;
 
     public NotificacionAdapter(List<NotificacionAtmos> notificaciones, OnItemClickListener listener) {
         this.notificaciones = notificaciones;
@@ -57,15 +57,15 @@ public class NotificacionAdapter extends RecyclerView.Adapter<NotificacionAdapte
         holder.textoNoti.setText(n.getTexto());
         holder.horaNoti.setText(n.getHora());
 
-        // Punto verde: visible si NO está leída
+        // Puntito verde: visible si NO está leída
         if (n.isLeida()) {
             holder.estadoNotis.setVisibility(View.INVISIBLE);
         } else {
             holder.estadoNotis.setVisibility(View.VISIBLE);
         }
 
-        // Icono principal (si quieres luego diferenciamos por tipo)
-        holder.imagenNoti.setImageResource(R.drawable.ic_bell); // pon un icono que tengas
+        // Icono según el tipo de notificación
+        holder.imagenNoti.setImageResource(obtenerIconoPorTipo(n.getTipo()));
 
         // Tocar la tarjeta → marcar como leída
         holder.itemView.setOnClickListener(v -> {
@@ -85,6 +85,28 @@ public class NotificacionAdapter extends RecyclerView.Adapter<NotificacionAdapte
     @Override
     public int getItemCount() {
         return notificaciones.size();
+    }
+
+    // Mapea el tipo (string) al drawable correspondiente
+    private int obtenerIconoPorTipo(String tipo) {
+        if (tipo == null) {
+            return R.drawable.ic_alerta_generica;
+        }
+
+        switch (tipo) {
+            case "CO2_CRITICO":
+                return R.drawable.ic_alerta_co2;
+            case "SENSOR_INACTIVO":
+                return R.drawable.ic_sensor_off;
+            case "LECTURAS_ERRONEAS":
+                return R.drawable.ic_warning;
+            case "RESUMEN_DIARIO":
+                return R.drawable.ic_resumen;
+            case "DISTANCIA_SENSOR":
+                return R.drawable.ic_distancia;
+            default:
+                return R.drawable.ic_alerta_generica;
+        }
     }
 
     public static class NotiViewHolder extends RecyclerView.ViewHolder {
@@ -107,3 +129,4 @@ public class NotificacionAdapter extends RecyclerView.Adapter<NotificacionAdapte
         }
     }
 }
+
