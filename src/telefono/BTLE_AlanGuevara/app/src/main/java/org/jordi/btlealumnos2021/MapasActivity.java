@@ -29,6 +29,11 @@ public class MapasActivity extends FuncionesBaseActivity {
 
         configurarChips();
 
+        findViewById(R.id.infoContaminantes).setOnClickListener(v -> {
+            startActivity(new Intent(this, InfoContaminantesActivity.class));
+        });
+
+
     }
 
     // ==========================================================
