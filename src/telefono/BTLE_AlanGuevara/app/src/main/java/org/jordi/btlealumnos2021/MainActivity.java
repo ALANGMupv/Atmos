@@ -30,6 +30,7 @@ import java.util.Locale;
 import java.util.UUID;
 
 // ------------------------------------------------------------------
+// AQUI AHORA MISMO SOBRA CASI TODO O TODO
 // MainActivity.java: clase principal de la app Android que gestiona el escaneo BLE,
 // muestra información de dispositivos o busca uno concreto, parsea tramas iBeacon con datos de CO₂ y los envía al servidor, además de manejar permisos y botones de la interfaz.
 // ------------------------------------------------------------------
@@ -255,8 +256,12 @@ public class MainActivity extends AppCompatActivity {
 
                         Log.d(ETIQUETA_LOG, "Enviando a la API. ¡A ver si tenemos suerte!");
 
-                        // Enviar los datos procesados al servidor
-                        logicaFake.guardarMedicion(uuid, gas, valor, contador);
+                        // Obtenemos el RSSI real del resultado del escaneo
+                        // int rssi = result.getRssi();
+
+                        // Enviar los datos procesados al servidor, incluyendo ahora el RSSI
+                        // logicaFake.guardarMedicion(uuid, gas, valor, rssi);
+
 
                         // Mostrar Toast para verificar en el móvil
                         Toast.makeText(MainActivity.this,
@@ -313,43 +318,6 @@ public class MainActivity extends AppCompatActivity {
         this.elEscanner.stopScan( this.callbackDelEscaneo );
         this.callbackDelEscaneo = null;
 
-    } // ()
-
-    // --------------------------------------------------------------
-    // (v: View) → botonBuscarDispositivosBTLEPulsado()
-    public void botonBuscarDispositivosBTLEPulsado( View v ) {
-        Toast.makeText(this, "Buscando todos los dispositivos BLE...", Toast.LENGTH_SHORT).show();
-        Log.d(ETIQUETA_LOG, " boton buscar dispositivos BTLE Pulsado" );
-        this.buscarTodosLosDispositivosBTLE();
-    } // ()
-
-    // --------------------------------------------------------------
-    // (v: View) → botonBuscarNuestroDispositivoBTLEPulsado()
-    public void botonBuscarNuestroDispositivoBTLEPulsado( View v ) {
-        Toast.makeText(this, "Buscando mi dispositivo BLE...", Toast.LENGTH_SHORT).show();
-        Log.d(ETIQUETA_LOG, " boton nuestro dispositivo BTLE Pulsado" );
-        //this.buscarEsteDispositivoBTLE( Utilidades.stringToUUID( "EPSG-GTI-PROY-3A" ) );
-
-        //this.buscarEsteDispositivoBTLE( "EPSG-GTI-PROY-3A" );
-        this.buscarEsteDispositivoBTLE("AtmosPlacaGrupo4"); //AQUÍ METO EL NOMBRE DE MI PLACA
-    } // ()
-
-    // --------------------------------------------------------------
-    // (v: View) → botonDetenerBusquedaDispositivosBTLEPulsado()
-    public void botonDetenerBusquedaDispositivosBTLEPulsado( View v ) {
-        /*
-        LO COMENTO PORQUE NO TENGO PLACA Y NECESITO PROBAR QUE HAGA POST CORRECTAMENTE*/
-        Toast.makeText(this, "Deteniendo búsqueda...", Toast.LENGTH_SHORT).show();
-        Log.d(ETIQUETA_LOG, " boton detener busqueda dispositivos BTLE Pulsado" );
-        this.detenerBusquedaDispositivosBTLE();
-
-        // Reiniciamos la bandera para que en la siguiente búsqueda
-        // vuelva a mostrar el Toast y LOG de "Encontrado el dispositivo"
-        dispositivoEncontrado = false;
-
-        /* PARA VER SI FUNCIONABA (NO HACER CASO)
-        logicaFake.guardarMedicion("GTI-3A-PlacaAlan", 11, 1234.567f, (int)(System.currentTimeMillis() / 1000));
-        */
     } // ()
 
     // --------------------------------------------------------------

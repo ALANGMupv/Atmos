@@ -52,58 +52,72 @@ function reglasREST(logica) {
         }
     }
 
-    // --------------------------------------------------------------------------
-    //  Endpoint: POST /medida
-    // --------------------------------------------------------------------------
-    /**
-     * Inserta una nueva medida en la base de datos.
-     *
-     * Cuerpo JSON esperado:
-     * {
-     *   "id_placa": "UUID-del-sensor",
-     *   "tipo": 11,
-     *   "valor": 412.7,
-     *   "latitud": 0.0,
-     *   "longitud": 0.0
-     * }
-     *
-     * Respuestas posibles:
-     *   200: { status: "ok", medida: {...} }
-     *   400: Faltan campos obligatorios
-     *   500: Error interno del servidor
-     */
-    router.post("/medida", async (req, res) => {
-        try {
-            const { id_placa, tipo, valor, latitud, longitud } = req.body;
+// --------------------------------------------------------------------------
+//  Endpoint: POST /medida
+//  Autor: Alan Guevara Martínez
+// --------------------------------------------------------------------------
+/**
+ * Inserta una nueva medida en la base de datos.
+ *
+ * Cuerpo JSON esperado (versión nueva):
+ * {
+ *   "id_placa": "UUID-del-sensor",
+ *   "tipo": 11,
+ *   "valor": 412.7,
+ *   "latitud": 0.0,
+ *   "longitud": 0.0,
+ *   "rssi": -65        // NUEVO: intensidad de señal
+ * }
+ *
+ * El campo rssi es opcional para mantener compatibilidad.
+ */
+router.post("/medida", async (req, res) => {
+    try {
+        const { id_placa, tipo, valor, latitud, longitud, rssi } = req.body;
 
-            if (!id_placa || tipo === undefined || valor === undefined) {
-                return res.status(400).json({
-                    status: "error",
-                    mensaje: "Faltan campos obligatorios: id_placa, tipo o valor"
-                });
-            }
+        if (!id_placa || tipo === undefined || valor === undefined) {
+            return res.status(400).json({
+                status: "error",
+                mensaje: "Faltan campos obligatorios: id_placa, tipo o valor"
+            });
+        }
 
-            const medidaInsertada = await logica.guardarMedida(
+        let medidaInsertada;
+
+        // Si el cliente envía RSSI, usamos la nueva lógica
+        if (typeof rssi === "number") {
+            medidaInsertada = await logica.guardarMedidaYActualizarDistancia(
+                id_placa,
+                tipo,
+                valor,
+                latitud || 0.0,
+                longitud || 0.0,
+                rssi
+            );
+        } else {
+            // Compatibilidad con clientes antiguos: solo inserta en medida
+            medidaInsertada = await logica.guardarMedida(
                 id_placa,
                 tipo,
                 valor,
                 latitud || 0.0,
                 longitud || 0.0
             );
-
-            res.json({
-                status: "ok",
-                medida: medidaInsertada
-            });
-        } catch (err) {
-            console.error("Error en POST /medida:", err);
-            res.status(500).json({
-                status: "error",
-                mensaje: "Error interno del servidor",
-                detalle: err.message
-            });
         }
-    });
+
+        res.json({
+            status: "ok",
+            medida: medidaInsertada
+        });
+    } catch (err) {
+        console.error("Error en POST /medida:", err);
+        res.status(500).json({
+            status: "error",
+            mensaje: "Error interno del servidor",
+            detalle: err.message
+        });
+    }
+});
 
     // --------------------------------------------------------------------------
     //  Endpoint: GET /medidas
@@ -449,6 +463,50 @@ function reglasREST(logica) {
             res.status(500).json({error: "Error interno del servidor"});
         }
     });
+
+    // -----------------------------------------------------------------------------
+// Endpoint: POST /actualizarEstadoPlaca
+// Autor: Alan Guevara Martínez
+// Fecha: 20/11/2025
+// -----------------------------------------------------------------------------
+// Descripción:
+//   Recibe el estado de encendida (1/0) de una placa y lo actualiza en MySQL.
+//
+// Body esperado (JSON):
+//   {
+//     "id_placa": "XXXX",
+//     "encendida": 1
+//   }
+//
+// Respuestas:
+//   200: { status: "ok" }
+//   400: faltan datos
+//   500: error interno
+// -----------------------------------------------------------------------------
+router.post("/actualizarEstadoPlaca", async (req, res) => {
+    try {
+        const { id_placa, encendida } = req.body;
+
+        if (!id_placa || encendida === undefined) {
+            return res.status(400).json({
+                status: "error",
+                mensaje: "Faltan datos: id_placa o encendida"
+            });
+        }
+
+        await logica.actualizarEstadoPlaca(id_placa, encendida);
+
+        return res.json({ status: "ok" });
+
+    } catch (err) {
+        console.error("Error en POST /actualizarEstadoPlaca:", err);
+        return res.status(500).json({
+            status: "error",
+            mensaje: "Error interno del servidor"
+        });
+    }
+});
+
 
     // --------------------------------------------------------------------------
     //  Devolvemos el router con todas las rutas activas

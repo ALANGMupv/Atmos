@@ -150,11 +150,14 @@ public class InicioSesionActivity extends FuncionesBaseActivity {
                 new LogicaFake.LoginCallback() {
                     @Override
                     public void onLoginOk(JSONObject usuario) {
-                        // Guardar sesión local
+
+                        // 1) Guardar sesión local
                         SesionManager.guardarSesion(InicioSesionActivity.this, usuario);
 
-                        // Ir al menú principal
+                        // 3) Ir a mapas
                         startActivity(new Intent(InicioSesionActivity.this, MapasActivity.class));
+
+                        // 4) Cerrar pantalla de login
                         finish();
                     }
 
@@ -192,4 +195,5 @@ public class InicioSesionActivity extends FuncionesBaseActivity {
                 }
         );
     }
+
 }
