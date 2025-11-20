@@ -52,7 +52,7 @@ function reglasREST(logica) {
         }
     }
 
-// --------------------------------------------------------------------------
+    // --------------------------------------------------------------------------
 //  Endpoint: POST /medida
 //  Autor: Alan Guevara Martínez
 // --------------------------------------------------------------------------
@@ -309,51 +309,51 @@ router.post("/medida", async (req, res) => {
 //   - Si existe, retornamos sus datos para crear la sesión PHP.
 //   - Si no existe, devolvemos un error.
 // -------------------------------------------------------------
-    router.post("/login", verificarToken, async (req, res) => {
-        try {
-            // ---------------------------------------------------------------------
-            // req.user lo rellena el middleware verificarToken.
-            // Aquí tenemos: uid, email, email_verified...
-            // ---------------------------------------------------------------------
-            const email = req.user.email;
+router.post("/login", verificarToken, async (req, res) => {
+    try {
+        // ---------------------------------------------------------------------
+        // req.user lo rellena el middleware verificarToken.
+        // Aquí tenemos: uid, email, email_verified...
+        // ---------------------------------------------------------------------
+        const email = req.user.email;
 
-            // ---------------------------------------------------------------------
-            // Buscar en MySQL el usuario cuyo email coincide con el de Firebase.
-            // Si no existe, significa que está registrado en Firebase pero
-            // NO se ha creado en MySQL todavía (caso raro pero posible).
-            // ---------------------------------------------------------------------
-            const usuario = await logica.buscarUsuarioPorEmail(email);
+        // ---------------------------------------------------------------------
+        // Buscar en MySQL el usuario cuyo email coincide con el de Firebase.
+        // Si no existe, significa que está registrado en Firebase pero
+        // NO se ha creado en MySQL todavía (caso raro pero posible).
+        // ---------------------------------------------------------------------
+        const usuario = await logica.buscarUsuarioPorEmail(email);
 
-            if (!usuario) {
-                return res.status(404).json({
-                    error: "Usuario no registrado en MySQL"
-                });
-            }
-
-            // ---------------------------------------------------------------------
-            // Devolver al frontend los datos necesarios para:
-            //   - guardar la sesión en PHP (guardarSesion.php)
-            //   - sincronizar contraseña si procede
-            // ---------------------------------------------------------------------
-            return res.json({
-                status: "ok",
-                usuario: {
-                    id_usuario: usuario.id_Usuario,
-                    nombre: usuario.nombre,
-                    apellidos: usuario.apellidos,
-                    email: usuario.email
-                }
+        if (!usuario) {
+            return res.status(404).json({
+                error: "Usuario no registrado en MySQL"
             });
-
-        } catch (error) {
-            // ---------------------------------------------------------------------
-            // Si ocurre cualquier problema en la lógica interna, logueamos el error
-            // y devolvemos un 500 al cliente.
-            // ---------------------------------------------------------------------
-            console.error("Error en POST /login:", error);
-            return res.status(500).json({ error: "Error interno en login" });
         }
-    });
+
+        // ---------------------------------------------------------------------
+        // Devolver al frontend los datos necesarios para:
+        //   - guardar la sesión en PHP (guardarSesion.php)
+        //   - sincronizar contraseña si procede
+        // ---------------------------------------------------------------------
+        return res.json({
+            status: "ok",
+            usuario: {
+                id_usuario: usuario.id_Usuario,
+                nombre: usuario.nombre,
+                apellidos: usuario.apellidos,
+                email: usuario.email
+            }
+        });
+
+    } catch (error) {
+        // ---------------------------------------------------------------------
+        // Si ocurre cualquier problema en la lógica interna, logueamos el error
+        // y devolvemos un 500 al cliente.
+        // ---------------------------------------------------------------------
+        console.error("Error en POST /login:", error);
+        return res.status(500).json({ error: "Error interno en login" });
+    }
+});
 
 // -----------------------------------------------------------------------------
 // Endpoint: POST /desvincular
@@ -375,36 +375,36 @@ router.post("/medida", async (req, res) => {
 //   400: { error: "Faltan datos: id_usuario" }
 //   500: { error: "..." }
 // -----------------------------------------------------------------------------
-    router.post("/desvincular", async (req, res) => {
-        try {
-            const { id_usuario } = req.body;
+router.post("/desvincular", async (req, res) => {
+    try {
+        const { id_usuario } = req.body;
 
-            // Validación básica del body
-            if (!id_usuario) {
-                return res.status(400).json({
-                    error: "Faltan datos: id_usuario"
-                });
-            }
-
-            // Llamamos a la lógica de negocio
-            const resultado = await logica.desvincularPlacaDeUsuario(id_usuario);
-
-            // devolvemos tal cual el objeto { status, mensaje }
-            return res.json(resultado);
-
-        } catch (err) {
-            console.error("Error en POST /desvincular:", err);
-            return res.status(500).json({
-                error: "Error interno al desvincular placa"
+        // Validación básica del body
+        if (!id_usuario) {
+            return res.status(400).json({
+                error: "Faltan datos: id_usuario"
             });
         }
-    });
+
+        // Llamamos a la lógica de negocio
+        const resultado = await logica.desvincularPlacaDeUsuario(id_usuario);
+
+        // devolvemos tal cual el objeto { status, mensaje }
+        return res.json(resultado);
+
+    } catch (err) {
+        console.error("Error en POST /desvincular:", err);
+        return res.status(500).json({
+            error: "Error interno al desvincular placa"
+        });
+    }
+});
 
 
     // -----------------------------------------------------------------------------
     // Endpoint: GET /resumenUsuarioPorGas
-    // Autor: Santiago Fuenmayor Ruiz
-    // Fecha: 19/11/2025
+	// Autor: Santiago Fuenmayor Ruiz
+	// Fecha: 19/11/2025
     // -----------------------------------------------------------------------------
     // Descripción:
     //   Devuelve la última medición y el promedio del día para un TIPO DE GAS
@@ -464,48 +464,276 @@ router.post("/medida", async (req, res) => {
         }
     });
 
+	// -----------------------------------------------------------------------------
+	// Endpoint: GET /resumen7Dias
+	// -----------------------------------------------------------------------------
+	// Devuelve promedios diarios de los últimos 7 días del gas seleccionado.
+	// -----------------------------------------------------------------------------
+	router.get("/resumen7Dias", async (req, res) => {
+		try {
+			const id_usuario = req.query.id_usuario;
+			const tipo = parseInt(req.query.tipo, 10);
+
+			if (!id_usuario || !tipo) {
+				return res.status(400).json({ error: "Faltan id_usuario o tipo" });
+			}
+
+			// Obtener placa
+			const placa = await logica.obtenerPlacaDeUsuario(id_usuario);
+			if (!placa) {
+				return res.json({ status: "sin_placa" });
+			}
+
+			// Obtener valores
+			const valores = await logica.obtenerPromedios7Dias(placa, tipo);
+
+			// =========================================================================
+			// Corrección: desplazar 1 día hacia la DERECHA
+			// (el backend devuelve un día atrasado por timezone)
+			// =========================================================================
+			if (Array.isArray(valores) && valores.length === 7) {
+				const ultimo = valores.pop();
+				valores.unshift(ultimo);
+			};
+
+			// Generar labels de días (últimos 7)
+			const dias = ["Dom","Lun","Mar","Mie","Jue","Vie","Sab"];
+			const hoy = new Date();
+			const labels = [];
+
+			for (let i = 6; i >= 0; i--) {
+				const d = new Date();
+				d.setDate(hoy.getDate() - i);
+				labels.push(dias[d.getDay()]);
+			}
+
+			// Calcular promedio general
+			const promedio = valores.reduce((a,b) => a+b, 0) / 7;
+
+			res.json({
+				status: "con_placa",
+				labels,
+				valores,
+				promedio
+			});
+
+		} catch (err) {
+			console.error(err);
+			res.status(500).json({ error: "Error interno en resumen7Dias" });
+		}
+	});
+
+
+	// -----------------------------------------------------------------------------
+	// Endpoint: GET /resumen8Horas
+	// -----------------------------------------------------------------------------
+	// Descripción:
+	//   Devuelve 8 promedios horarios del gas seleccionado.
+	//
+	// Parámetros esperados:
+	//   - id_usuario
+	//   - tipo
+	//
+	// Respuesta:
+	//   {
+	//     status: "con_placa",
+	//     labels: ["08","09","10","11","12","13","14","15"],
+	//     valores: [...],
+	//     promedio: number
+	//   }
+	// -----------------------------------------------------------------------------
+	router.get("/resumen8Horas", async (req, res) => {
+		try {
+			const id_usuario = req.query.id_usuario;
+			const tipo = parseInt(req.query.tipo, 10);
+
+			if (!id_usuario || !tipo) {
+				return res.status(400).json({ error: "Faltan datos: id_usuario o tipo" });
+			}
+
+			const placa = await logica.obtenerPlacaDeUsuario(id_usuario);
+			if (!placa) return res.json({ status: "sin_placa" });
+
+			const valores = await logica.obtenerPromedios8HorasPorGas(placa, tipo);
+			const promedio = valores.reduce((a, b) => a + b, 0) / valores.length;
+
+			const labels = [];
+			const ahora = new Date();
+			for (let i = 7; i >= 0; i--) {
+				const fecha = new Date(ahora.getTime() - i * 3600000);
+				labels.push(fecha.getHours().toString().padStart(2, "0"));
+			}
+
+			return res.json({
+				status: "con_placa",
+				labels,
+				valores,
+				promedio
+			});
+
+		} catch (err) {
+			console.error("Error en GET /resumen8Horas:", err);
+			res.status(500).json({ error: "Error interno servidor" });
+		}
+	});
+
+	// -----------------------------------------------------------------------------
+	// Endpoint: POST /actualizarEstadoPlaca
+	// Autor: Alan Guevara Martínez
+	// Fecha: 20/11/2025
+	// -----------------------------------------------------------------------------
+	// Descripción:
+	//   Recibe el estado de encendida (1/0) de una placa y lo actualiza en MySQL.
+	//
+	// Body esperado (JSON):
+	//   {
+	//     "id_placa": "XXXX",
+	//     "encendida": 1
+	//   }
+	//
+	// Respuestas:
+	//   200: { status: "ok" }
+	//   400: faltan datos
+	//   500: error interno
+	// -----------------------------------------------------------------------------
+	router.post("/actualizarEstadoPlaca", async (req, res) => {
+		try {
+			const { id_placa, encendida } = req.body;
+
+			if (!id_placa || encendida === undefined) {
+				return res.status(400).json({
+					status: "error",
+					mensaje: "Faltan datos: id_placa o encendida"
+				});
+			}
+
+			await logica.actualizarEstadoPlaca(id_placa, encendida);
+
+			return res.json({ status: "ok" });
+
+		} catch (err) {
+			console.error("Error en POST /actualizarEstadoPlaca:", err);
+			return res.status(500).json({
+				status: "error",
+				mensaje: "Error interno del servidor"
+			});
+		}
+	});
+
+	// -----------------------------------------------------------------------------
+	// GET /estadoPlaca
+	// -----------------------------------------------------------------------------
+	//  Descripción:
+	//     Devuelve el estado actual del sensor asociado al usuario.
+	//     Usa el campo `placa.encendida` para saber si el sensor está activo.
+	//
+	//  Parámetros (query):
+	//     - id_usuario : ID del usuario logueado
+	//
+	//  Respuestas:
+	//     { estado: "activo" }    → si encendida = 1
+	//     { estado: "inactivo" }  → si encendida = 0
+	//     { estado: "sin_placa" } → si el usuario no tiene placa asociada
+	//
+	//  Notas:
+	//     • Este endpoint se consulta periódicamente desde el frontend.
+	//     • Es muy ligero: solo hace una consulta súper pequeña.
+	// -----------------------------------------------------------------------------
+	router.get("/estadoPlaca", async (req, res) => {
+		try {
+			const id_usuario = req.query.id_usuario;
+
+			if (!id_usuario)
+				return res.status(400).json({ error: "Falta id_usuario" });
+
+			// Obtener ID de la placa asociada al usuario
+			const id_placa = await logica.obtenerPlacaDeUsuario(id_usuario);
+
+			if (!id_placa)
+				return res.json({ estado: "sin_placa" });
+
+			// Consultar si la placa está encendida o no
+			const encendida = await logica.obtenerEstadoPlaca(id_placa);
+
+			return res.json({
+				estado: encendida ? "activo" : "inactivo"
+			});
+
+		} catch (err) {
+			console.error("Error en GET /estadoPlaca:", err);
+			res.status(500).json({ error: "Error interno del servidor" });
+		}
+	});
+
+	// ======================================================================
+	// GET /estadoSenal?id_usuario=NUM
+	// ----------------------------------------------------------------------
+	// Devuelve el nivel de señal del sensor del usuario.
+	// ======================================================================
+	router.get("/estadoSenal", async (req, res) => {
+
+		try {
+			const idUsuario = req.query.id_usuario;
+
+			const datos = await logica.obtenerEstadoSenal(idUsuario);
+
+			res.json({
+				status: "ok",
+				rssi: datos.rssi,
+				nivel: datos.nivel
+			});
+
+		} catch (e) {
+			console.log("ERROR en /estadoSenal:", e);
+			res.json({ status: "error", mensaje: e.toString() });
+		}
+	});
     // -----------------------------------------------------------------------------
-// Endpoint: POST /actualizarEstadoPlaca
-// Autor: Alan Guevara Martínez
-// Fecha: 20/11/2025
-// -----------------------------------------------------------------------------
-// Descripción:
-//   Recibe el estado de encendida (1/0) de una placa y lo actualiza en MySQL.
-//
-// Body esperado (JSON):
-//   {
-//     "id_placa": "XXXX",
-//     "encendida": 1
-//   }
-//
-// Respuestas:
-//   200: { status: "ok" }
-//   400: faltan datos
-//   500: error interno
-// -----------------------------------------------------------------------------
-router.post("/actualizarEstadoPlaca", async (req, res) => {
-    try {
-        const { id_placa, encendida } = req.body;
+    // GET /notificacionesUsuario
+    // -----------------------------------------------------------------------------
+    // Descripción:
+    //   Devuelve las notificaciones calculadas "al vuelo" para un usuario.
+    //
+    // Parámetros (query):
+    //   - id_usuario
+    //
+    // Respuesta:
+    //   {
+    //     status: "ok",
+    //     notificaciones: [
+    //       {
+    //         tipo: "CO2_CRITICO",
+    //         titulo: "...",
+    //         texto: "...",
+    //         icono: "alerta",
+    //         fecha_hora: "...",
+    //         leido: false
+    //       },
+    //       ...
+    //     ]
+    //   }
+    // -----------------------------------------------------------------------------
+    router.get("/notificacionesUsuario", async (req, res) => {
+        try {
+            const id_usuario = req.query.id_usuario;
 
-        if (!id_placa || encendida === undefined) {
-            return res.status(400).json({
-                status: "error",
-                mensaje: "Faltan datos: id_placa o encendida"
+            if (!id_usuario) {
+                return res.status(400).json({ error: "Falta id_usuario" });
+            }
+
+            const notis = await logica.obtenerNotificacionesUsuario(Number(id_usuario));
+
+            return res.json({
+                status: "ok",
+                notificaciones: notis
             });
+
+        } catch (err) {
+            console.error("Error en GET /notificacionesUsuario:", err);
+            return res.status(500).json({ error: "Error interno al obtener notificaciones" });
         }
+    });
 
-        await logica.actualizarEstadoPlaca(id_placa, encendida);
-
-        return res.json({ status: "ok" });
-
-    } catch (err) {
-        console.error("Error en POST /actualizarEstadoPlaca:", err);
-        return res.status(500).json({
-            status: "error",
-            mensaje: "Error interno del servidor"
-        });
-    }
-});
 
 
     // --------------------------------------------------------------------------

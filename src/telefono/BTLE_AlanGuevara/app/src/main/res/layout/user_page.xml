@@ -440,7 +440,7 @@
                          ===================================================== -->
                     <androidx.cardview.widget.CardView
                         android:layout_width="match_parent"
-                        android:layout_height="200dp"
+                        android:layout_height="wrap_content"
                         app:cardCornerRadius="18dp"
                         app:cardElevation="6dp"
                         app:cardUseCompatPadding="true">
@@ -562,7 +562,9 @@
                                 <com.github.mikephil.charting.charts.BarChart
                                     android:id="@+id/barChartCalidadAire"
                                     android:layout_width="match_parent"
-                                    android:layout_height="160dp" />
+                                    android:layout_height="260dp"
+                                    android:paddingTop="8dp"
+                                    android:paddingBottom="8dp"/>
 
                             </LinearLayout>
 
