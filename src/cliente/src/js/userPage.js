@@ -12,18 +12,6 @@
  * Autor: Santiago Fuenmayor Ruiz
  */
 
-// Mostrar todos los errores de Chart.js en consola
-Chart.register({
-    id: "debuggerPlugin",
-    beforeInit(chart, args, options) {
-        chart.options.animation = false;
-    },
-    afterDraw(chart, args, options) {
-        if (chart.$context && chart.$context.error) {
-            console.error("Chart.js error:", chart.$context.error);
-        }
-    }
-});
 
 // ================================================================
 // 1. POPUPS
@@ -633,6 +621,110 @@ botonesModoGrafica.forEach(btn => {
     });
 });
 
+// -----------------------------------------------------------------------------
+//  9. Función: actualizarEstadoSensor()
+// -----------------------------------------------------------------------------
+//  Descripción:
+//     Consulta al backend cada cierto tiempo para saber si el sensor está
+//     encendido o apagado. Según la respuesta, actualiza el texto y el icono
+//     que se muestran en la tarjeta "Estado del Sensor".
+//
+//  Funcionamiento:
+//     - Pide al backend /estadoPlaca?id_usuario=xxx
+//     - Si el backend dice "activo"   → texto verde + icono activo
+//     - Si dice "inactivo"            → texto rojo + icono apagado
+//     - Si no hay placa asociada      → texto gris + icono apagado
+//
+//  Notas:
+//     • Esta función es MUY ligera, se puede llamar cada 20 segundos sin problema.
+//     • Se ejecuta automáticamente al cargar la página.
+// -----------------------------------------------------------------------------
+async function actualizarEstadoSensor() {
+
+    try {
+        const url = `https://nagufor.upv.edu.es/estadoPlaca?id_usuario=${ID_USUARIO}`;
+        const resp = await fetch(url);
+        const data = await resp.json();
+
+        const texto = document.getElementById("estadoSensorTexto");
+        const icono = document.getElementById("estadoSensorIcono");
+
+        if (!texto || !icono) {
+            console.warn(" Elementos del DOM del estado del sensor no encontrados.");
+            return;
+        }
+
+        // --------- SENSOR ACTIVO ---------
+        if (data.estado === "activo") {
+            texto.textContent = "Sensor activo";
+            icono.src = "img/estadoActivoSensorIcono.svg";
+            return;
+        }
+
+        // --------- SENSOR INACTIVO ---------
+        if (data.estado === "inactivo") {
+            texto.textContent = "Sensor inactivo";
+            icono.src = "img/estadoInactivoSensorIcono.svg";
+            return;
+        }
+
+        // --------- SIN PLACA ---------
+        texto.textContent = "Sin placa asociada";
+        texto.style.color = "#777"; // gris
+        icono.src = "img/estadoInactivoSensorIcono.svg";
+
+    } catch (err) {
+        console.error("Error consultando estado del sensor:", err);
+    }
+}
+
+// ======================================================================
+// Función: actualizarEstadoSenal()
+// ----------------------------------------------------------------------
+// Llama al backend /estadoSenal y muestra:
+//   - icono según el nivel
+//   - texto según el nivel
+// ======================================================================
+async function actualizarEstadoSenal() {
+
+    const resp = await fetch(`/estadoSenal?id_usuario=${ID_USUARIO}`);
+    const data = await resp.json();
+
+    if (data.status !== "ok") return;
+
+    const icono = document.getElementById("iconoSenal");
+    const texto = document.getElementById("textoSenal");
+
+    switch (data.nivel) {
+
+        case "fuerte":
+            icono.src = "img/señalAltaDistanciaIcono.svg";
+            texto.textContent = "Señal alta";
+            break;
+
+        case "media":
+            icono.src = "img/señalRegularDistanciaIcono.svg";
+            texto.textContent = "Señal regular";
+            break;
+
+        case "baja":
+            icono.src = "img/señalMalaDistanciaIcono.svg";
+            texto.textContent = "Señal baja";
+            break;
+
+        case "mala":
+            icono.src = "img/sinSeñalDistanciaIcono.svg";
+            texto.textContent = "Señal muy baja";
+            break;
+
+        default:
+            icono.src = "img/sinSeñalDistanciaIcono.svg";
+            texto.textContent = "Sin datos";
+    }
+}
+
+
+
 // ======================================================================
 // 9. Inicialización automática al cargar la página
 // ----------------------------------------------------------------------
@@ -664,6 +756,18 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     // Cargar gráfica en modo inicial (D)
     await cargarGraficaSegunModo();
+
+    // Consultar estado del sensor al cargar la página
+    actualizarEstadoSensor();
+
+    // Consultarlo cada 20 segundos
+    setInterval(actualizarEstadoSensor, 20000);
+
+    // Consultar la señal del sensor
+    actualizarEstadoSenal();
+
+    // Consultarla cada 5 segundos
+    setInterval(actualizarEstadoSenal, 5000);
 });
 
 

@@ -110,14 +110,14 @@ $usuario = $_SESSION['usuario'];
                         <div class="distancia_estado-container">
                             <div class="estado-container">
                                 <div class="estado-titulo-container"><h4>Estado del Sensor</h4></div>
-                                <img class="estado-icono" src="img/estadoActivoSensorIcono.svg" alt="">
-                                <p>Sensor activo</p>
+                                <img class="estado-icono" id="estadoSensorIcono" src="img/estadoActivoSensorIcono.svg" alt="">
+                                <p id="estadoSensorTexto">Sensor activo</p>
                             </div>
 
                             <div class="distancia-container">
                                 <div class="distancia-titulo-container"><h4>Distancia al sensor</h4></div>
-                                <img class="distancia-icono" src="img/distanciaIcono.svg" alt="">
-                                <p>Señal alta</p>
+                                <img class="distancia-icono" id="iconoSenal" src="img/sinSeñalDistanciaIcono.svg" alt="">
+                                <p id="textoSenal">Señal alta</p>
                             </div>
                         </div>
 

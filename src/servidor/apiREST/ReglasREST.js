@@ -53,28 +53,27 @@ function reglasREST(logica) {
     }
 
     // --------------------------------------------------------------------------
-    //  Endpoint: POST /medida
-    // --------------------------------------------------------------------------
+//  Endpoint: POST /medida
+//  Autor: Alan Guevara Martínez
+// --------------------------------------------------------------------------
     /**
      * Inserta una nueva medida en la base de datos.
      *
-     * Cuerpo JSON esperado:
+     * Cuerpo JSON esperado (versión nueva):
      * {
      *   "id_placa": "UUID-del-sensor",
      *   "tipo": 11,
      *   "valor": 412.7,
      *   "latitud": 0.0,
-     *   "longitud": 0.0
+     *   "longitud": 0.0,
+     *   "rssi": -65        // NUEVO: intensidad de señal
      * }
      *
-     * Respuestas posibles:
-     *   200: { status: "ok", medida: {...} }
-     *   400: Faltan campos obligatorios
-     *   500: Error interno del servidor
+     * El campo rssi es opcional para mantener compatibilidad.
      */
     router.post("/medida", async (req, res) => {
         try {
-            const { id_placa, tipo, valor, latitud, longitud } = req.body;
+            const { id_placa, tipo, valor, latitud, longitud, rssi } = req.body;
 
             if (!id_placa || tipo === undefined || valor === undefined) {
                 return res.status(400).json({
@@ -83,13 +82,28 @@ function reglasREST(logica) {
                 });
             }
 
-            const medidaInsertada = await logica.guardarMedida(
-                id_placa,
-                tipo,
-                valor,
-                latitud || 0.0,
-                longitud || 0.0
-            );
+            let medidaInsertada;
+
+            // Si el cliente envía RSSI, usamos la nueva lógica
+            if (typeof rssi === "number") {
+                medidaInsertada = await logica.guardarMedidaYActualizarDistancia(
+                    id_placa,
+                    tipo,
+                    valor,
+                    latitud || 0.0,
+                    longitud || 0.0,
+                    rssi
+                );
+            } else {
+                // Compatibilidad con clientes antiguos: solo inserta en medida
+                medidaInsertada = await logica.guardarMedida(
+                    id_placa,
+                    tipo,
+                    valor,
+                    latitud || 0.0,
+                    longitud || 0.0
+                );
+            }
 
             res.json({
                 status: "ok",
@@ -562,6 +576,120 @@ function reglasREST(logica) {
             res.status(500).json({ error: "Error interno servidor" });
         }
     });
+
+    // -----------------------------------------------------------------------------
+    // Endpoint: POST /actualizarEstadoPlaca
+    // Autor: Alan Guevara Martínez
+    // Fecha: 20/11/2025
+    // -----------------------------------------------------------------------------
+    // Descripción:
+    //   Recibe el estado de encendida (1/0) de una placa y lo actualiza en MySQL.
+    //
+    // Body esperado (JSON):
+    //   {
+    //     "id_placa": "XXXX",
+    //     "encendida": 1
+    //   }
+    //
+    // Respuestas:
+    //   200: { status: "ok" }
+    //   400: faltan datos
+    //   500: error interno
+    // -----------------------------------------------------------------------------
+    router.post("/actualizarEstadoPlaca", async (req, res) => {
+        try {
+            const { id_placa, encendida } = req.body;
+
+            if (!id_placa || encendida === undefined) {
+                return res.status(400).json({
+                    status: "error",
+                    mensaje: "Faltan datos: id_placa o encendida"
+                });
+            }
+
+            await logica.actualizarEstadoPlaca(id_placa, encendida);
+
+            return res.json({ status: "ok" });
+
+        } catch (err) {
+            console.error("Error en POST /actualizarEstadoPlaca:", err);
+            return res.status(500).json({
+                status: "error",
+                mensaje: "Error interno del servidor"
+            });
+        }
+    });
+
+    // -----------------------------------------------------------------------------
+    // GET /estadoPlaca
+    // -----------------------------------------------------------------------------
+    //  Descripción:
+    //     Devuelve el estado actual del sensor asociado al usuario.
+    //     Usa el campo `placa.encendida` para saber si el sensor está activo.
+    //
+    //  Parámetros (query):
+    //     - id_usuario : ID del usuario logueado
+    //
+    //  Respuestas:
+    //     { estado: "activo" }    → si encendida = 1
+    //     { estado: "inactivo" }  → si encendida = 0
+    //     { estado: "sin_placa" } → si el usuario no tiene placa asociada
+    //
+    //  Notas:
+    //     • Este endpoint se consulta periódicamente desde el frontend.
+    //     • Es muy ligero: solo hace una consulta súper pequeña.
+    // -----------------------------------------------------------------------------
+    router.get("/estadoPlaca", async (req, res) => {
+        try {
+            const id_usuario = req.query.id_usuario;
+
+            if (!id_usuario)
+                return res.status(400).json({ error: "Falta id_usuario" });
+
+            // Obtener ID de la placa asociada al usuario
+            const id_placa = await logica.obtenerPlacaDeUsuario(id_usuario);
+
+            if (!id_placa)
+                return res.json({ estado: "sin_placa" });
+
+            // Consultar si la placa está encendida o no
+            const encendida = await logica.obtenerEstadoPlaca(id_placa);
+
+            return res.json({
+                estado: encendida ? "activo" : "inactivo"
+            });
+
+        } catch (err) {
+            console.error("Error en GET /estadoPlaca:", err);
+            res.status(500).json({ error: "Error interno del servidor" });
+        }
+    });
+
+    // ======================================================================
+    // GET /estadoSenal?id_usuario=NUM
+    // ----------------------------------------------------------------------
+    // Devuelve el nivel de señal del sensor del usuario.
+    // ======================================================================
+    router.get("/estadoSenal", async (req, res) => {
+
+        try {
+            const idUsuario = req.query.id_usuario;
+
+            const datos = await logica.obtenerEstadoSenal(idUsuario);
+
+            res.json({
+                status: "ok",
+                rssi: datos.rssi,
+                nivel: datos.nivel
+            });
+
+        } catch (e) {
+            console.log("ERROR en /estadoSenal:", e);
+            res.json({ status: "error", mensaje: e.toString() });
+        }
+    });
+
+
 
 
     // --------------------------------------------------------------------------
