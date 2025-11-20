@@ -477,8 +477,8 @@ public class UserPageActivity extends FuncionesBaseActivity {
 
             Date fecha = iso.parse(fechaISO);
 
-            // Formato deseado: 19/11/2025
-            SimpleDateFormat bonito = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+            // Formato deseado: 19/11/2025 - 20:12
+            SimpleDateFormat bonito = new SimpleDateFormat("dd/MM/yyyy - HH:mm", Locale.getDefault());
             bonito.setTimeZone(TimeZone.getDefault());
 
             return bonito.format(fecha);
