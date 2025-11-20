@@ -17,7 +17,7 @@
 
 .saludo-container{
     width: 100%;
-    height: 70px;
+    height: 50px;
     background-image: url('../img/fondoTitulosDegrade.svg');
     background-size: cover;
     background-position: center;
@@ -29,14 +29,14 @@
 
 .saludo-container h2{
     font-family: "Roboto", sans-serif;
-    font-size: clamp(18px, 1.5vw, 25px);
+    font-size: clamp(18px, 1.5vw, 22px);
     font-weight: 400;
     margin-left: 25px;
 }
 
 .saludo-container p{
     font-family: "Roboto", sans-serif;
-    font-size: clamp(17px, 1.4vw, 22px);
+    font-size: clamp(17px, 1.4vw, 20px);
     font-weight: 300;
     margin-left: 10px;
 }
@@ -268,6 +268,7 @@
 .miSensor-container{
     width: 100%;
     height: 100%;
+    min-height: 585px;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -294,6 +295,7 @@
     width: 100%;
     height: 36px;
     display: flex;
+    justify-content: space-between;
     background-color: white;
     border-radius: 12px;
     box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.11);
@@ -302,12 +304,28 @@
 }
 
 .selector-gases-container select{
-    width: 100%;
+    width: 20%;
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(12px, 1vw, 13px);
+    font-weight: 400;
+    color: #545454;
+    border: none;
+    background-color: white;
+    text-align: center;
+    justify-self: flex-end;
+    cursor: pointer;
+}
+
+.selector-gases-container select:hover{
+    background-color: #e3e3e3;
+    border-radius: 8px;
+}
+
+.selector-gases-container p{
     font-family: 'Open Sans', sans-serif;
     font-size: clamp(12px, 1vw, 13px);
     font-weight: 400;
     color: #6c6c6c;
-    border: none;
 }
 
 .selector-gases-container select option{
@@ -538,6 +556,8 @@
 
 /* Fin del Container ultima medicion */
 
+/* Inicio del Container promedio */
+
 .promedio-container{
     width: 50%;
     height: 100%;
@@ -628,13 +648,113 @@
     font-weight: 300;
 }
 
+/* Fin del Container promedio */
+
+/* Inicio del Container de Gráfica */
+
 .grafica-container{
     width: 100%;
     height: 45%;
     background-color: white;
     border-radius: 15px;
     box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
 }
+
+.top-container{
+    width: 100%;
+    height: 30%;
+    display: flex;
+    justify-content: space-between;
+}
+
+.titulo-grafica-container h4{
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(11px, 1vw, 0.8rem);
+    font-weight: 600;
+}
+
+.titulo-grafica-container p{
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(10px, 1vw, 0.75rem);
+    font-weight: 400;
+    color: #575757;
+}
+
+.titulo-grafica{
+    display: flex;
+    gap: 5px;
+}
+
+.titulo-grafica button{
+    margin-top: 1px;
+}
+
+.selector-carita-container{
+    display: flex;
+    gap: 10px;
+}
+
+.selector-modo-grafica{
+    width: auto;
+    height: auto;
+    background-color: white;
+    padding: 5px;
+    border-radius: 7px;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.15);
+}
+
+.selector-modo-grafica button{
+    width: 23px;
+    height: 20px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(13px, 1vw, 1.3rem);
+    font-weight: 600;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.selector-modo-grafica button:hover{
+    background-color: #d9d9d9;
+    border-radius: 5px;
+}
+
+.selector-modo-grafica .selector-opcion.activo {
+    background-color: #E8E8E8;
+    border-radius: 5px;
+    color: #000;
+    font-weight: 600;
+}
+
+.carita-grafica{
+    width: 53px;
+    height: 53px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.15);
+    text-align: center;
+}
+
+.carita-grafica img{
+    width: 40px;
+    margin-top: 7px;
+}
+.bottom-container{
+    width: 100%;
+    height: 69%;
+}
+
+#graficaCalidad {
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
+}
+
+
+/* Fin del Container de Gráfica */
 
 /* POPUP DE MI SENSOR */
 
@@ -805,8 +925,8 @@
     .mapa-indice-container{
         min-width: 140px;
         min-height: 140px;
-        top: 9px;
-        right: 8.5px;
+        top: 6px;
+        right: 7.5px;
         gap: 10px;
     }
 
@@ -816,6 +936,7 @@
 
     .miSensor-container{
         gap: 10px;
+        min-height: 200px;
     }
 
     .distancia_estado-container{
@@ -845,10 +966,15 @@
 
     .grafica-container{
         height: 70%;
+        padding: 10px 10px 0 10px;
     }
 
     .popup-container{
         width: 90%;
+    }
+
+    #graficaCalidad{
+        min-height: 118px;
     }
 
 
@@ -870,7 +996,7 @@
     }
 
     .medicion-titulo-container p{
-        font-size: clamp(9px, 1vw, 0.75rem);
+        font-size: clamp(8.5px, 1vw, 0.75rem);
     }
 
     .medicion-container{

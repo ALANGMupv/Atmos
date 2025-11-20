@@ -95,9 +95,9 @@ $usuario = $_SESSION['usuario'];
 
                     <!-- Selector de gas -->
                     <div class="selector-gases-container">
+                        <p>Selecciona un gas contaminante:</p>
                         <select id="gasSelector">
-                            <option value="" disabled selected hidden>Selecciona un gas contaminante</option>
-                            <option value="NO₂">NO₂</option>
+                            <option value="NO₂" selected >NO₂</option>
                             <option value="CO">CO</option>
                             <option value="O₃">O₃</option>
                             <option value="SO₂">SO₂</option>
@@ -110,14 +110,14 @@ $usuario = $_SESSION['usuario'];
                         <div class="distancia_estado-container">
                             <div class="estado-container">
                                 <div class="estado-titulo-container"><h4>Estado del Sensor</h4></div>
-                                <img class="estado-icono" src="img/estadoActivoSensorIcono.svg" alt="">
-                                <p>Sensor activo</p>
+                                <img class="estado-icono" id="estadoSensorIcono" src="img/estadoActivoSensorIcono.svg" alt="">
+                                <p id="estadoSensorTexto">Sensor activo</p>
                             </div>
 
                             <div class="distancia-container">
                                 <div class="distancia-titulo-container"><h4>Distancia al sensor</h4></div>
-                                <img class="distancia-icono" src="img/distanciaIcono.svg" alt="">
-                                <p>Señal alta</p>
+                                <img class="distancia-icono" id="iconoSenal" src="img/sinSeñalDistanciaIcono.svg" alt="">
+                                <p id="textoSenal">Señal alta</p>
                             </div>
                         </div>
 
@@ -183,7 +183,7 @@ $usuario = $_SESSION['usuario'];
                                         <img src="img/informacionIcon.svg" alt="">
                                     </button>
                                 </div>
-                                <p id="graficaRangoFechas">17/11 al 23/11</p>
+                                <p id="graficaRangoTexto">--/-- al --/--</p>
                             </div>
                             <div class="selector-carita-container">
                                 <div class="selector-grafica-container">
@@ -202,7 +202,7 @@ $usuario = $_SESSION['usuario'];
 
                         </div>
                         <div class="bottom-container">
-
+                            <canvas id="graficaCalidad"></canvas>
                         </div>
                     </div>
                 </div>
@@ -218,13 +218,13 @@ $usuario = $_SESSION['usuario'];
                     <div class="estado-info-container">
                         <h2>Estado del Sensor</h2>
                         <img src="img/estadoSensorInfoPopup.svg" alt="">
-                        <p>Muestra el estado del nodo sensor.</p>
+                        <p>Muestra el estado actual del nodo sensor. Este puede estar conectado y activo o desconectado e inactivo.</p>
                     </div>
 
                     <div class="distancia-info-container">
                         <h2>Distancia del Sensor</h2>
                         <img src="img/distanciaSensorInfoPopup.svg" alt="">
-                        <p>Indica la potencia de señal recibida.</p>
+                        <p>Indica la intensidad de la señal entre tu móvil y el sensor Atmos midiendo la potencia de la señal.  Una señal alta significa que el sensor está cerca o bien conectado; una señal baja puede indicar más distancia o interferencias.</p>
                     </div>
                 </div>
 
@@ -232,13 +232,13 @@ $usuario = $_SESSION['usuario'];
                     <div class="medicion-info-container">
                         <h2>Última medición</h2>
                         <img src="img/medicionInfoPopup.svg" alt="">
-                        <p>Valor más reciente captado por el sensor.</p>
+                        <p>Es la medición más reciente captada por tu sensor. Este valor se actualiza periódicamente y permite saber en tiempo real cómo está la calidad del aire justo ahora.</p>
                     </div>
 
                     <div class="promedio-info-container">
                         <h2>Promedio del día</h2>
                         <img src="img/promedioInfoPopup.svg" alt="">
-                        <p>Promedio de contaminación del día.</p>
+                        <p>Es el valor medio de las mediciones registradas por el sensor a lo largo del día. Ayuda a entender cómo ha sido la calidad del aire durante la jornada, más allá de picos puntuales.</p>
                     </div>
                 </div>
             </div>

@@ -657,6 +657,392 @@ class Logica {
         }
     }
 
+    // --------------------------------------------------------------------------
+    // Método: obtenerPromedios7Dias()
+    // --------------------------------------------------------------------------
+    // Descripción:
+    //   Devuelve una lista de 7 promedios, uno por cada día desde hace 6 días
+    //   hasta hoy, SOLO del tipo de gas indicado para una placa.
+    //   Si un día no tiene medidas → se devuelve 0.
+    // --------------------------------------------------------------------------
+    async obtenerPromedios7Dias(id_placa, tipo) {
+        const conn = await this.pool.getConnection();
+        try {
+            const sql = `
+				SELECT DATE(fecha_hora) AS fecha, AVG(valor) AS promedio
+				FROM medida
+				WHERE id_placa = ?
+				  AND tipo = ?
+				  AND fecha_hora >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+				GROUP BY DATE(fecha_hora)
+			`;
+
+            const [rows] = await conn.query(sql, [id_placa, tipo]);
+
+            // Convertimos resultado a un mapa: { "2025-11-15": 0.08, ... }
+            const mapa = {};
+            rows.forEach(r => {
+                mapa[r.fecha.toISOString().substring(0,10)] = Number(r.promedio);
+            });
+
+            // Construimos salida en orden cronológico
+            const hoy = new Date();
+            const valores = [];
+
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(hoy.getDate() - i);
+
+                // Convertir fecha a AAAA-MM-DD en zona local (no UTC)
+                const clave = d.getFullYear() + "-" +
+                    String(d.getMonth() + 1).padStart(2, "0") + "-" +
+                    String(d.getDate()).padStart(2, "0");
+
+
+                valores.push(mapa[clave] ? mapa[clave] : 0);
+            }
+
+            return valores;
+
+        } finally {
+            conn.release();
+        }
+    }
+
+
+    // --------------------------------------------------------------------------
+    // Método: obtenerPromedios8HorasPorGas()
+    // --------------------------------------------------------------------------
+    // Descripción:
+    //   Devuelve un arreglo con 8 promedios horarios del gas indicado,
+    //   desde hace 7 horas hasta la hora actual.
+    //
+    // Parámetros:
+    //   - id_placa {string} : identificador del sensor
+    //   - tipo     {number} : tipo del gas
+    //
+    // Devuelve:
+    //   - {Promise<Array<number>>} : 8 valores (hora -7 → hora actual).
+    // --------------------------------------------------------------------------
+    async obtenerPromedios8HorasPorGas(id_placa, tipo) {
+        const conn = await this.pool.getConnection();
+        try {
+            const sql = `
+				SELECT 
+					fecha_hora,
+					HOUR(fecha_hora) AS hora,
+					AVG(valor) AS promedio
+				FROM medida
+				WHERE id_placa = ?
+				  AND tipo = ?
+				  AND fecha_hora >= DATE_SUB(NOW(), INTERVAL 8 HOUR)
+				GROUP BY HOUR(fecha_hora)
+				ORDER BY hora;
+			`;
+
+            const [rows] = await conn.query(sql, [id_placa, tipo]);
+
+            console.log("\n\n============= DEBUG SQL (ULTIMAS 8 HORAS) =============");
+            console.log("NOW() local del servidor:", new Date().toString());
+            console.log("Registros encontrados por MySQL:\n", rows);
+
+            const resultado = [];
+            const ahora = new Date();
+
+            console.log("\nHoras generadas por Node para comparar:");
+            for (let i = 7; i >= 0; i--) {
+                const fecha = new Date(ahora.getTime() - i * 3600000);
+                const horaNode = fecha.getHours();
+
+                console.log(` - Hora generada: ${horaNode}`);
+
+                // Buscar en rows
+                const fila = rows.find(r => Number(r.hora) === horaNode);
+
+                if (fila) {
+                    console.log(`   ✔ Coincidencia encontrada: MySQL hora=${fila.hora}, promedio=${fila.promedio}`);
+                    resultado.push(Number(fila.promedio));
+                } else {
+                    console.log(`   ✖ Sin coincidencia para esa hora -> se añade 0`);
+                    resultado.push(0);
+                }
+            }
+
+            console.log("\nResultado final (8 valores):", resultado);
+            console.log("======================================================\n\n");
+
+            return resultado;
+
+        } finally {
+            conn.release();
+        }
+    }
+
+// --------------------------------------------------------------------------
+    // Autor: Alan Guevara Martínez
+    // Fecha: 20/11/2025
+    // Método PRIVADO: _mapearRSSIaEstado()
+    // --------------------------------------------------------------------------
+    // Descripción:
+    //   Recibe un valor de RSSI y lo traduce a una etiqueta de distancia
+    //   legible para guardar directamente en la BD (ej: "cerca", "media", "lejos").
+    //
+    // Notas:
+    //   - Los umbrales son orientativos y se pueden ajustar más adelante.
+    // --------------------------------------------------------------------------
+    _mapearRSSIaEstado(rssi) {
+        // Si no viene nada o es NaN, devolvemos "desconocida"
+        if (rssi === null || rssi === undefined || isNaN(Number(rssi))) {
+            return "desconocida";
+        }
+
+        const valor = Number(rssi);
+
+        // Umbrales típicos para BLE (puedes modificarlos a tu gusto)
+        if (valor >= -50) {
+            return "muy_cerca";      // señal muy fuerte
+        } else if (valor >= -70) {
+            return "cerca";          // bastante cerca
+        } else if (valor >= -85) {
+            return "media";          // distancia media
+        } else {
+            return "lejos";          // lejos / muy débil
+        }
+    }
+
+    // --------------------------------------------------------------------------
+    // Autor: Alan Guevara Martínez
+    // Fecha: 20/11/2025
+    // Método: guardarMedidaYActualizarDistancia()
+    // --------------------------------------------------------------------------
+    // Descripción:
+    //   Inserta una nueva medida en la tabla "medida" (como guardarMedida),
+    //   y además actualiza el campo "distancia" de la tabla "placa"
+    //   usando el RSSI recibido.
+    //
+    // Parámetros:
+    //   - id_placa {string} : identificador de la placa.
+    //   - tipo     {number} : tipo de gas.
+    //   - valor    {number} : valor medido.
+    //   - latitud  {number} : latitud registrada (opcional).
+    //   - longitud {number} : longitud registrada (opcional).
+    //   - rssi     {number} : intensidad de señal del beacon.
+    //
+    // Devuelve:
+    //   - {Promise<Object>} : fila insertada en "medida".
+    //
+    // Notas importantes:
+    //   - Se usa transacción para que inserción y actualización vayan juntas.
+    //   - El campo "placa.distancia" debe ser de tipo VARCHAR para guardar texto
+    //     como "cerca" / "media" / "lejos". Ahora mismo está como DOUBLE en el
+    //     SQL que has pasado, habría que cambiarlo a VARCHAR(20) por ejemplo.
+    // --------------------------------------------------------------------------
+    async guardarMedidaYActualizarDistancia(
+        id_placa,
+        tipo,
+        valor,
+        latitud = 0,
+        longitud = 0,
+        rssi
+    ) {
+        const conn = await this.pool.getConnection();
+        try {
+            // Iniciamos transacción para hacerlo todo de forma atómica
+            await conn.beginTransaction();
+
+            // 1) Insertar la medida igual que en guardarMedida()
+            const sqlInsert = `
+                INSERT INTO medida (id_placa, tipo, valor, latitud, longitud, fecha_hora)
+                VALUES (?, ?, ?, ?, ?, NOW())
+            `;
+            const [resultado] = await conn.execute(sqlInsert, [
+                id_placa,
+                tipo,
+                valor,
+                latitud,
+                longitud
+            ]);
+
+            const sqlSelect = `SELECT * FROM medida WHERE id_medida = ?`;
+            const [filas] = await conn.execute(sqlSelect, [resultado.insertId]);
+            const medidaInsertada = filas[0];
+
+            // 2) Calcular el estado de distancia a partir del RSSI
+            const estadoDistancia = this._mapearRSSIaEstado(rssi);
+
+            // 3) Actualizar la tabla placa con el estado calculado
+            const sqlUpdatePlaca = `
+                UPDATE placa
+                SET distancia = ?
+                WHERE id_placa = ?
+            `;
+            await conn.execute(sqlUpdatePlaca, [estadoDistancia, id_placa]);
+
+            // 4) Confirmamos la transacción
+            await conn.commit();
+
+            return medidaInsertada;
+
+        } catch (err) {
+            // Si algo falla, revertimos la transacción
+            try {
+                await conn.rollback();
+            } catch (e) {
+                console.error("Error en rollback de guardarMedidaYActualizarDistancia:", e);
+            }
+            console.error("Error en guardarMedidaYActualizarDistancia:", err);
+            throw err;
+
+        } finally {
+            // Liberamos la conexión al pool
+            conn.release();
+        }
+    }
+
+    // --------------------------------------------------------------------------
+    // Método: actualizarEstadoPlaca
+    // Autor: Alan Guevara Martínez
+    // Fecha: 23/11/2025
+    // --------------------------------------------------------------------------
+    // Descripción:
+    //   Actualiza el campo "encendida" de la tabla placa según si el sensor
+    //   está enviando beacons (1) o no (0).
+    //
+    // Parámetros:
+    //   - id_placa {string}
+    //   - encendida {number} → 1 o 0
+    //
+    // Devuelve:
+    //   - {Promise<void>}
+    // --------------------------------------------------------------------------
+    async actualizarEstadoPlaca(id_placa, encendida) {
+        const conn = await this.pool.getConnection();
+        try {
+            const sql = `
+				UPDATE placa
+				SET encendida = ?
+				WHERE id_placa = ?
+			`;
+            await conn.execute(sql, [encendida, id_placa]);
+
+        } catch (err) {
+            console.error("Error en actualizarEstadoPlaca:", err);
+            throw err;
+
+        } finally {
+            conn.release();
+        }
+    }
+
+    // -----------------------------------------------------------------------------
+    // Método: obtenerEstadoPlaca()
+    // -----------------------------------------------------------------------------
+    // Descripción:
+    //     Consulta en la base de datos si una placa (sensor) está encendida o no.
+    //     La tabla `placa` contiene un campo llamado `encendida` que:
+    //         • vale 1 → la placa está activa / encendida
+    //         • vale 0 → la placa está apagada / inactiva
+    //
+    //  Parámetros:
+    //     - id_placa {string} : ID de la placa que queremos comprobar
+    //
+    //  Devuelve:
+    //     - true  → si la placa está encendida (1)
+    //     - false → si la placa está apagada (0)
+    //     - null  → si no existe la placa
+    //
+    //  Notas:
+    //     • Solo consulta 1 campo, así que es rápido.
+    //     • Se usa en el endpoint /estadoPlaca.
+    // -----------------------------------------------------------------------------
+    async obtenerEstadoPlaca(id_placa) {
+
+        const conn = await this.pool.getConnection();
+
+        try {
+            const sql = `
+				SELECT encendida 
+				FROM placa
+				WHERE id_placa = ?
+				LIMIT 1
+			`;
+
+            const [rows] = await conn.query(sql, [id_placa]);
+
+            if (rows.length === 0) return null;
+
+            // Devuelve true si encendida = 1, false si encendida = 0
+            return rows[0].encendida === 1;
+
+        } finally {
+            conn.release();
+        }
+    }
+
+    // ==========================================================================
+    // Método: obtenerEstadoSenal( idUsuario )
+    // --------------------------------------------------------------------------
+    // Descripción:
+    //   Devuelve el nivel de señal del sensor del usuario.
+    //
+    //   Para calcularlo:
+    //      - Se obtiene la placa asignada al usuario.
+    //      - Se lee el valor del campo "distancia" de la tabla placa (RSSI).
+    //      - Se clasifica según tus rangos:
+    //
+    //          -40  a -55  → señal fuerte
+    //          -56  a -70  → señal media
+    //          -71  a -85  → señal baja
+    //          -86  a -95  → mala señal (casi perdido)
+    //
+    // Parámetros:
+    //   - idUsuario: ID del usuario autenticado.
+    //
+    // Respuesta:
+    //   { rssi: number, nivel: "fuerte" | "media" | "baja" | "mala" | "sin_datos" }
+    // ==========================================================================
+    async obtenerEstadoSenal(idUsuario) {
+
+        const conn = await this.pool.getConnection();
+
+        try {
+            // 1) Buscar qué placa tiene este usuario
+            const sqlPlaca = `
+				SELECT p.distancia
+				FROM usuarioplaca up
+				JOIN placa p ON p.id_placa = up.id_placa
+				WHERE up.id_usuario = ?
+				LIMIT 1
+			`;
+
+            const [rows] = await conn.query(sqlPlaca, [idUsuario]);
+
+            if (rows.length === 0) {
+                return { nivel: "sin_datos" };
+            }
+
+            const rssi = rows[0].distancia;
+
+            // 2) Clasificar señal según rangos
+            let nivel = "sin_datos";
+
+            if (rssi <= -40 && rssi >= -55) {
+                nivel = "fuerte";
+            } else if (rssi <= -56 && rssi >= -70) {
+                nivel = "media";
+            } else if (rssi <= -71 && rssi >= -85) {
+                nivel = "baja";
+            } else if (rssi <= -86 && rssi >= -95) {
+                nivel = "mala";
+            }
+
+            return { rssi, nivel };
+
+        } finally {
+            conn.release();
+        }
+    }
+
 }
 
 // --------------------------------------------------------------------------

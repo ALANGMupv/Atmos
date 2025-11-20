@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:id="@+id/contenedorNotificacion"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="6dp"
+        android:background="@drawable/notificacion_caja"
+        android:orientation="vertical"
+        android:padding="12dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- FILA SUPERIOR: icono + título + hora + punto -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <!-- Icono -->
+            <ImageView
+                android:id="@+id/imagenNoti"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="8dp"
+                tools:srcCompat="@tools:sample/avatars" />
+
+            <!-- Título (ocupa espacio disponible) -->
+            <TextView
+                android:id="@+id/tituloNoti"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Nivel crítico"
+                android:textStyle="bold"
+                android:textSize="15sp"
+                android:textColor="#000000" />
+
+            <!-- Hora -->
+            <TextView
+                android:id="@+id/horaNoti"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:text="2:20 PM"
+                android:textColor="#7A7A7A"
+                android:textSize="13sp" />
+
+            <!-- Puntito verde -->
+            <ImageView
+                android:id="@+id/estadoNotis"
+                android:layout_width="9dp"
+                android:layout_height="9dp"
+                android:layout_marginStart="4dp"
+                android:src="@drawable/bg_boton_verde" />
+
+        </LinearLayout>
+
+        <!-- TEXTO DE DESCRIPCIÓN -->
+        <TextView
+            android:id="@+id/textoNoti"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="Texto de la notificación"
+            android:textSize="14sp"
+            android:textColor="#333333" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
