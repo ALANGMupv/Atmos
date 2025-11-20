@@ -1,7 +1,9 @@
 package org.jordi.btlealumnos2021;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -13,8 +15,19 @@ import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  * Nombre fichero: UserPageActivity.java
@@ -40,8 +53,24 @@ public class UserPageActivity extends FuncionesBaseActivity {
     private RequestQueue queue;
 
     private LinearLayout layoutSinSensor, layoutConSensor;
-    private TextView txtUltima, txtPromedio;
+    private TextView txtUltima, txtPromedio, txtUltimaFecha, txtPromedioFecha, txtEstadoUltima, txtEstadoPromedio;
+    private TextView txtUltimaCalidad, txtPromedioCalidad;
+    private ImageView imgUltimaCalidad, imgPromedioCalidad;
     private Spinner spinner;
+
+    // --- CAMPOS PARA LA GRÁFICA ---
+    private com.github.mikephil.charting.charts.BarChart barChartCalidadAire;
+    private TextView txtRangoFechasGrafica;
+    private TextView txtEstadoCalidad;
+    private ImageView iconEstadoCalidad;
+    private TextView btnModoDia;
+    private TextView btnModoHora;
+
+    // modo actual de la gráfica ("dia" o "hora")
+    private String modoGrafica = "dia";
+
+    // tipo de gas seleccionado en el spinner
+    private int tipoSeleccionado = 11;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,11 +86,49 @@ public class UserPageActivity extends FuncionesBaseActivity {
         nombre = SesionManager.obtenerNombre(this);
 
         // ---------------------------------------------------------------
+        // REFERENCIAS A LA TARJETA DE LA GRÁFICA
+        // ---------------------------------------------------------------
+        barChartCalidadAire = findViewById(R.id.barChartCalidadAire);
+        txtRangoFechasGrafica = findViewById(R.id.txtRangoFechasGrafica);
+        txtEstadoCalidad = findViewById(R.id.txtEstadoCalidad);
+        txtUltimaFecha = findViewById(R.id.tv_ultima_fecha);
+        txtPromedioFecha = findViewById(R.id.tv_promedio_fecha);
+        iconEstadoCalidad = findViewById(R.id.iconEstadoCalidad);
+        btnModoDia = findViewById(R.id.btnModoDia);
+        btnModoHora = findViewById(R.id.btnModoHora);
+        txtEstadoUltima = findViewById(R.id.tv_ultima_gas);
+        txtEstadoPromedio = findViewById(R.id.tv_promedio_gas);
+
+        txtUltimaCalidad = findViewById(R.id.tv_ultima_calidad);
+        txtPromedioCalidad = findViewById(R.id.tv_promedio_calidad);
+        imgPromedioCalidad = findViewById(R.id.img_promedio_calidad);
+        imgUltimaCalidad = findViewById(R.id.img_ultima_calidad);
+
+
+        // Modo por defecto: día seleccionado
+        actualizarModoGrafica("dia");
+
+        // ---------------------------------------------------------------
+        // BOTONES D / H PARA CAMBIAR EL MODO DE LA GRÁFICA
+        // ---------------------------------------------------------------
+        btnModoDia.setOnClickListener(v -> actualizarModoGrafica("dia"));
+        btnModoHora.setOnClickListener(v -> actualizarModoGrafica("hora"));
+
+        // ---------------------------------------------------------------
         // SPINNER
         // ---------------------------------------------------------------
         spinner = findViewById(R.id.spinnerContaminante);
 
-        String[] gases = {"NO₂", "CO₂", "O₃"};
+        String[] gases = {"NO₂", "CO", "O₃", "SO₃"};
+
+        /*
+        11 = NO2
+        12 = CO
+        13 = O3
+        14 = SO3
+        */
+        // Códigos reales en BD (tabla medida.tipo)
+        int[] tiposGases = {11, 12, 13, 14};
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 this,
@@ -70,6 +137,25 @@ public class UserPageActivity extends FuncionesBaseActivity {
         );
 
         spinner.setAdapter(adapter);
+
+        // ---------------------------------------------------------------
+        // CAMBIO DE CONTAMINANTE EN EL SPINNER
+        // ---------------------------------------------------------------
+        spinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                // Guardar el tipo seleccionado según la posición
+                tipoSeleccionado = tiposGases[position];
+                recargarEstadoUsuario();
+            }
+
+            @Override
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {
+                // Por defecto NO2
+                tipoSeleccionado = 11;
+            }
+
+        });
 
 
         // ---------------------------------------------------------------
@@ -160,65 +246,96 @@ public class UserPageActivity extends FuncionesBaseActivity {
     /**
      * Nombre Método: recargarEstadoUsuario
      * Descripción:
-     *      Vuelve a consultar al servidor si el usuario tiene una placa vinculada
-     *      y actualiza la interfaz (mostrar layoutSinSensor o layoutConSensor).
+     *      Consulta al servidor si el usuario tiene una placa vinculada y,
+     *      en caso afirmativo, obtiene:
+     *          - la última medición del gas seleccionado
+     *          - el promedio del día del gas seleccionado
      *
-     * Objetivo: Que tras vincular un sensor se recarge automáticamente el layout
+     *      Este método usa el endpoint actualizado:
+     *          GET /resumenUsuarioPorGas?id_usuario=XX&tipo=YY
      *
-     * Autor: Alan Guevara Martínez
-     * Fecha: 18/11/2025
+     * Entradas:
+     *      - No recibe parámetros. Usa:
+     *          tipoSeleccionado (gas del spinner)
+     *          SesionManager.obtenerIdUsuario()
+     *
+     * Salidas:
+     *      - Actualiza la interfaz de usuario mostrando:
+     *          * layoutSinSensor → si NO tiene placa
+     *          * layoutConSensor → si SÍ tiene una placa
+     *
+     * Autora: Nerea Aguilar Forés
      */
     private void recargarEstadoUsuario() {
 
-        // Ocultar ambas mientras cargamos
         layoutSinSensor.setVisibility(View.GONE);
         layoutConSensor.setVisibility(View.GONE);
 
         int idUsuario = SesionManager.obtenerIdUsuario(this);
 
-        // ---------------------------------------------------------------
-        // CONSULTAR EN EL SERVIDOR EL RESUMEN DEL USUARIO
-        // ---------------------------------------------------------------
-        // Aquí preguntamos:
-        //   - ¿Tiene una placa vinculada?
-        //   - Si sí → ¿cuál es la última medida y el promedio?
-        LogicaFake.resumenUsuario(
+        LogicaFake.resumenUsuarioPorGas(
                 idUsuario,
+                tipoSeleccionado,
                 queue,
                 new LogicaFake.ResumenUsuarioCallback() {
 
                     // ----------------------------------------------------
-                    // CASO 1: EL USUARIO NO TIENE PLACA VINCULADA
+                    // CASO 1: EL USUARIO NO TIENE PLACA
                     // ----------------------------------------------------
                     @Override
                     public void onSinPlaca() {
-                        layoutConSensor.setVisibility(View.GONE); // Ocultar tarjeta con datos sensor
-                        layoutSinSensor.setVisibility(View.VISIBLE); // mostrar pantalla "Ups..."
+                        layoutConSensor.setVisibility(View.GONE);
+                        layoutSinSensor.setVisibility(View.VISIBLE);
                     }
 
                     // ----------------------------------------------------
-                    // CASO 2: EL USUARIO SÍ TIENE PLACA VINCULADA
+                    // CASO 2: EL USUARIO TIENE PLACA ASIGNADA
                     // ----------------------------------------------------
                     @Override
-                    public void onConPlaca(String placa, double ultima, double promedio) {
+                    public void onConPlaca(String placa, double ultimaValor, String ultimaFecha, double promedio) {
 
+                        Log.d("RESUMEN", "ultimaFecha cruda = '" + ultimaFecha + "'");
 
-                        // Mostrar la tarjeta con datos del sensor
                         layoutConSensor.setVisibility(View.VISIBLE);
-                        layoutSinSensor.setVisibility(View.GONE); // Ocultar "Ups..."
+                        layoutSinSensor.setVisibility(View.GONE);
 
-                        // Formateamos los decimales a dos cifras
-                        txtUltima.setText(
-                                String.format(Locale.US, "%.2f", ultima)
-                        );
+                        txtUltima.setText(String.format(Locale.US, "%.3f", ultimaValor));
+                        txtPromedio.setText(String.format(Locale.US, "%.3f", promedio));
 
-                        txtPromedio.setText(
-                                String.format(Locale.US, "%.2f", promedio)
-                        );
+                        txtUltimaFecha.setText(formatearFechaBonita(ultimaFecha));
+                        txtPromedioFecha.setText("Hoy");
+
+                        String simbolo = simboloGas(tipoSeleccionado);
+                        txtEstadoUltima.setText(simbolo + "\nppm");
+                        txtEstadoPromedio.setText(simbolo + "\nppm");
+
+                        // ----------------------------------------------------
+                        // ACTUALIZAR ESTADO DE CALIDAD EN LAS TARJETAS
+                        // ----------------------------------------------------
+                        //
+                        // Última medición
+                        String textoCalidadUltima = obtenerTextoCalidad(ultimaValor, tipoSeleccionado);
+                        int iconoCalidadUltima = obtenerIconoCalidad(ultimaValor, tipoSeleccionado);
+
+                        // Actualizar UI de la tarjeta de última medición
+                        txtUltimaCalidad.setText(textoCalidadUltima);
+                        imgUltimaCalidad.setImageResource(iconoCalidadUltima);
+
+                        // Promedio del día
+                        String textoCalidadProm = obtenerTextoCalidad(promedio, tipoSeleccionado);
+                        int iconoCalidadProm = obtenerIconoCalidad(promedio, tipoSeleccionado);
+
+                        // Actualizar UI de la tarjeta de promedio
+                        txtPromedioCalidad.setText(textoCalidadProm);
+                        imgPromedioCalidad.setImageResource(iconoCalidadProm);
+
+
+
+                        cargarDatosGrafica();
                     }
 
                     // ----------------------------------------------------
-                    // CASO 3: ERROR CONTROLADO DESDE EL SERVIDOR
+                    // CASO 3: ERROR CONTROLADO
                     // ----------------------------------------------------
                     @Override
                     public void onErrorServidor() {
@@ -227,7 +344,7 @@ public class UserPageActivity extends FuncionesBaseActivity {
                     }
 
                     // ----------------------------------------------------
-                    // CASO 4: ERROR NO ESPERADO
+                    // CASO 4: ERROR INESPERADO
                     // ----------------------------------------------------
                     @Override
                     public void onErrorInesperado() {
@@ -237,4 +354,428 @@ public class UserPageActivity extends FuncionesBaseActivity {
                 }
         );
     }
+
+    /**
+     * Nombre Método: obtenerTextoCalidad
+     * Descripción:
+     *      Devuelve el texto "Buena", "Regular", "Mala" o "Sin datos"
+     *      según el valor medido y el tipo de gas seleccionado.
+     *
+     * Entradas:
+     *      - valor: doble con la medida (última o promedio)
+     *      - tipoGas: código del gas (11 = NO2, 12 = CO, 13 = O3, 14 = SO2)
+     *
+     * Salidas:
+     *      - String con el texto correspondiente al estado de calidad
+     *
+     * Autora: Nerea Aguilar Forés
+     */
+    private String obtenerTextoCalidad(double valor, int tipoGas) {
+
+        // Si no hay datos o es 0 → Sin datos
+        if (valor <= 0) return "Sin datos";
+
+        switch (tipoGas) {
+
+            case 12: // CO
+                if (valor <= 1.7)  return "Buena";
+                if (valor <= 4.4)  return "Regular";
+                return "Mala";
+
+            case 11: // NO2
+                if (valor <= 0.021) return "Buena";
+                if (valor <= 0.053) return "Regular";
+                return "Mala";
+
+            case 13: // O3
+                if (valor <= 0.031) return "Buena";
+                if (valor <= 0.061) return "Regular";
+                return "Mala";
+
+            case 14: // SO2
+                if (valor <= 0.0076) return "Buena";
+                if (valor <= 0.019)  return "Regular";
+                return "Mala";
+        }
+
+        return "Sin datos";
+    }
+
+    /**
+     * Nombre Método: obtenerIconoCalidad
+     * Descripción:
+     *      Devuelve el recurso drawable del icono correspondiente
+     *      al estado de calidad: bueno, regular, malo o sin datos.
+     *
+     * Entradas:
+     *      - valor: doble con la medida (última o promedio)
+     *      - tipoGas: código del gas (11–14)
+     *
+     * Salidas:
+     *      - int con el identificador del drawable a usar
+     *
+     * Autora: Nerea Aguilar Forés
+     */
+    private int obtenerIconoCalidad(double valor, int tipoGas) {
+
+        // Sin datos → icono gris
+        if (valor <= 0) return R.drawable.ic_estado_sin_datos;
+
+        switch (tipoGas) {
+
+            case 12: // CO
+                if (valor <= 1.7)  return R.drawable.ic_estado_bueno;
+                if (valor <= 4.4)  return R.drawable.ic_estado_regular;
+                return R.drawable.ic_estado_malo;
+
+            case 11: // NO2
+                if (valor <= 0.021) return R.drawable.ic_estado_bueno;
+                if (valor <= 0.053) return R.drawable.ic_estado_regular;
+                return R.drawable.ic_estado_malo;
+
+            case 13: // O3
+                if (valor <= 0.031) return R.drawable.ic_estado_bueno;
+                if (valor <= 0.061) return R.drawable.ic_estado_regular;
+                return R.drawable.ic_estado_malo;
+
+            case 14: // SO2
+                if (valor <= 0.0076) return R.drawable.ic_estado_bueno;
+                if (valor <= 0.019)  return R.drawable.ic_estado_regular;
+                return R.drawable.ic_estado_malo;
+        }
+
+        return R.drawable.ic_estado_sin_datos;
+    }
+
+
+
+    /**
+     * Nombre Método: formatearFechaBonita
+     * Descripción:
+     *      Convierte una fecha en formato "yyyy-MM-dd HH:mm:ss"
+     *      (que viene del backend) a un formato más legible
+     *      como "dd/MM/yyyy".
+     *
+     * Entradas:
+     *      - fechaISO: cadena de fecha recibida del servidor.
+     *
+     * Salidas:
+     *      - Cadena formateada o "-" si falla.
+     *
+     * Autora: Nerea Aguilar Forés
+     */
+    private String formatearFechaBonita(String fechaISO) {
+
+        if (fechaISO == null || fechaISO.isEmpty()) {
+            return "-";
+        }
+
+        try {
+            // Formato que llega del servidor: 2025-11-19T19:12:00.000Z
+            SimpleDateFormat iso = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US);
+            iso.setTimeZone(TimeZone.getTimeZone("UTC")); // muy importante
+
+            Date fecha = iso.parse(fechaISO);
+
+            // Formato deseado: 19/11/2025
+            SimpleDateFormat bonito = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+            bonito.setTimeZone(TimeZone.getDefault());
+
+            return bonito.format(fecha);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "-";
+        }
+    }
+
+    /**
+     * Devuelve el símbolo del gas según el tipo (11–14)
+     * Autora: Nerea Aguilar Forés
+     */
+    private String simboloGas(int tipoGas) {
+        switch (tipoGas) {
+            case 11: return "NO\u2082"; // NO₂
+            case 12: return "CO";
+            case 13: return "O\u2083"; // O₃
+            case 14: return "SO\u2082"; // SO₂
+            default: return "-";
+        }
+    }
+
+
+
+
+    /**
+     * Nombre Método: actualizarModoGrafica
+     * Descripción:
+     *      Cambia el modo de visualización de la gráfica entre:
+     *      - "dia"  → promedio por día (últimos 7 días)
+     *      - "hora" → promedio por hora (día actual)
+     *
+     *      Además actualiza el aspecto visual de los botones D/H
+     *      para que se vea cuál está seleccionado.
+     *
+     * Entradas:
+     *      - nuevoModo: Cadena con el valor "dia" o "hora"
+     *
+     * Salidas:
+     *      - No retorna nada. Actualiza variables de la Activity
+     *        y la interfaz de usuario.
+     *
+     * Autora: Nerea Aguilar Forés
+     */
+    private void actualizarModoGrafica(String nuevoModo) {
+
+        // Guardamos el modo actual
+        modoGrafica = nuevoModo;
+
+        // Cambiamos el fondo de los botones según el modo
+        if ("dia".equals(nuevoModo)) {
+            btnModoDia.setBackgroundResource(R.drawable.bg_modo_selected);
+            btnModoHora.setBackgroundResource(R.drawable.bg_modo_unselected);
+        } else {
+            btnModoDia.setBackgroundResource(R.drawable.bg_modo_unselected);
+            btnModoHora.setBackgroundResource(R.drawable.bg_modo_selected);
+        }
+
+        cargarDatosGrafica();
+    }
+
+    /**
+     * Nombre Método: actualizarEstadoCalidad
+     * Descripción:
+     *      Determina el estado de la calidad del aire (buena, regular o mala)
+     *      según el promedio de las medidas visibles y el tipo de gas seleccionado.
+     *
+     *      Cambia dinámicamente:
+     *          - El texto mostrado al usuario
+     *          - El icono de carita (verde, naranja o rojo)
+     *
+     * Entradas:
+     *      - promedio: valor promedio calculado de la gráfica
+     *      - tipoGas: código del gas (11=NO2, 12=CO, 13=O3, 14=SO2)
+     *
+     * Salidas:
+     *      - No retorna nada. Actualiza la interfaz de usuario.
+     *
+     * Autora: Nerea Aguilar Forés
+     */
+    private void actualizarEstadoCalidad(double promedio, int tipoGas) {
+
+        String estado = "";
+        int icono = R.drawable.ic_estado_neutro; // Por si algo falla
+
+        // ---------------------------------------------------------
+        // Evaluar rangos según el tipo de gas
+        // ---------------------------------------------------------
+        switch (tipoGas) {
+
+            case 12: // CO
+                if (promedio <= 1.7) {
+                    estado = "Calidad de aire buena en promedio.";
+                    icono = R.drawable.ic_cara_buena;
+                } else if (promedio <= 4.4) {
+                    estado = "Calidad de aire regular en promedio.";
+                    icono = R.drawable.ic_cara_regular;
+                } else {
+                    estado = "Calidad de aire mala en promedio.";
+                    icono = R.drawable.ic_cara_mala;
+                }
+                break;
+
+            case 11: // NO2
+                if (promedio <= 0.021) {
+                    estado = "Calidad de aire buena en promedio.";
+                    icono = R.drawable.ic_cara_buena;
+                } else if (promedio <= 0.053) {
+                    estado = "Calidad de aire regular en promedio.";
+                    icono = R.drawable.ic_cara_regular;
+                } else {
+                    estado = "Calidad de aire mala en promedio.";
+                    icono = R.drawable.ic_cara_mala;
+                }
+                break;
+
+            case 13: // O3
+                if (promedio <= 0.031) {
+                    estado = "Calidad de aire buena en promedio.";
+                    icono = R.drawable.ic_cara_buena;
+                } else if (promedio <= 0.061) {
+                    estado = "Calidad de aire regular en promedio.";
+                    icono = R.drawable.ic_cara_regular;
+                } else {
+                    estado = "Calidad de aire mala en promedio.";
+                    icono = R.drawable.ic_cara_mala;
+                }
+                break;
+
+            case 14: // SO2
+                if (promedio <= 0.0076) {
+                    estado = "Calidad de aire buena en promedio.";
+                    icono = R.drawable.ic_cara_buena;
+                } else if (promedio <= 0.019) {
+                    estado = "Calidad de aire regular en promedio.";
+                    icono = R.drawable.ic_cara_regular;
+                } else {
+                    estado = "Calidad de aire mala en promedio.";
+                    icono = R.drawable.ic_cara_mala;
+                }
+                break;
+        }
+
+        // ---------------------------------------------------------
+        // Actualizar la UI en pantalla
+        // ---------------------------------------------------------
+        txtEstadoCalidad.setText(estado);
+        iconEstadoCalidad.setImageResource(icono);
+    }
+
+    /**
+     * Nombre Método: cargarDatosGrafica
+     * Descripción:
+     *      Carga los datos necesarios para pintar la gráfica de calidad del aire.
+     *      De momento usa datos fake ya que el backend aún no existe.
+     *      Cuando el backend esté listo, solo será necesario sustituir
+     *      la parte donde se crean los valores simulados.
+     *
+     * Entradas:
+     *      - No recibe parámetros. Usa las variables globales:
+     *          modoGrafica ("dia" o "hora")
+     *          tipoSeleccionado (11-14)
+     *
+     * Salidas:
+     *      - Actualiza la gráfica en pantalla
+     *
+     * Autora: Nerea Aguilar Forés
+     */
+    private void cargarDatosGrafica() {
+
+        // ---------------------------
+        // DATOS FAKE TEMPORALES
+        // ---------------------------
+        List<String> labels = new ArrayList<>();
+        List<Float> valores = new ArrayList<>();
+
+        if (modoGrafica.equals("dia")) {
+            // Últimos 7 días (fake)
+            labels.add("Lun");   valores.add(0.10f);
+            labels.add("Mar");   valores.add(0.22f);
+            labels.add("Mié");   valores.add(0.90f);
+            labels.add("Jue");   valores.add(0.40f);
+            labels.add("Vie");   valores.add(0.18f);
+            labels.add("Sáb");   valores.add(0.06f);
+            labels.add("Dom");   valores.add(0.09f);
+
+            txtRangoFechasGrafica.setText("17/11 al 23/11");
+
+        } else {
+            // 8 últimas horas (fake)
+            labels.add("08:00"); valores.add(0.02f);
+            labels.add("09:00"); valores.add(0.04f);
+            labels.add("10:00"); valores.add(0.05f);
+            labels.add("11:00"); valores.add(0.20f);
+            labels.add("12:00"); valores.add(0.17f);
+            labels.add("13:00"); valores.add(0.06f);
+            labels.add("14:00"); valores.add(0.03f);
+
+            txtRangoFechasGrafica.setText("Hoy");
+        }
+
+        // ---------------------------
+        // CONSTRUCCIÓN DE LA GRÁFICA
+        // ---------------------------
+        List<BarEntry> entries = new ArrayList<>();
+
+        for (int i = 0; i < valores.size(); i++) {
+            entries.add(new BarEntry(i, valores.get(i)));
+        }
+
+        BarDataSet dataSet = new BarDataSet(entries, "");
+        dataSet.setDrawValues(false); // quitar números encima
+
+        // Colores según promedio INDIVIDUAL
+        List<Integer> colores = new ArrayList<>();
+        for (float v : valores) {
+            colores.add(colorParaValor(v, tipoSeleccionado));
+        }
+        dataSet.setColors(colores);
+
+        BarData data = new BarData(dataSet);
+        data.setBarWidth(0.5f);
+
+        barChartCalidadAire.setData(data);
+        barChartCalidadAire.getDescription().setEnabled(false);
+        barChartCalidadAire.getXAxis().setGranularity(1f);
+
+        // Eje X → etiquetas (días o horas)
+        XAxis xAxis = barChartCalidadAire.getXAxis();
+        xAxis.setValueFormatter(new IndexAxisValueFormatter(labels));
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setGranularity(1f);
+        xAxis.setDrawGridLines(false);
+
+        // Eje Y
+        YAxis left = barChartCalidadAire.getAxisLeft();
+        left.setDrawGridLines(true);
+        left.setGridColor(Color.LTGRAY);
+        left.setTextSize(10f);
+        barChartCalidadAire.getAxisRight().setEnabled(false);
+
+        barChartCalidadAire.invalidate();
+
+        // ---------------------------
+        // PROMEDIO GENERAL
+        //----------------------------
+        double suma = 0;
+        for (float v : valores) suma += v;
+        double promedio = suma / valores.size();
+
+        // Cambiar la carita y texto
+        actualizarEstadoCalidad(promedio, tipoSeleccionado);
+    }
+
+    /**
+     * Nombre Método: colorParaValor
+     * Descripción:
+     *      Determina el color verde / naranja / rojo para una barra
+     *      según el valor promedio individual y el gas.
+     *
+     * Entradas:
+     *      - valor: valor promedio de la barra
+     *      - tipoGas: código del gas (11–14)
+     *
+     * Salidas:
+     *      - int con el color correspondiente
+     *
+     * Autora: Nerea Aguilar Forés
+     */
+    private int colorParaValor(float valor, int tipoGas) {
+
+        switch (tipoGas) {
+
+            case 12: // CO
+                if (valor <= 1.7f) return Color.rgb(76, 175, 80);     // verde
+                if (valor <= 4.4f) return Color.rgb(255, 152, 0);     // naranja
+                return Color.rgb(244, 67, 54);                       // rojo
+
+            case 11: // NO2
+                if (valor <= 0.021f) return Color.rgb(76, 175, 80);
+                if (valor <= 0.053f) return Color.rgb(255, 152, 0);
+                return Color.rgb(244, 67, 54);
+
+            case 13: // O3
+                if (valor <= 0.031f) return Color.rgb(76, 175, 80);
+                if (valor <= 0.061f) return Color.rgb(255, 152, 0);
+                return Color.rgb(244, 67, 54);
+
+            case 14: // SO2
+                if (valor <= 0.0076f) return Color.rgb(76, 175, 80);
+                if (valor <= 0.019f) return Color.rgb(255, 152, 0);
+                return Color.rgb(244, 67, 54);
+        }
+
+        return Color.GRAY;
+    }
+
 }

@@ -383,34 +383,45 @@ public class LogicaFake {
      */
     public interface ResumenUsuarioCallback {
         void onSinPlaca();                                    // Usuario no tiene placa asociada
-        void onConPlaca(String placa, double ultima, double promedio);  // Usuario con placa y datos
+        void onConPlaca(String placa, double ultimaValor, String ultimaFecha, double promedio);  // Usuario con placa y datos
         void onErrorServidor();                               // Error en la simulación/petición
         void onErrorInesperado();                             // Excepción inesperada
     }
 
+    // =========================================================
+// RESUMEN USUARIO POR GAS
+// =========================================================
+
     /**
-     * Nombre Método: resumenUsuario
-     * Descripción: Consulta al backend si un usuario tiene una placa vinculada
-     *              y devuelve sus datos resumidos (última medida y promedio).
+     * Nombre Método: resumenUsuarioPorGas
+     * Descripción:
+     *      Llama al endpoint /resumenUsuarioPorGas para obtener:
+     *          - Si el usuario tiene placa vinculada
+     *          - La placa asociada
+     *          - La última medición del gas seleccionado
+     *          - El promedio del día del gas seleccionado
      *
      * Entradas:
-     *   - idUsuario → id del usuario guardado en sesión
-     *   - queue → cola Volley para ejecutar la petición HTTP
-     *   - callback → interface para devolver datos al Activity
+     *      - idUsuario: ID del usuario logueado
+     *      - tipoGas: Código del gas (11=NO2, 12=CO, 13=O3, 14=SO2)
+     *      - queue: Cola de peticiones Volley
+     *      - callback: Objeto con métodos para manejar la respuesta
      *
      * Salidas:
-     *   - Callback indicando si tiene o no placa
-     *   - Datos del sensor (última medida, promedio)
+     *      - No retorna nada. Usa callback.
      *
      * Autora: Nerea Aguilar Forés
      */
-    public static void resumenUsuario(
+    public static void resumenUsuarioPorGas(
             int idUsuario,
+            int tipoGas,
             RequestQueue queue,
             ResumenUsuarioCallback callback
     ) {
-        String url = "https://nagufor.upv.edu.es/resumenUsuario?id_usuario="
-                + idUsuario + "&t=" + System.currentTimeMillis(); // <-- ROMPE CACHÉ
+        String url = "https://nagufor.upv.edu.es/resumenUsuarioPorGas"
+                + "?id_usuario=" + idUsuario
+                + "&tipo=" + tipoGas
+                + "&t=" + System.currentTimeMillis();
 
         JsonObjectRequest req = new JsonObjectRequest(
                 Request.Method.GET,
@@ -418,7 +429,7 @@ public class LogicaFake {
                 null,
                 response -> {
                     try {
-                        String status = response.getString("status");
+                        String status = response.optString("status");
 
                         if ("sin_placa".equals(status)) {
                             callback.onSinPlaca();
@@ -426,11 +437,25 @@ public class LogicaFake {
                         }
 
                         if ("con_placa".equals(status)) {
-                            String placa = response.getString("id_placa");
-                            double ultima = response.getDouble("ultima_medida");
-                            double promedio = response.getDouble("promedio");
 
-                            callback.onConPlaca(placa, ultima, promedio);
+                            String placa = response.getString("id_placa");
+
+                            double ultimaValor = 0;
+                            String ultimaFecha = "";
+                            // ==== LEER OBJETO ultima_medida { valor, fecha_hora } ====
+                            try {
+                                JSONObject ultimaObj = response.getJSONObject("ultima_medida");
+
+                                ultimaValor = ultimaObj.optDouble("valor", 0);
+                                ultimaFecha = ultimaObj.optString("fecha_hora", "");
+                            } catch (Exception e) {
+                                ultimaValor = 0;
+                                ultimaFecha = "";
+                            }
+
+                            double promedio = response.optDouble("promedio", 0);
+
+                            callback.onConPlaca(placa, ultimaValor, ultimaFecha, promedio);
                             return;
                         }
 
@@ -443,9 +468,7 @@ public class LogicaFake {
                 error -> callback.onErrorServidor()
         );
 
-        // DESACTIVAMOS CACHÉ DE VOLLEY
         req.setShouldCache(false);
-
         queue.add(req);
     }
 
