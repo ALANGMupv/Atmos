@@ -657,6 +657,121 @@ class Logica {
         }
     }
 
+// --------------------------------------------------------------------------
+// Autor: Alan Guevara Martínez
+// Fecha: 20/11/2025
+// Método: guardarMedidaYActualizarDistancia()
+// --------------------------------------------------------------------------
+// Descripción:
+//   Inserta una nueva medida en la tabla "medida" (como guardarMedida),
+//   y además actualiza el campo "distancia" de la tabla "placa"
+//   usando el RSSI recibido (ahora se guarda el valor crudo).
+//
+// Parámetros:
+//   - id_placa {string} : identificador de la placa.
+//   - tipo     {number} : tipo de gas.
+//   - valor    {number} : valor medido.
+//   - latitud  {number} : latitud registrada (opcional).
+//   - longitud {number} : longitud registrada (opcional).
+//   - rssi     {number} : intensidad de señal del beacon.
+//
+// Devuelve:
+//   - {Promise<Object>} : fila insertada en "medida".
+// --------------------------------------------------------------------------
+async guardarMedidaYActualizarDistancia(
+    id_placa,
+    tipo,
+    valor,
+    latitud = 0,
+    longitud = 0,
+    rssi
+) {
+    const conn = await this.pool.getConnection();
+    try {
+        // Iniciamos transacción
+        await conn.beginTransaction();
+
+        // 1) Insertar la medida
+        const sqlInsert = `
+            INSERT INTO medida (id_placa, tipo, valor, latitud, longitud, fecha_hora)
+            VALUES (?, ?, ?, ?, ?, NOW())
+        `;
+        const [resultado] = await conn.execute(sqlInsert, [
+            id_placa,
+            tipo,
+            valor,
+            latitud,
+            longitud
+        ]);
+
+        const sqlSelect = `SELECT * FROM medida WHERE id_medida = ?`;
+        const [filas] = await conn.execute(sqlSelect, [resultado.insertId]);
+        const medidaInsertada = filas[0];
+
+        // 2) Guardar directamente el RSSI en placa.distancia
+        const sqlUpdatePlaca = `
+            UPDATE placa
+            SET distancia = ?
+            WHERE id_placa = ?
+        `;
+        await conn.execute(sqlUpdatePlaca, [rssi, id_placa]);
+
+        // 3) Commit
+        await conn.commit();
+
+        return medidaInsertada;
+
+    } catch (err) {
+        // Rollback si falla
+        try {
+            await conn.rollback();
+        } catch (e) {
+            console.error("Error en rollback de guardarMedidaYActualizarDistancia:", e);
+        }
+        console.error("Error en guardarMedidaYActualizarDistancia:", err);
+        throw err;
+
+    } finally {
+        conn.release();
+    }
+}
+
+
+// --------------------------------------------------------------------------
+// Método: actualizarEstadoPlaca
+// Autor: Alan Guevara Martínez
+// Fecha: 20/11/2025
+// --------------------------------------------------------------------------
+// Descripción:
+//   Actualiza el campo "encendida" de la tabla placa según si el sensor
+//   está enviando beacons (1) o no (0).
+//
+// Parámetros:
+//   - id_placa {string}
+//   - encendida {number} → 1 o 0
+//
+// Devuelve:
+//   - {Promise<void>}
+// --------------------------------------------------------------------------
+async actualizarEstadoPlaca(id_placa, encendida) {
+    const conn = await this.pool.getConnection();
+    try {
+        const sql = `
+            UPDATE placa
+            SET encendida = ?
+            WHERE id_placa = ?
+        `;
+        await conn.execute(sql, [encendida, id_placa]);
+
+    } catch (err) {
+        console.error("Error en actualizarEstadoPlaca:", err);
+        throw err;
+
+    } finally {
+        conn.release();
+    }
+}
+
 }
 
 // --------------------------------------------------------------------------

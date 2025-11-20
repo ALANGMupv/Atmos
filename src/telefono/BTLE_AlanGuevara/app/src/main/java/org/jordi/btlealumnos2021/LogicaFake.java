@@ -35,54 +35,106 @@ public class LogicaFake {
     private static final String URL_DESVINCULAR = "https://nagufor.upv.edu.es/desvincular";
 
 
-    // uuid: Texto, gas: Z, valor: R, contador: Z → guardarMedicion() →
-    public void guardarMedicion(String uuid, int gas, float valor, int contador) {
+    /**
+     * Nombre Método: guardarMedicion
+     * Autor: Alan Guevara Martínez
+     * Fecha: 20/11/2025
+     * Descripción detallada:
+     *   - Envía al backend una nueva medición de gas para una placa.
+     *   - Inserta la fila en la tabla "medida" (misma lógica de siempre).
+     *   - Además, ahora envía el campo RSSI para que el servidor
+     *     pueda calcular y guardar la distancia en la tabla "placa".
+     *
+     * Parámetros:
+     *   - uuid  : identificador/UUID de la placa (id_placa en la BD).
+     *   - gas   : código del tipo de gas (tipo en la BD).
+     *   - valor : valor medido por el sensor.
+     *   - rssi  : intensidad de la señal del beacon (se usará para la distancia).
+     */
+    public void guardarMedicion(String uuid, int gas, float valor, int rssi) {
+        // Lanzamos la lógica en un hilo en segundo plano para no bloquear la UI
         new Thread(() -> {
             try {
-                // --- Mapeo mínimo y campos nuevos requeridos por la BBDD ---
-                String idPlaca = uuid;                     // id_placa ← uuid que ya recibimos
-                int    tipo    = gas;                      // tipo     ← gas
-                double val      = (double) valor;          // valor    ← valor (double)
-                String latitud  = String.format(Locale.US, "%.2f", 0.00); // por ahora 0.00
-                String longitud = String.format(Locale.US, "%.2f", 0.00); // por ahora 0.00
-                String fechaISO = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US)
-                        .format(new Date());               // fecha_hora
+                // --- Mapeo de campos a los nombres esperados por la API ---
+                // id_placa ← usamos directamente el UUID recibido
+                String idPlaca = uuid;
 
+                // tipo ← código de gas que ya recibimos
+                int tipo = gas;
+
+                // valor ← convertimos el float a double por compatibilidad con la BD
+                double val = (double) valor;
+
+                // latitud/longitud de momento son 0.00 (se pueden mejorar más adelante)
+                String latitud  = String.format(Locale.US, "%.2f", 0.00);
+                String longitud = String.format(Locale.US, "%.2f", 0.00);
+
+                // La fecha la calcula el backend con NOW(), así que no es obligatorio enviarla.
+                // La dejamos comentada por si en algún momentose usa.
+                // String fechaISO = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US)
+                //         .format(new Date());
+
+                // Creamos el objeto JSON que enviaremos por POST
                 JSONObject json = new JSONObject();
-                json.put("id_placa",   idPlaca);
-                json.put("tipo",       tipo);
-                json.put("valor",      val);
-                json.put("latitud",    latitud);
-                json.put("longitud",   longitud);
-                json.put("fecha_hora", fechaISO);
+                json.put("id_placa", idPlaca);   // Identificador de la placa
+                json.put("tipo",     tipo);      // Código de gas
+                json.put("valor",    val);       // Valor medido
+                json.put("latitud",  latitud);   // Latitud (por ahora fija)
+                json.put("longitud", longitud);  // Longitud (por ahora fija)
 
-                // (Opcional) Si tu backend ya hace NOW(), comenta la línea de fecha_hora:
-                // json.remove("fecha_hora");
+                // NUEVO: enviamos el RSSI para que el servidor calcule la distancia
+                json.put("rssi",     rssi);
 
-                // LOG para ver exactamente qué se envía
-                Log.d(TAG, "Enviando JSON NUEVO: " + json.toString());
+                // Si quisieras enviar la fecha manualmente:
+                // json.put("fecha_hora", fechaISO);
 
-                // Conexión HTTP
+                // Log para depurar y ver exactamente qué se envía
+                Log.d(TAG, "Enviando JSON NUEVO /medida: " + json.toString());
+
+                // Abrimos la conexión HTTP hacia el endpoint configurado en API_URL
                 URL url = new URL(API_URL);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+                // Indicamos que es un POST con cuerpo JSON
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
                 conn.setDoOutput(true);
 
-                // Cuerpo JSON
+                // Escribimos el JSON en el cuerpo de la petición
                 try (OutputStream os = conn.getOutputStream()) {
                     os.write(json.toString().getBytes(StandardCharsets.UTF_8));
                 }
 
-                int code = conn.getResponseCode();
-                Log.d(TAG, "guardarMedicion(): HTTP " + code);
+                // Leemos el código de respuesta (200, 400, 500, etc.)
+                int responseCode = conn.getResponseCode();
+                Log.d(TAG, "Respuesta /medida: HTTP " + responseCode);
 
+                // (Opcional) podrías leer también el cuerpo de la respuesta si hace falta
                 conn.disconnect();
+
             } catch (Exception e) {
-                Log.e(TAG, "guardarMedicion() error", e);
+                // Cualquier excepción durante la construcción del JSON o la conexión
+                e.printStackTrace();
+                Log.e(TAG, "Error al enviar medición a la API", e);
             }
         }).start();
     }
+
+    /**
+     * ¿SE USA ESTO?
+     * Nombre Método: guardarMedicion
+     * Fecha: 20/11/2025
+     * Descripción detallada:
+     *   - Versión antigua compatible del método.
+     *   - Mantiene la firma original (uuid, gas, valor)
+     *     para que el código viejo siga compilando.
+     *   - Llama internamente a la nueva versión con RSSI = 0.
+     */
+    public void guardarMedicion(String uuid, int gas, float valor) {
+        // Llamamos a la versión nueva, usando 0 como RSSI por defecto
+        guardarMedicion(uuid, gas, valor, 0);
+    }
+
 
     // =========================================================
     // LOGIN
@@ -703,6 +755,50 @@ public class LogicaFake {
         // Añadimos la petición a la cola de Volley para que se ejecute
         queue.add(req);
     }
+
+    /**
+     * Nombre Método: actualizarEstadoPlaca
+     * Fecha: 20/11/2025
+     * Autor: Alan Guevara Martínez
+     *
+     * Descripción:
+     *   Envía al backend el estado actual de la placa (encendida/apagada).
+     *   El backend debe actualizar la columna `encendida` de la tabla placa.
+     *
+     * Parámetros:
+     *   - idPlaca : UUID de la placa
+     *   - estado  : 1 = encendida, 0 = apagada
+     */
+    public void actualizarEstadoPlaca(String idPlaca, int estado) {
+
+        new Thread(() -> {
+            try {
+                URL url = new URL("https://nagufor.upv.edu.es/actualizarEstadoPlaca");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                conn.setDoOutput(true);
+
+                JSONObject json = new JSONObject();
+                json.put("id_placa", idPlaca);
+                json.put("encendida", estado);
+
+                try (OutputStream os = conn.getOutputStream()) {
+                    os.write(json.toString().getBytes(StandardCharsets.UTF_8));
+                }
+
+                int code = conn.getResponseCode();
+                Log.d(TAG, "Respuesta /actualizarEstadoPlaca: HTTP " + code);
+
+                conn.disconnect();
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error actualizando estado placa", e);
+            }
+        }).start();
+    }
+
 }
 
 
