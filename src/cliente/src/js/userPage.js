@@ -12,6 +12,19 @@
  * Autor: Santiago Fuenmayor Ruiz
  */
 
+// Mostrar todos los errores de Chart.js en consola
+Chart.register({
+    id: "debuggerPlugin",
+    beforeInit(chart, args, options) {
+        chart.options.animation = false;
+    },
+    afterDraw(chart, args, options) {
+        if (chart.$context && chart.$context.error) {
+            console.error("Chart.js error:", chart.$context.error);
+        }
+    }
+});
+
 // ================================================================
 // 1. POPUPS
 // ================================================================
@@ -106,6 +119,8 @@ if (gasSelector) {
         // Actualizamos tarjetas de última medida / promedio diario
         await cargarDatosDeGas(tipo);
 
+        // Actualizamos las graficas segun el tipo de gas
+        await cargarGraficaSegunModo();
 
     });
 }
@@ -141,6 +156,19 @@ function clasificarMedida(valor, tipoGas) {
     if (valor <= r.insalubre)return { texto: "Insalubre", color: "#FF9D00" };
     return { texto: "Mala",  color: "#FF0004" };
 }
+
+function nivelCategoriaValor(valor, tipoGas) {
+    const categ = clasificarMedida(valor, tipoGas).texto;
+
+    switch (categ) {
+        case "Buena":     return 1;
+        case "Moderada":  return 2;
+        case "Insalubre": return 3;
+        case "Mala":      return 4;
+        default:          return 0; // Sin datos
+    }
+}
+
 
 
 // ================================================================
@@ -238,6 +266,391 @@ async function cargarDatosDeGas(tipoGas) {
         console.error("Error consultando datos:", err);
     }
 }
+
+// ======================================================================
+// 5. Función: renderizarGraficaCalidad()
+// ----------------------------------------------------------------------
+// Descripción:
+//   Recrea la gráfica con los datos proporcionados.
+//   Incluye:
+//      - PPM reales en tooltip
+//      - Fechas reales en tooltip
+//      - Fechas debajo de cada barra (doble línea)
+// ======================================================================
+function renderizarGraficaCalidad(labels, valores) {
+
+    // Eliminar width y height inline que pone Chart.js
+    const canvas = document.getElementById("graficaCalidad");
+    canvas.removeAttribute("width");
+    canvas.removeAttribute("height");
+
+    const ctx = canvas.getContext("2d");
+
+    if (graficaCalidadChart) {
+        graficaCalidadChart.destroy();
+    }
+
+    // Convertir ppm → categorías (1,2,3,4)
+    const valoresConvertidos = valores.map(v => nivelCategoriaValor(v, tipoGasActual));
+
+    graficaCalidadChart = new Chart(ctx, {
+        type: "bar",
+
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "ppm",
+                data: valoresConvertidos,
+                originalValues: valores,      // guardamos ppm reales
+                backgroundColor: valores.map(v => clasificarMedida(v, tipoGasActual).color)
+            }]
+        },
+
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+
+            plugins: {
+                legend: { display: false },
+
+                tooltip: {
+                    callbacks: {
+
+                        // ======================================================
+                        //  TÍTULO DEL TOOLTIP → FECHA REAL SEGÚN MODO
+                        // ======================================================
+                        title: function (context) {
+
+                            const idx = context[0].dataIndex;
+                            const hoy = new Date();
+
+                            // ---------- MODO SEMANA ----------
+                            if (modoGraficaActual === "D") {
+
+                                const fecha = new Date(hoy);
+                                fecha.setDate(hoy.getDate() - (labels.length - 1 - idx));
+
+                                const dia = fecha.toLocaleDateString("es-ES", {
+                                    weekday: "long"
+                                });
+
+                                const fechaStr = fecha.toLocaleDateString("es-ES");
+
+                                return `${dia} (${fechaStr})`;
+                            }
+
+                            // ---------- MODO HORAS ----------
+                            if (modoGraficaActual === "H") {
+
+                                const fecha = new Date(
+                                    hoy.getTime() - (labels.length - 1 - idx) * 3600000
+                                );
+
+                                const hora = fecha.getHours().toString().padStart(2, "0");
+                                const fechaStr = fecha.toLocaleDateString("es-ES");
+
+                                return `${hora}:00 (${fechaStr})`;
+                            }
+
+                            return "";
+                        },
+
+                        // ======================================================
+                        //  LÍNEA DEL TOOLTIP → PPM REAL
+                        // ======================================================
+                        label: function (context) {
+                            const ppm = context.dataset.originalValues[context.dataIndex];
+                            return ppm.toFixed(3) + " ppm";
+                        }
+                    }
+                }
+            },
+
+            // ==============================================================
+            //  EJES
+            // ==============================================================
+
+            scales: {
+                x: {
+                    ticks: {
+                        font: { size: 10 },
+
+                        // Mostrar debajo del label la fecha real
+                        callback: function (value, index, ticks) {
+
+                            const label = this.getLabelForValue(value);
+                            const hoy = new Date();
+
+                            // ---------- MODO SEMANA ----------
+                            if (modoGraficaActual === "D") {
+
+                                const fecha = new Date(hoy);
+                                fecha.setDate(hoy.getDate() - (ticks.length - 1 - index));
+
+                                const fechaStr = fecha.toLocaleDateString("es-ES", {
+                                    day: "2-digit",
+                                    month: "2-digit"
+                                });
+
+                                // multi-line label
+                                return [label, fechaStr];
+                            }
+
+                            // ---------- MODO HORAS ----------
+                            if (modoGraficaActual === "H") {
+
+                                const fecha = new Date(
+                                    hoy.getTime() - (ticks.length - 1 - index) * 3600000
+                                );
+
+                                const fechaStr = fecha.toLocaleDateString("es-ES", {
+                                    day: "2-digit",
+                                    month: "2-digit"
+                                });
+
+                                return [label, fechaStr];
+                            }
+
+                            return label;
+                        }
+                    }
+                },
+
+                y: {
+                    min: 0,
+                    max: 4,
+                    ticks: {
+                        callback: function (value) {
+                            switch (value) {
+                                case 1: return "Buena";
+                                case 2: return "Moderada";
+                                case 3: return "Insalubre";
+                                case 4: return "Mala";
+                                default: return "";
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+
+// ======================================================================
+// 6. Función: actualizarCaritaGrafica(promedio)
+// ----------------------------------------------------------------------
+// Actualiza la carita de la gráfica según el promedio del período
+// ======================================================================
+function actualizarCaritaGrafica(promedio) {
+
+    if (!caritaGraficaImg) return;
+
+    // Si no hay datos → carita neutra
+    if (promedio === null || isNaN(promedio)) {
+        caritaGraficaImg.src = "img/estadoAireIcono.svg";
+        return;
+    }
+
+    // Clasificar según los rangos del gas seleccionado
+    const { texto } = clasificarMedida(promedio, tipoGasActual);
+
+    // Selección de imagen según categoría
+    switch (texto) {
+        case "Buena":
+            caritaGraficaImg.src = "img/caritaGraficaBuena.svg";
+            break;
+
+        case "Moderada":
+            caritaGraficaImg.src = "img/caritaGraficaModerada.svg";
+            break;
+
+        case "Insalubre":
+            caritaGraficaImg.src = "img/caritaGraficaInsalubre.svg";
+            break;
+
+        case "Mala":
+            caritaGraficaImg.src = "img/caritaGraficaMala.svg";
+            break;
+
+        default:
+            caritaGraficaImg.src = "img/estadoAireIcono.svg";
+            break;
+    }
+}
+
+
+
+// ======================================================================
+// 7. Función: cargarGraficaSegunModo()
+// ----------------------------------------------------------------------
+// Soluciona el desfase de barras: se rotan labels pero NO valores.
+// ======================================================================
+async function cargarGraficaSegunModo() {
+
+    // Si no hay gas seleccionado → mostrar mensaje en el canvas
+    if (!tipoGasActual) {
+
+        // Si existe una gráfica previa → destruirla
+        if (graficaCalidadChart) {
+            graficaCalidadChart.destroy();
+            graficaCalidadChart = null;
+        }
+
+        const canvas = document.getElementById("graficaCalidad");
+
+        // Asegurar tamaño correcto antes de dibujar
+        canvas.style.width = "100%";
+        canvas.style.height = "100%";
+
+        const ctx = canvas.getContext("2d");
+
+        // Limpiar el canvas real (no el CSS)
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Texto
+        ctx.font = "16px Poppins";
+        ctx.fillStyle = "#999";
+        ctx.textAlign = "center";
+
+        ctx.fillText(
+            "Selecciona un gas para ver la gráfica",
+            canvas.width / 2,
+            canvas.height / 2
+        );
+
+        return;
+    }
+
+
+
+    const API_BASE = "https://nagufor.upv.edu.es";
+    const endpoint = (modoGraficaActual === "D") ? "/resumen7Dias" : "/resumen8Horas";
+
+    const url = API_BASE + endpoint +
+        "?id_usuario=" + ID_USUARIO +
+        "&tipo=" + tipoGasActual;
+
+    console.log("URL que se está llamando:", url);
+
+    const resp = await fetch(url);
+    const data = await resp.json();
+
+    if (data.status === "sin_placa") return;
+
+    // -----------------------------------------------
+    // El backend devuelve:
+    // labels  = ["Vie","Sab","Dom","Lun","Mar","Mie","Jue"] (cronológico)
+    // valores = [ 0 , 0 ,  0  ,  0 , 0.48 , 0.01 , 0 ]     (cronológico)
+    //
+    // Si hoy es JUEVES, "Jue" ya está en la última posición,
+    // así que NO hay que invertir valores.
+    //
+    // Solo rotamos labels si HOY no coincide con la última etiqueta.
+    // -----------------------------------------------
+    const labels = data.labels.slice();
+    const valores = data.valores.slice();
+
+    const diasSemana = ["Dom","Lun","Mar","Mie","Jue","Vie","Sab"];
+    const hoy = diasSemana[new Date().getDay()];
+
+    // SOLO rotamos si el modo es D (dias)
+    if (modoGraficaActual === "D") {
+
+        const diasSemana = ["Dom","Lun","Mar","Mie","Jue","Vie","Sab"];
+        const hoy = diasSemana[new Date().getDay()];
+
+        if (labels[labels.length - 1] !== hoy) {
+            let seguridad = 20; // evitamos bucles infinitos
+
+            while (labels[labels.length - 1] !== hoy && seguridad > 0) {
+                const primero = labels.shift();
+                labels.push(primero);
+
+                const primeroVal = valores.shift();
+                valores.push(primeroVal);
+
+                seguridad--;
+            }
+        }
+    }
+
+    // ===============================
+    //  ACTUALIZAR TEXTO DEL RANGO
+    // ===============================
+    if (graficaRangoTexto) {
+
+        if (modoGraficaActual === "D") {
+
+            graficaRangoTexto.textContent = "Últimos 7 días";
+
+        } else if (modoGraficaActual === "H") {
+
+            graficaRangoTexto.textContent = "Últimas 8 horas";
+        }
+    }
+
+
+    // Render final con el orden correcto
+    renderizarGraficaCalidad(labels, valores);
+
+    actualizarCaritaGrafica(data.promedio);
+}
+
+
+
+
+// ======================================================================
+// 8. Botones de modo (D / H)
+// ----------------------------------------------------------------------
+botonesModoGrafica.forEach(btn => {
+    btn.addEventListener("click", () => {
+
+        botonesModoGrafica.forEach(b => b.classList.remove("activo"));
+        btn.classList.add("activo");
+
+        modoGraficaActual = btn.dataset.modo;
+
+        cargarGraficaSegunModo();
+    });
+});
+
+// ======================================================================
+// 9. Inicialización automática al cargar la página
+// ----------------------------------------------------------------------
+// Selecciona automáticamente el primer gas del selector y carga datos.
+// ======================================================================
+window.addEventListener("DOMContentLoaded", async () => {
+
+    // Asegurar que existe el selector
+    if (!gasSelector || gasSelector.options.length === 0) return;
+
+    // Seleccionar el primer gas del desplegable
+    gasSelector.selectedIndex = 0;
+
+    // Obtener el nombre del gas (ej. "NO₂")
+    const gasInicial = gasSelector.value;
+
+    // Obtener el tipo numérico del gas (11, 12, 13, 14)
+    const tipoInicial = MAPA_GASES[gasInicial];
+
+    // Guardar estado global
+    tipoGasActual = tipoInicial;
+
+    // Actualizar textos de tarjetas
+    gasUltima.textContent   = gasInicial;
+    gasPromedio.textContent = gasInicial;
+
+    // Cargar tarjetas
+    await cargarDatosDeGas(tipoInicial);
+
+    // Cargar gráfica en modo inicial (D)
+    await cargarGraficaSegunModo();
+});
+
+
+
 
 
 
