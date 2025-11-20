@@ -181,8 +181,10 @@ public class RegistroActivity extends FuncionesBaseActivity {
 
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Error creando usuario: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    String errorTraducido = traducirErrorFirebase(e.getMessage());
+                    Toast.makeText(this, errorTraducido, Toast.LENGTH_LONG).show();
                 });
+
     }
 
     /**
@@ -237,4 +239,37 @@ public class RegistroActivity extends FuncionesBaseActivity {
                 }
         );
     }
+    /**
+     * Traduce mensajes de error de Firebase al español.
+     */
+    private String traducirErrorFirebase(String mensajeOriginal) {
+
+        if (mensajeOriginal == null) return "Error desconocido";
+
+        String msg = mensajeOriginal.toLowerCase();
+
+        if (msg.contains("email address is badly formatted")) {
+            return "El correo electrónico no es válido";
+        }
+
+        if (msg.contains("the email address is already in use")) {
+            return "Este correo ya está registrado";
+        }
+
+        if (msg.contains("password should be at least")) {
+            return "La contraseña es demasiado débil";
+        }
+
+        if (msg.contains("network error")) {
+            return "Error de conexión. Comprueba tu internet.";
+        }
+
+        if (msg.contains("too many unsuccessful login attempts")
+                || msg.contains("blocked")) {
+            return "Demasiados intentos fallidos. Inténtalo más tarde.";
+        }
+
+        return "Error: " + mensajeOriginal;
+    }
+
 }
