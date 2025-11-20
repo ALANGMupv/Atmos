@@ -37,9 +37,9 @@ public class ActividadSplash extends AppCompatActivity {
             if (preferencias.esPrimeraVez()) {
                 startActivity(new Intent(ActividadSplash.this, ActividadInicio.class));
             }
-            //  En cualquier otro caso → login
+            //  En cualquier otro caso → registro
             else {
-                startActivity(new Intent(ActividadSplash.this, InicioSesionActivity.class));
+                startActivity(new Intent(ActividadSplash.this, RegistroActivity.class));
             }
 
             finish();
