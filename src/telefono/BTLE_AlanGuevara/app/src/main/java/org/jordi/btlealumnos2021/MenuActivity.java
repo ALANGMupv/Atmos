@@ -141,7 +141,7 @@ public class MenuActivity extends FuncionesBaseActivity {
         }
 
         // Llamamos a la lógica fake para saber si tiene o no placa asociada
-        LogicaFake.resumenUsuario(
+        LogicaFake.resumenUsuarioPorGas(
                 idUsuario,
                 11,        // <- tipo de gas por defecto y el único que hay
                 queue,
@@ -155,8 +155,7 @@ public class MenuActivity extends FuncionesBaseActivity {
                     }
 
                     @Override
-                    public void onConPlaca(String placa, double ultima, double promedio) {
-                        // Si tiene placa, mostramos la tarjeta
+                    public void onConPlaca(String placa, double ultima, String fecha, double promedio) {
                         if (cardDesvincularSensor != null) {
                             cardDesvincularSensor.setVisibility(View.VISIBLE);
                         }

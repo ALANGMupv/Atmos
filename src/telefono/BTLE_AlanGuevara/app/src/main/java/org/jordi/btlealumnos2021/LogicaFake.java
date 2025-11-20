@@ -448,6 +448,12 @@ public class LogicaFake {
                                 ultima = objUltima.optDouble("valor", 0);
                             }
 
+                            String fecha = "";
+                            if (objUltima != null) {
+                                fecha = objUltima.optString("fecha_hora", "");
+                            }
+
+
                             // Leer promedio
                             double promedio = response.optDouble("promedio", 0);
 
@@ -455,6 +461,7 @@ public class LogicaFake {
                             callback.onConPlaca(
                                     response.optString("id_placa", ""),
                                     ultima,
+                                    fecha,
                                     promedio
                             );
                             return;
