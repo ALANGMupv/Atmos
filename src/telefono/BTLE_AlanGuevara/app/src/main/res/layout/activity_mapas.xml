@@ -64,9 +64,9 @@
             android:gravity="center_vertical"
             android:layout_marginTop="10dp">
 
-            <!-- CHIP ACTIVO: CO2 -->
+            <!-- CHIP ACTIVO: CO -->
             <LinearLayout
-                android:id="@+id/chipCO2"
+                android:id="@+id/chipCO"
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
                 android:paddingStart="14dp"
@@ -84,16 +84,16 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="CO2"
+                    android:text="CO"
                     android:textColor="#059669"
                     android:textSize="16sp"
                     android:fontFamily="@font/roboto_bold"
                     android:layout_marginStart="6dp"/>
             </LinearLayout>
 
-            <!-- CHIP SO2 -->
+            <!-- CHIP O3 -->
             <LinearLayout
-                android:id="@+id/chipSO2"
+                android:id="@+id/chipO3"
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
                 android:paddingStart="14dp"
@@ -111,16 +111,16 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="SO2"
+                    android:text="O3"
                     android:textColor="#1F2B38"
                     android:textSize="16sp"
                     android:fontFamily="@font/roboto_light"
                     android:layout_marginStart="6dp"/>
             </LinearLayout>
 
-            <!-- CHIP NO3 -->
+            <!-- CHIP SO3 -->
             <LinearLayout
-                android:id="@+id/chipNO3"
+                android:id="@+id/chipSO3"
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
                 android:paddingStart="14dp"
@@ -138,7 +138,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="NO3"
+                    android:text="SO3"
                     android:textColor="#1F2B38"
                     android:textSize="16sp"
                     android:fontFamily="@font/roboto_light"
