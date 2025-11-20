@@ -3,13 +3,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content">
 
     <LinearLayout
         android:id="@+id/contenedorNotificacion"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="6dp"
         android:background="@drawable/notificacion_caja"
         android:orientation="vertical"
         android:padding="12dp"
@@ -27,12 +30,12 @@
             <!-- Icono -->
             <ImageView
                 android:id="@+id/imagenNoti"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:layout_marginEnd="8dp"
                 tools:srcCompat="@tools:sample/avatars" />
 
-            <!-- Título (ocupa todo el espacio disponible) -->
+            <!-- Título (ocupa espacio disponible) -->
             <TextView
                 android:id="@+id/tituloNoti"
                 android:layout_width="0dp"
@@ -40,7 +43,7 @@
                 android:layout_weight="1"
                 android:text="Nivel crítico"
                 android:textStyle="bold"
-                android:textSize="16sp"
+                android:textSize="15sp"
                 android:textColor="#000000" />
 
             <!-- Hora -->
@@ -51,13 +54,13 @@
                 android:layout_marginEnd="6dp"
                 android:text="2:20 PM"
                 android:textColor="#7A7A7A"
-                android:textSize="14sp" />
+                android:textSize="13sp" />
 
             <!-- Puntito verde -->
             <ImageView
                 android:id="@+id/estadoNotis"
-                android:layout_width="10dp"
-                android:layout_height="10dp"
+                android:layout_width="9dp"
+                android:layout_height="9dp"
                 android:layout_marginStart="4dp"
                 android:src="@drawable/bg_boton_verde" />
 
@@ -68,9 +71,9 @@
             android:id="@+id/textoNoti"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="6dp"
             android:text="Texto de la notificación"
-            android:textSize="15sp"
+            android:textSize="14sp"
             android:textColor="#333333" />
 
     </LinearLayout>
