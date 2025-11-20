@@ -329,7 +329,7 @@ public class UserPageActivity extends FuncionesBaseActivity {
                         txtUltima.setText(String.format(Locale.US, "%.3f", ultimaValor));
                         txtPromedio.setText(String.format(Locale.US, "%.3f", promedio));
 
-                        txtUltimaFecha.setText(formatearFechaBonita(ultimaFecha));
+                        txtUltimaFecha.setText(formatearFecha(ultimaFecha));
                         txtPromedioFecha.setText("Hoy");
 
                         String simbolo = simboloGas(tipoSeleccionado);
@@ -477,7 +477,7 @@ public class UserPageActivity extends FuncionesBaseActivity {
 
 
     /**
-     * Nombre Método: formatearFechaBonita
+     * Nombre Método: formatearFecha
      * Descripción:
      *      Convierte una fecha en formato "yyyy-MM-dd HH:mm:ss"
      *      (que viene del backend) a un formato más legible
@@ -491,7 +491,7 @@ public class UserPageActivity extends FuncionesBaseActivity {
      *
      * Autora: Nerea Aguilar Forés
      */
-    private String formatearFechaBonita(String fechaISO) {
+    private String formatearFecha(String fechaISO) {
 
         if (fechaISO == null || fechaISO.isEmpty()) {
             return "-";
