@@ -5,6 +5,13 @@
     android:orientation="vertical"
     android:background="#FFFFFF">
 
+    <!-- =============================================================
+         HEADER SUPERIOR
+         ============================================================= -->
+    <include
+        android:id="@+id/header"
+        layout="@layout/toolbar_header"/>
+
     <!-- CONTENIDO SCROLLEABLE -->
     <ScrollView
         android:layout_width="match_parent"
@@ -36,6 +43,7 @@
 
             <!-- CARD MANUAL USUARIO -->
             <LinearLayout
+                android:id="@+id/cardManualUsuario"
                 android:layout_width="match_parent"
                 android:layout_height="84dp"
                 android:orientation="horizontal"
@@ -77,6 +85,7 @@
 
             <!-- CARD INCIDENCIAS -->
             <LinearLayout
+                android:id="@+id/cardIncidencias"
                 android:layout_width="match_parent"
                 android:layout_height="84dp"
                 android:orientation="horizontal"
@@ -118,6 +127,7 @@
 
             <!-- CARD DESVINCULAR SENSOR -->
             <LinearLayout
+                android:id="@+id/cardDesvincularSensor"
                 android:layout_width="match_parent"
                 android:layout_height="84dp"
                 android:orientation="horizontal"

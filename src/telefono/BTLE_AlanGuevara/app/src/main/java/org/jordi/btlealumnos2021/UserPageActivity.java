@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -138,23 +139,18 @@ public class UserPageActivity extends FuncionesBaseActivity {
 
         spinner.setAdapter(adapter);
 
-        // ---------------------------------------------------------------
-        // CAMBIO DE CONTAMINANTE EN EL SPINNER
-        // ---------------------------------------------------------------
-        spinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+        // =========================================================
+        // Cada vez que el usuario cambie el gas en el spinner,
+        // refrescamos los valores automáticamente
+        // =========================================================
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
-                // Guardar el tipo seleccionado según la posición
-                tipoSeleccionado = tiposGases[position];
+            public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
                 recargarEstadoUsuario();
             }
 
             @Override
-            public void onNothingSelected(android.widget.AdapterView<?> parent) {
-                // Por defecto NO2
-                tipoSeleccionado = 11;
-            }
-
+            public void onNothingSelected(AdapterView<?> parent) {}
         });
 
 
@@ -206,6 +202,36 @@ public class UserPageActivity extends FuncionesBaseActivity {
     }
 
     /**
+     * Nombre Método: tipoSeleccionado
+     * Descripción: Este método devuelve el tipo correcto según la posición del spinner
+     * Autor: Alan Guevara Martínez
+     * Fecha: 19/11/2025
+     */
+    private int tipoSeleccionado() {
+
+        int pos = spinner.getSelectedItemPosition();
+
+        switch (pos) {
+
+            case 0:
+                return 11; // NO2
+
+            case 1:
+                return 12; // CO
+
+            case 2:
+                return 13; // O3
+
+            case 3:
+                return 14; // SO3
+
+            default:
+                return 11; // Valor seguro
+        }
+    }
+
+
+    /**
      * Nombre Método: onResume
      * Autor: Alan Guevara Martínez
      * Fecha: 18/11/2025
@@ -213,6 +239,7 @@ public class UserPageActivity extends FuncionesBaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        recargarEstadoUsuario();;
     }
 
     /**
@@ -275,7 +302,7 @@ public class UserPageActivity extends FuncionesBaseActivity {
 
         LogicaFake.resumenUsuarioPorGas(
                 idUsuario,
-                tipoSeleccionado,
+                tipoSeleccionado(),   // ← GAS SELECCIONADO
                 queue,
                 new LogicaFake.ResumenUsuarioCallback() {
 

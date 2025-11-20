@@ -17,6 +17,13 @@
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
 
 
+    <!-- Compatibilidad con versiones antiguas -->
+    <uses-permission android:name="android.permission.BLUETOOTH"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+
+
+
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -29,14 +36,9 @@
         <!-- Desde Android 12 es obligatorio indicar android:exported en actividades,
      servicios o receivers con intent-filter. En MainActivity debe ser "true"
      porque es la actividad de inicio accesible desde el sistema. -->
-        <activity
-            android:name=".MainActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+        <activity android:name=".MainActivity"
+            android:exported="true"/>
+
 
         <activity android:name=".RegistroActivity"
             android:exported="true" />
@@ -75,6 +77,25 @@
         <activity
             android:name=".InfoPopupActivity"
             android:theme="@style/PopupTarjetaReal"/>
+
+        <activity
+            android:name=".ActividadSplash"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ActividadInicio"
+            android:exported="false"/>
+
+        <service
+            android:name=".BeaconScanService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="location" />
 
     </application>
 

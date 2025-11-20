@@ -1,16 +1,16 @@
 <?php
+
 session_start();
 
-// -------------------------------
-// 1. Comprobar si hay sesión activa
-// -------------------------------
+// Comprobar sesión activa
 if (!isset($_SESSION['usuario'])) {
     header("Location: login.php");
     exit();
 }
 
-// 2. Guardar datos del usuario
+// Datos del usuario en sesión
 $usuario = $_SESSION['usuario'];
+
 ?>
 
 <!doctype html>
@@ -27,27 +27,32 @@ $usuario = $_SESSION['usuario'];
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="stylesheet" href="css/userPage.css">
 
-    <!-- Fonts -->
+    <!-- Fuente -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
-<body>
 
-<?php
-include __DIR__ . '/partials/headerLogueado.php';
-?>
+<!-- data-id-usuario permite al JS saber quién está logueado -->
+<body data-id-usuario="<?= htmlspecialchars($usuario['id_usuario']); ?>">
+
+<?php include __DIR__ . '/partials/headerLogueado.php'; ?>
 
 <main>
+
     <section class="home-container">
 
+        <!-- Saludo -->
         <section class="saludo-container">
             <h2>¡Hola, <?= htmlspecialchars($usuario['nombre']); ?>!</h2>
             <p>así se ve el aire que respiras hoy</p>
         </section>
 
+        <!-- Panel general -->
         <section class="panel-container">
             <div class="left-container">
+
+                <!-- Mapa -->
                 <div class="mapa-container">
                     <h3>Mapa</h3>
                     <div class="mapa">
@@ -64,6 +69,7 @@ include __DIR__ . '/partials/headerLogueado.php';
                     <button>Ver Mapa</button>
                 </div>
 
+                <!-- Menú de acciones -->
                 <div class="menu-container">
                     <h3>Menú de acciones</h3>
                     <div class="botones-menu-container">
@@ -75,19 +81,39 @@ include __DIR__ . '/partials/headerLogueado.php';
             </div>
 
             <div class="right-container">
+
+                <!-- Mi Sensor -->
                 <div class="miSensor-container">
                     <div class="miSensor-titulo-container">
                         <h3>Mi Sensor</h3>
-                        <button data-popup="popupMiSensor" class="informacion-icono"><img src="img/informacionIcon.svg" alt=""></button>
+
+                        <!-- Botón de info del popup -->
+                        <button data-popup="popupMiSensor" class="informacion-icono">
+                            <img src="img/informacionIcon.svg" alt="">
+                        </button>
+                    </div>
+
+                    <!-- Selector de gas -->
+                    <div class="selector-gases-container">
+                        <select id="gasSelector">
+                            <option value="" disabled selected hidden>Selecciona un gas contaminante</option>
+                            <option value="NO₂">NO₂</option>
+                            <option value="CO">CO</option>
+                            <option value="O₃">O₃</option>
+                            <option value="SO₂">SO₂</option>
+                        </select>
                     </div>
 
                     <div class="info-miSensor-mobile">
+
+                        <!-- Estado y distancia -->
                         <div class="distancia_estado-container">
                             <div class="estado-container">
                                 <div class="estado-titulo-container"><h4>Estado del Sensor</h4></div>
                                 <img class="estado-icono" src="img/estadoActivoSensorIcono.svg" alt="">
                                 <p>Sensor activo</p>
                             </div>
+
                             <div class="distancia-container">
                                 <div class="distancia-titulo-container"><h4>Distancia al sensor</h4></div>
                                 <img class="distancia-icono" src="img/distanciaIcono.svg" alt="">
@@ -95,65 +121,79 @@ include __DIR__ . '/partials/headerLogueado.php';
                             </div>
                         </div>
 
+                        <!-- Última medición + promedio -->
                         <div class="medicion_promedio-container">
+
+                            <!-- Última medición -->
                             <div class="medicion-container">
                                 <div class="medicion-titulo-container">
-                                    <div class="titulo-medicion">
-                                        <h4>Última medición</h4>
-                                    </div>
-                                    <p>9:41 - 08/09</p>
+                                    <h4>Última medición</h4>
+                                    <p class="hora-ultima" id="fechaUltima">--:--</p>
                                 </div>
+
+                                <!-- Valor que se actualizará -->
                                 <div class="medicion-medio-container">
-                                    <p class="medicion-medicion">0.02</p>
+                                    <p class="medicion-medicion">--</p>
+
                                     <div class="detalles-medicion">
-                                        <p class="tipo-medicion">NO2</p>
+                                        <p class="tipo-medicion" id="gasUltima">--</p>
                                         <p class="unidad-medicion">ppm</p>
                                     </div>
                                 </div>
+
                                 <div class="categoria-medicion-container">
-                                    <span class="color-medicion"></span> <span class="texto-medicion">Buena</span>
+                                    <span class="color-medicion"></span>
+                                    <span class="texto-medicion">--</span>
                                 </div>
                             </div>
 
+                            <!-- Promedio -->
                             <div class="promedio-container">
                                 <div class="promedio-titulo-container">
-                                    <div class="titulo-promedio">
-                                        <h4>Promedio del día</h4>
-                                    </div>
-                                    <p>08/09/2025</p>
+                                    <h4>Promedio del día</h4>
+                                    <p class="fecha-promedio" id="fechaPromedio">--/--/----</p>
                                 </div>
+
+                                <!-- Valor que se actualizará -->
                                 <div class="promedio-medio-container">
-                                    <p class="medicion-promedio">0.10</p>
+                                    <p class="medicion-promedio">--</p>
+
                                     <div class="detalles-medicion-promedio">
-                                        <p class="tipo-promedio">NO2</p>
+                                        <p class="tipo-promedio" id="gasPromedio">--</p>
                                         <p class="unidad-promedio">ppm</p>
                                     </div>
                                 </div>
 
+                                <div class="categoria-promedio-container">
+                                    <span class="color-promedio"></span>
+                                    <span class="texto-promedio">--</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
+                    <!-- Gráfica -->
                     <div class="grafica-container"></div>
                 </div>
             </div>
         </section>
 
+        <!-- POPUP de info -->
         <section id="popupMiSensor" class="popup-info-container">
             <div class="popup-container">
-                <button class="cerrar-popup">
-                    <img  src="img/cerrarIcono.svg" alt="">
-                </button>
+                <button class="cerrar-popup"><img src="img/cerrarIcono.svg" alt=""></button>
+
                 <div class="top-containers">
                     <div class="estado-info-container">
                         <h2>Estado del Sensor</h2>
                         <img src="img/estadoSensorInfoPopup.svg" alt="">
-                        <p>Muestra el estado actual del nodo sensor. Este puede estar conectado y <b>activo</b> o desconectado e <b>inactivo</b>.</p>
+                        <p>Muestra el estado del nodo sensor.</p>
                     </div>
+
                     <div class="distancia-info-container">
                         <h2>Distancia del Sensor</h2>
                         <img src="img/distanciaSensorInfoPopup.svg" alt="">
-                        <p>Indica la potencia de la señal de tu sensor. Una señal <b>alta</b> significa que el sensor está cerca de tu móvil o bien conectado; una señal <b>baja</b> puede indicar más distancia o interferencias.</p>
+                        <p>Indica la potencia de señal recibida.</p>
                     </div>
                 </div>
 
@@ -161,21 +201,28 @@ include __DIR__ . '/partials/headerLogueado.php';
                     <div class="medicion-info-container">
                         <h2>Última medición</h2>
                         <img src="img/medicionInfoPopup.svg" alt="">
-                        <p>Es la medición más reciente de NO₂ captada por tu sensor. Este valor se actualiza periódicamente y permite saber en tiempo real cómo está la calidad del aire justo ahora.</p>
+                        <p>Valor más reciente captado por el sensor.</p>
                     </div>
+
                     <div class="promedio-info-container">
                         <h2>Promedio del día</h2>
                         <img src="img/promedioInfoPopup.svg" alt="">
-                        <p>Es el valor medio de NO₂ registrado por el sensor a lo largo del día. Ayuda a entender cómo ha sido la calidad del aire durante la jornada, más allá de picos puntuales.</p>
+                        <p>Promedio de contaminación del día.</p>
                     </div>
                 </div>
             </div>
         </section>
+
     </section>
 </main>
 
-<!-- ✅ Carga del script de User Page -->
+<script>
+    window.ID_USUARIO = <?= json_encode($usuario['id_usuario']); ?>;
+</script>
+
+<!-- Script de la página -->
 <script type="module" src="js/userPage.js"></script>
+
 
 </body>
 </html>
