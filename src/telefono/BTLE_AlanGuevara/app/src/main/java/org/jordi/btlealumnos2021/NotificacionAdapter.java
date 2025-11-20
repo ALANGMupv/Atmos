@@ -1,16 +1,3 @@
-package org.jordi.btlealumnos2021;
-
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
-
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
-
-import java.util.List;
-
 /**
  * Nombre Fichero: NotificacionAdapter.java
  * Descripción: Adaptador del RecyclerView encargado de vincular
@@ -26,12 +13,24 @@ import java.util.List;
  * Autor: Alejandro Vazquez Remes
  * Fecha: 20/11/2025
  */
+package org.jordi.btlealumnos2021;
 
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.List;
 
 public class NotificacionAdapter extends RecyclerView.Adapter<NotificacionAdapter.NotiViewHolder> {
 
     public interface OnItemClickListener {
-        void onItemClick(int position);
+        void onItemClick(int position);     // tocar la tarjeta → marcar leída
+        void onDeleteClick(int position);   // tocar la X → borrar
     }
 
     private List<NotificacionAtmos> notificaciones;
@@ -65,12 +64,20 @@ public class NotificacionAdapter extends RecyclerView.Adapter<NotificacionAdapte
             holder.estadoNotis.setVisibility(View.VISIBLE);
         }
 
-        // Aquí puedes jugar luego con diferentes íconos según el tipo
-        holder.imagenNoti.setImageResource(R.drawable.ic_bell); // CAMBIAR DESPUES
+        // Icono principal (si quieres luego diferenciamos por tipo)
+        holder.imagenNoti.setImageResource(R.drawable.ic_bell); // pon un icono que tengas
 
+        // Tocar la tarjeta → marcar como leída
         holder.itemView.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onItemClick(position);
+            if (listener != null && holder.getAdapterPosition() != RecyclerView.NO_POSITION) {
+                listener.onItemClick(holder.getAdapterPosition());
+            }
+        });
+
+        // Tocar la X → borrar solo esta notificación
+        holder.btnEliminarNoti.setOnClickListener(v -> {
+            if (listener != null && holder.getAdapterPosition() != RecyclerView.NO_POSITION) {
+                listener.onDeleteClick(holder.getAdapterPosition());
             }
         });
     }
@@ -87,14 +94,16 @@ public class NotificacionAdapter extends RecyclerView.Adapter<NotificacionAdapte
         TextView textoNoti;
         TextView horaNoti;
         ImageView estadoNotis;
+        ImageView btnEliminarNoti;
 
         public NotiViewHolder(@NonNull View itemView) {
             super(itemView);
-            imagenNoti = itemView.findViewById(R.id.imagenNoti);
-            tituloNoti = itemView.findViewById(R.id.tituloNoti);
-            textoNoti = itemView.findViewById(R.id.textoNoti);
-            horaNoti = itemView.findViewById(R.id.horaNoti);
-            estadoNotis = itemView.findViewById(R.id.estadoNotis);
+            imagenNoti     = itemView.findViewById(R.id.imagenNoti);
+            tituloNoti     = itemView.findViewById(R.id.tituloNoti);
+            textoNoti      = itemView.findViewById(R.id.textoNoti);
+            horaNoti       = itemView.findViewById(R.id.horaNoti);
+            estadoNotis    = itemView.findViewById(R.id.estadoNotis);
+            btnEliminarNoti = itemView.findViewById(R.id.btnEliminarNoti);
         }
     }
 }
