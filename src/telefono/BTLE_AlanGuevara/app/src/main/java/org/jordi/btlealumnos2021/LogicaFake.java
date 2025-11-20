@@ -6,14 +6,18 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonObjectRequest;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -703,6 +707,176 @@ public class LogicaFake {
         // Añadimos la petición a la cola de Volley para que se ejecute
         queue.add(req);
     }
+
+    public interface GraficaCallback {
+        void onSinPlaca();
+        void onDatosObtenidos(List<String> labels, List<Float> valores, double promedio);
+        void onErrorServidor();
+        void onErrorInesperado();
+    }
+
+    /**
+     * Nombre Método: resumen7Dias
+     * Descripción:
+     *   Llama al endpoint GET /resumen7Dias para obtener los promedios
+     *   diarios de los últimos 7 días del gas indicado para el usuario.
+     *
+     * Entradas:
+     *   - idUsuario: ID del usuario en MySQL.
+     *   - tipoGas:   Código del gas (11,12,13,14).
+     *   - queue:     Cola Volley para ejecutar la petición HTTP.
+     *   - callback:  Implementación de GraficaCallback para recibir el resultado.
+     *
+     * Salidas:
+     *   - No retorna nada directamente.
+     *   - Notifica a través de callback:
+     *       - onSinPlaca() si el servidor responde status="sin_placa".
+     *       - onDatosObtenidos(labels, valores, promedio) si hay datos.
+     *       - onErrorServidor() si hay error de servidor.
+     *       - onErrorInesperado() si hay error de parseo u otro.
+     *
+     * Autor: Alan Guevara Martínez
+     * Fecha: 21/11/2025
+     */
+    public static void resumen7Dias(
+            int idUsuario,
+            int tipoGas,
+            RequestQueue queue,
+            GraficaCallback callback
+    ) {
+        try {
+            String url = "https://nagufor.upv.edu.es" +
+                    "/resumen7Dias?id_usuario=" + idUsuario +
+                    "&tipo=" + tipoGas;
+
+            JsonObjectRequest request = new JsonObjectRequest(
+                    Request.Method.GET,
+                    url,
+                    null,
+                    response -> {
+                        try {
+                            String status = response.optString("status", "");
+
+                            if ("sin_placa".equals(status)) {
+                                callback.onSinPlaca();
+                                return;
+                            }
+
+                            JSONArray arrLabels = response.getJSONArray("labels");
+                            JSONArray arrValores = response.getJSONArray("valores");
+                            double promedio = response.getDouble("promedio");
+
+                            List<String> labels = new ArrayList<>();
+                            List<Float> valores = new ArrayList<>();
+
+                            for (int i = 0; i < arrLabels.length(); i++) {
+                                labels.add(arrLabels.getString(i));
+                                valores.add((float) arrValores.getDouble(i));
+                            }
+
+                            callback.onDatosObtenidos(labels, valores, promedio);
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            callback.onErrorInesperado();
+                        }
+                    },
+                    error -> {
+                        error.printStackTrace();
+                        callback.onErrorServidor();
+                    }
+            );
+
+            queue.add(request);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            callback.onErrorInesperado();
+        }
+    }
+
+
+    /**
+     * Nombre Método: resumen8Horas
+     * Descripción:
+     *   Llama al endpoint GET /resumen8Horas para obtener los promedios
+     *   horarios de las últimas 8 horas del gas indicado para el usuario.
+     *
+     * Entradas:
+     *   - idUsuario: ID del usuario en MySQL.
+     *   - tipoGas:   Código del gas (11,12,13,14).
+     *   - queue:     Cola Volley para ejecutar la petición HTTP.
+     *   - callback:  Implementación de GraficaCallback para recibir el resultado.
+     *
+     * Salidas:
+     *   - No retorna nada directamente.
+     *   - Notifica a través de callback:
+     *       - onSinPlaca() si el servidor responde status="sin_placa".
+     *       - onDatosObtenidos(labels, valores, promedio) si hay datos.
+     *       - onErrorServidor() si hay error de servidor.
+     *       - onErrorInesperado() si hay error de parseo u otro.
+     *
+     * Autor: Alan Guevara Martínez
+     * Fecha: 21/11/2025
+     */
+    public static void resumen8Horas(
+            int idUsuario,
+            int tipoGas,
+            RequestQueue queue,
+            GraficaCallback callback
+    ) {
+        try {
+            String url = "https://nagufor.upv.edu.es" +
+                    "/resumen8Horas?id_usuario=" + idUsuario +
+                    "&tipo=" + tipoGas;
+
+            JsonObjectRequest request = new JsonObjectRequest(
+                    Request.Method.GET,
+                    url,
+                    null,
+                    response -> {
+                        try {
+                            String status = response.optString("status", "");
+
+                            if ("sin_placa".equals(status)) {
+                                callback.onSinPlaca();
+                                return;
+                            }
+
+                            JSONArray arrLabels = response.getJSONArray("labels");
+                            JSONArray arrValores = response.getJSONArray("valores");
+                            double promedio = response.getDouble("promedio");
+
+                            List<String> labels = new ArrayList<>();
+                            List<Float> valores = new ArrayList<>();
+
+                            for (int i = 0; i < arrLabels.length(); i++) {
+                                labels.add(arrLabels.getString(i));
+                                valores.add((float) arrValores.getDouble(i));
+                            }
+
+                            callback.onDatosObtenidos(labels, valores, promedio);
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            callback.onErrorInesperado();
+                        }
+                    },
+                    error -> {
+                        error.printStackTrace();
+                        callback.onErrorServidor();
+                    }
+            );
+
+            queue.add(request);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            callback.onErrorInesperado();
+        }
+    }
+
+
 }
 
 
