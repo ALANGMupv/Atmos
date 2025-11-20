@@ -626,18 +626,9 @@ botonesModoGrafica.forEach(btn => {
 // -----------------------------------------------------------------------------
 //  Descripción:
 //     Consulta al backend cada cierto tiempo para saber si el sensor está
-//     encendido o apagado. Según la respuesta, actualiza el texto y el icono
-//     que se muestran en la tarjeta "Estado del Sensor".
-//
-//  Funcionamiento:
-//     - Pide al backend /estadoPlaca?id_usuario=xxx
-//     - Si el backend dice "activo"   → texto verde + icono activo
-//     - Si dice "inactivo"            → texto rojo + icono apagado
-//     - Si no hay placa asociada      → texto gris + icono apagado
-//
-//  Notas:
-//     • Esta función es MUY ligera, se puede llamar cada 20 segundos sin problema.
-//     • Se ejecuta automáticamente al cargar la página.
+//     encendido o apagado. Según la respuesta, actualiza el texto y el icono.
+//     Además, si el sensor NO está activo → automáticamente se resetea
+//     la tarjeta de “Distancia al sensor” a “Sin datos”.
 // -----------------------------------------------------------------------------
 async function actualizarEstadoSensor() {
 
@@ -658,6 +649,7 @@ async function actualizarEstadoSensor() {
         if (data.estado === "activo") {
             texto.textContent = "Sensor activo";
             icono.src = "img/estadoActivoSensorIcono.svg";
+            texto.style.color = "#000"; // restaurar color normal
             return;
         }
 
@@ -665,6 +657,11 @@ async function actualizarEstadoSensor() {
         if (data.estado === "inactivo") {
             texto.textContent = "Sensor inactivo";
             icono.src = "img/estadoInactivoSensorIcono.svg";
+            texto.style.color = "#000";
+
+            // cuando el sensor está apagado, la tarjeta de señal
+            // DEBE mostrar obligatoriamente "Sin datos".
+            resetearEstadoSenal();
             return;
         }
 
@@ -673,10 +670,38 @@ async function actualizarEstadoSensor() {
         texto.style.color = "#777"; // gris
         icono.src = "img/estadoInactivoSensorIcono.svg";
 
+        // si el usuario no tiene placa, tampoco hay señal que mostrar
+        resetearEstadoSenal();
+
     } catch (err) {
         console.error("Error consultando estado del sensor:", err);
     }
 }
+
+
+// ======================================================================
+// Función: resetearEstadoSenal()
+// ----------------------------------------------------------------------
+// Se llama automáticamente cuando:
+//   • El sensor está INACTIVO
+//   • El usuario NO tiene placa asociada
+//
+// ¿Qué hace?
+//   * Muestra el icono de "sin señal"
+//   * Muestra el texto "Sin datos"
+//   * Ignora cualquier dato real del endpoint /estadoSenal
+// ======================================================================
+function resetearEstadoSenal() {
+
+    const icono = document.getElementById("iconoSenal");
+    const texto = document.getElementById("textoSenal");
+
+    if (!icono || !texto) return;
+
+    icono.src = "img/sinSeñalDistanciaIcono.svg";
+    texto.textContent = "Sin datos";
+}
+
 
 // ======================================================================
 // Función: actualizarEstadoSenal()
@@ -708,7 +733,7 @@ async function actualizarEstadoSenal() {
             break;
 
         case "baja":
-            icono.src = "img/señalMalaDistanciaIcono.svg";
+            icono.src = "img/señalBajaDistanciaIcono.svg";
             texto.textContent = "Señal baja";
             break;
 
