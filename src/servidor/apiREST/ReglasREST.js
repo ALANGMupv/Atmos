@@ -389,7 +389,7 @@ function reglasREST(logica) {
 
     // -----------------------------------------------------------------------------
     // Endpoint: GET /resumenUsuarioPorGas
-    // Autor: Alan Guevara Martínez
+    // Autor: Santiago Fuenmayor Ruiz
     // Fecha: 19/11/2025
     // -----------------------------------------------------------------------------
     // Descripción:

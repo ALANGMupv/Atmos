@@ -65,6 +65,29 @@ if (!ID_USUARIO) {
     console.warn("ID_USUARIO no está disponible.");
 }
 
+// ================================================================
+// 2.1. Estado global para la gráfica
+// ================================================================
+
+// Tipo de gas actualmente seleccionado (11, 12, 13, 14)
+let tipoGasActual = null;
+
+// Modo de visualización de la gráfica: "D" (semana) o "H" (horas)
+let modoGraficaActual = "D";
+
+// Instancia de Chart.js para poder destruirla y recrearla
+let graficaCalidadChart = null;
+
+// Referencias a elementos de la gráfica
+const ctxGrafica = document.getElementById("graficaCalidad")
+    ? document.getElementById("graficaCalidad").getContext("2d")
+    : null;
+
+const botonesModoGrafica = document.querySelectorAll(".selector-modo-grafica .selector-opcion");
+const caritaGraficaImg   = document.querySelector(".carita-grafica img");
+const graficaRangoTexto  = document.getElementById("graficaRangoTexto");
+
+
 // Acción al seleccionar un gas
 if (gasSelector) {
     gasSelector.addEventListener("change", async () => {
@@ -77,7 +100,13 @@ if (gasSelector) {
 
         if (!tipo) return;
 
+        // Guardamos el tipo de gas actual para la gráfica
+        tipoGasActual = tipo;
+
+        // Actualizamos tarjetas de última medida / promedio diario
         await cargarDatosDeGas(tipo);
+
+
     });
 }
 
@@ -190,10 +219,10 @@ async function cargarDatosDeGas(tipoGas) {
         if (textoMedicion)      textoMedicion.textContent = categoriaUltima.texto;
 
 
-// CLASIFICACIÓN PARA PROMEDIO
+        // CLASIFICACIÓN PARA PROMEDIO
         const valorProm = Number(data.promedio || 0);
 
-// Si NO hay última medida → también promedio = "Sin datos"
+        // Si NO hay última medida → también promedio = "Sin datos"
         if (valorUltimo === null) {
             if (cuadraditoPromedio) cuadraditoPromedio.style.backgroundColor = "#C0C0C0";
             if (textoPromedio)      textoPromedio.textContent = "Sin datos";
@@ -209,3 +238,6 @@ async function cargarDatosDeGas(tipoGas) {
         console.error("Error consultando datos:", err);
     }
 }
+
+
+

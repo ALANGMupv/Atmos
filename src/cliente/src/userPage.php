@@ -42,7 +42,7 @@ $usuario = $_SESSION['usuario'];
 
     <section class="home-container">
 
-        <!-- Saludo -->
+        <!-- Saludo-->
         <section class="saludo-container">
             <h2>¡Hola, <?= htmlspecialchars($usuario['nombre']); ?>!</h2>
             <p>así se ve el aire que respiras hoy</p>
@@ -173,7 +173,38 @@ $usuario = $_SESSION['usuario'];
                     </div>
 
                     <!-- Gráfica -->
-                    <div class="grafica-container"></div>
+                    <div class="grafica-container">
+                        <div class="top-container">
+                            <div class="titulo-grafica-container">
+                                <div class="titulo-grafica">
+                                    <h4>Gráfica de Calidad del Aire</h4>
+                                    <!-- Botón de info del popup -->
+                                    <button data-popup="popupGrafica" class="informacion-icono">
+                                        <img src="img/informacionIcon.svg" alt="">
+                                    </button>
+                                </div>
+                                <p id="graficaRangoFechas">17/11 al 23/11</p>
+                            </div>
+                            <div class="selector-carita-container">
+                                <div class="selector-grafica-container">
+                                    <div class="selector-modo-grafica">
+                                        <button class="selector-opcion activo" data-modo="D">D</button>
+                                        <button class="selector-opcion" data-modo="H">H</button>
+                                    </div>
+                                </div>
+                                <div class="carita-grafica-container">
+
+                                    <div class="carita-grafica">
+                                        <img src="img/estadoAireIcono.svg" alt="">
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="bottom-container">
+
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -222,6 +253,10 @@ $usuario = $_SESSION['usuario'];
 
 <!-- Script de la página -->
 <script type="module" src="js/userPage.js"></script>
+
+<!-- Script para la gráfica de calidad de aire -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
 
 
 </body>
