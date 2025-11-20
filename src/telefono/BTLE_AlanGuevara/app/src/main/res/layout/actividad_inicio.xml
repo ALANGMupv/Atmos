@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <!-- ViewPager de las páginas -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPagerPaginas"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/contenedorInferior" />
+
+    <!-- CONTENEDOR INFERIOR -->
+    <LinearLayout
+        android:id="@+id/contenedorInferior"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- BOTONES: REGRESAR - SIGUIENTE -->
+        <LinearLayout
+            android:id="@+id/contenedorBotonesTexto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/botonRegresar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Regresar"
+                android:textColor="@color/verde_principal"
+                android:fontFamily="@font/roboto_bold"
+                android:textSize="16sp" />
+
+            <!-- SEPARADOR (IMPORTANTE: TIENE layout_width="0dp") -->
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/botonSiguiente"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Siguiente"
+                android:textColor="@color/verde_principal"
+                android:fontFamily="@font/roboto_bold"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+
+        <!-- BOTÓN GRANDE "COMENZAR" -->
+        <Button
+            android:id="@+id/botonComenzar"
+            style="@style/BotonPrincipal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Comenzar"
+            android:layout_marginTop="16dp"
+            android:visibility="gone" />
+
+        <!-- TEXTO DE INICIAR SESIÓN -->
+        <LinearLayout
+            android:id="@+id/contenedorIniciarSesion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_gravity="center_horizontal"
+            android:visibility="gone"
+            android:layout_marginTop="12dp">
+
+            <!-- Texto: ¿Tienes una cuenta? -->
+            <TextView
+                android:id="@+id/tvPregunta"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto"
+                android:text="¿Tienes una cuenta?"
+                android:textColor="#1F2B38"
+                android:textSize="16sp" />
+
+            <!-- Texto clicable: Iniciar sesión -->
+            <TextView
+                android:id="@+id/tvIrInicio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:focusable="true"
+                android:fontFamily="@font/roboto_bold"
+                android:paddingStart="4dp"
+                android:text=" Iniciar sesión"
+                android:textColor="@color/verde_principal"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</RelativeLayout>

@@ -2,7 +2,7 @@
  * ReglasREST.js
  * -------------------------
  * Define los endpoints REST de la API.
- * 
+ *
  * Aquí NO se ejecutan consultas SQL directamente.
  * Este archivo se encarga de:
  *   - Recibir las peticiones HTTP (POST, GET...).
@@ -295,51 +295,160 @@ function reglasREST(logica) {
 //   - Si existe, retornamos sus datos para crear la sesión PHP.
 //   - Si no existe, devolvemos un error.
 // -------------------------------------------------------------
-router.post("/login", verificarToken, async (req, res) => {
-    try {
-        // ---------------------------------------------------------------------
-        // req.user lo rellena el middleware verificarToken.
-        // Aquí tenemos: uid, email, email_verified...
-        // ---------------------------------------------------------------------
-        const email = req.user.email;
+    router.post("/login", verificarToken, async (req, res) => {
+        try {
+            // ---------------------------------------------------------------------
+            // req.user lo rellena el middleware verificarToken.
+            // Aquí tenemos: uid, email, email_verified...
+            // ---------------------------------------------------------------------
+            const email = req.user.email;
 
-        // ---------------------------------------------------------------------
-        // Buscar en MySQL el usuario cuyo email coincide con el de Firebase.
-        // Si no existe, significa que está registrado en Firebase pero
-        // NO se ha creado en MySQL todavía (caso raro pero posible).
-        // ---------------------------------------------------------------------
-        const usuario = await logica.buscarUsuarioPorEmail(email);
+            // ---------------------------------------------------------------------
+            // Buscar en MySQL el usuario cuyo email coincide con el de Firebase.
+            // Si no existe, significa que está registrado en Firebase pero
+            // NO se ha creado en MySQL todavía (caso raro pero posible).
+            // ---------------------------------------------------------------------
+            const usuario = await logica.buscarUsuarioPorEmail(email);
 
-        if (!usuario) {
-            return res.status(404).json({
-                error: "Usuario no registrado en MySQL"
+            if (!usuario) {
+                return res.status(404).json({
+                    error: "Usuario no registrado en MySQL"
+                });
+            }
+
+            // ---------------------------------------------------------------------
+            // Devolver al frontend los datos necesarios para:
+            //   - guardar la sesión en PHP (guardarSesion.php)
+            //   - sincronizar contraseña si procede
+            // ---------------------------------------------------------------------
+            return res.json({
+                status: "ok",
+                usuario: {
+                    id_usuario: usuario.id_Usuario,
+                    nombre: usuario.nombre,
+                    apellidos: usuario.apellidos,
+                    email: usuario.email
+                }
+            });
+
+        } catch (error) {
+            // ---------------------------------------------------------------------
+            // Si ocurre cualquier problema en la lógica interna, logueamos el error
+            // y devolvemos un 500 al cliente.
+            // ---------------------------------------------------------------------
+            console.error("Error en POST /login:", error);
+            return res.status(500).json({ error: "Error interno en login" });
+        }
+    });
+
+// -----------------------------------------------------------------------------
+// Endpoint: POST /desvincular
+// Autor: Alan Guevara Martínez
+// Fecha: 19/11/2025
+// -----------------------------------------------------------------------------
+// Descripción:
+//   - Desvincula la placa asociada al usuario indicado.
+//   - Internamente llama a logica.desvincularPlacaDeUsuario(id_usuario).
+//
+// Body esperado (JSON):
+//   {
+//     "id_usuario": 6
+//   }
+//
+// Respuestas posibles:
+//   200: { status: "ok", mensaje: "Placa desvinculada correctamente" }
+//   200: { status: "sin_placa", mensaje: "El usuario no tiene placas vinculadas" }
+//   400: { error: "Faltan datos: id_usuario" }
+//   500: { error: "..." }
+// -----------------------------------------------------------------------------
+    router.post("/desvincular", async (req, res) => {
+        try {
+            const { id_usuario } = req.body;
+
+            // Validación básica del body
+            if (!id_usuario) {
+                return res.status(400).json({
+                    error: "Faltan datos: id_usuario"
+                });
+            }
+
+            // Llamamos a la lógica de negocio
+            const resultado = await logica.desvincularPlacaDeUsuario(id_usuario);
+
+            // devolvemos tal cual el objeto { status, mensaje }
+            return res.json(resultado);
+
+        } catch (err) {
+            console.error("Error en POST /desvincular:", err);
+            return res.status(500).json({
+                error: "Error interno al desvincular placa"
             });
         }
+    });
 
-        // ---------------------------------------------------------------------
-        // Devolver al frontend los datos necesarios para:
-        //   - guardar la sesión en PHP (guardarSesion.php)
-        //   - sincronizar contraseña si procede
-        // ---------------------------------------------------------------------
-        return res.json({
-            status: "ok",
-            usuario: {
-                id_usuario: usuario.id_Usuario,
-                nombre: usuario.nombre,
-                apellidos: usuario.apellidos,
-                email: usuario.email
+
+    // -----------------------------------------------------------------------------
+    // Endpoint: GET /resumenUsuarioPorGas
+    // Autor: Alan Guevara Martínez
+    // Fecha: 19/11/2025
+    // -----------------------------------------------------------------------------
+    // Descripción:
+    //   Devuelve la última medición y el promedio del día para un TIPO DE GAS
+    //   específico perteneciente a la placa vinculada del usuario.
+    //
+    // Parámetros esperados (query):
+    //   - id_usuario {number} : ID del usuario logueado.
+    //   - tipo       {number} : tipo del gas (11 = NO₂, 12 = CO, 13 = O₃, 14 = SO₂)
+    //
+    // Devuelve:
+    //   - { status: "sin_placa" }
+    //   - {
+    //       status: "con_placa",
+    //       id_placa,
+    //       tipo,
+    //       ultima_medida: { valor, fecha_hora } | null,
+    //       promedio: number | 0
+    //     }
+    // -----------------------------------------------------------------------------
+    router.get("/resumenUsuarioPorGas", async (req, res) => {
+        try {
+            const id_usuario = req.query.id_usuario;
+            const tipo = parseInt(req.query.tipo, 10);
+
+            // Validación de parámetros
+            if (!id_usuario || !tipo) {
+                return res.status(400).json({
+                    error: "Faltan datos: id_usuario o tipo"
+                });
             }
-        });
 
-    } catch (error) {
-        // ---------------------------------------------------------------------
-        // Si ocurre cualquier problema en la lógica interna, logueamos el error
-        // y devolvemos un 500 al cliente.
-        // ---------------------------------------------------------------------
-        console.error("Error en POST /login:", error);
-        return res.status(500).json({ error: "Error interno en login" });
-    }
-});
+            // 1. Obtener placa del usuario
+            const placa = await logica.obtenerPlacaDeUsuario(id_usuario);
+
+            if (!placa) {
+                return res.json({status: "sin_placa"});
+            }
+
+            // 2. Obtener última medición del tipo solicitado
+            const ultima = await logica.obtenerUltimaMedidaPorGas(placa, tipo);
+
+            // 3. Obtener promedio del día del tipo solicitado
+            const promedio = await logica.obtenerPromedioPorGasHoy(placa, tipo);
+
+            // 4. Respuesta final
+            return res.json({
+                status: "con_placa",
+                id_placa: placa,
+                tipo: tipo,
+                ultima_medida: ultima,
+                promedio: promedio || 0
+            });
+
+        } catch (err) {
+            console.error("Error en GET /resumenUsuarioPorGas:", err);
+            res.status(500).json({error: "Error interno del servidor"});
+        }
+    });
 
     // --------------------------------------------------------------------------
     //  Devolvemos el router con todas las rutas activas

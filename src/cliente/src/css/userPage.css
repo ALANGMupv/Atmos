@@ -280,12 +280,46 @@
 .miSensor-titulo-container{
     display: flex;
     gap: 5px;
+    margin: 2px 0 0 2px;
 }
 .miSensor-container h3{
     font-family: 'Open Sans', sans-serif;
     font-size: clamp(13px, 1vw, 14px);
-    margin-bottom: -5px;
     font-weight: 500;
+}
+
+/* Selector de gases contaminantes */
+
+.selector-gases-container{
+    width: 100%;
+    height: 36px;
+    display: flex;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.11);
+    padding: 5px 10px;
+    margin: -5px 0 2px 0;
+}
+
+.selector-gases-container select{
+    width: 100%;
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(12px, 1vw, 13px);
+    font-weight: 400;
+    color: #6c6c6c;
+    border: none;
+}
+
+.selector-gases-container select option{
+    border: none;
+    border-radius: 15px;
+    font-weight: 600;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.11);
+}
+
+.selector-gases-container select:focus{
+    outline: none;
+    border: none;
 }
 
 .info-miSensor-mobile{
@@ -425,7 +459,7 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 10px;
+    padding: 10px 15px;
 }
 
 .medicion-titulo-container{
@@ -438,7 +472,7 @@
     gap: 5px;
 }
 
-.titulo-medicion h4{
+.medicion-titulo-container h4{
     font-family: 'Open Sans', sans-serif;
     font-size: clamp(11px, 1vw, 0.8rem);
     font-weight: 600;
@@ -490,7 +524,7 @@
     display: inline-block;
     width: clamp(14px, 1vw, 15px);
     height: clamp(14px, 1vw, 15px);
-    background-color: #55E249;
+    background-color: #cccccc;
     border-radius: 5px;
     margin-right: 5px;
 
@@ -510,9 +544,10 @@
     background-color: white;
     border-radius: 15px;
     box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.15);
-    padding: 10px;
+    padding: 10px 15px;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
     gap: 10px;
 
 }
@@ -527,7 +562,7 @@
     gap: 5px;
 }
 
-.titulo-promedio h4{
+.promedio-titulo-container h4{
     font-family: 'Open Sans', sans-serif;
     font-size: clamp(11px, 1vw, 0.8rem);
     font-weight: 600;
@@ -581,7 +616,7 @@
     display: inline-block;
     width: clamp(14px, 1vw, 15px);
     height: clamp(14px, 1vw, 15px);
-    background-color: #ff9955;
+    background-color: #cccccc;
     border-radius: 5px;
     margin-right: 5px;
 
@@ -834,6 +869,22 @@
         font-size: clamp(9px, 1vw, 0.8rem);
     }
 
+    .medicion-titulo-container p{
+        font-size: clamp(9px, 1vw, 0.75rem);
+    }
+
+    .medicion-container{
+        padding: 10px;
+    }
+
+    .promedio-container{
+        padding: 10px;
+    }
+
+    .promedio-titulo-container p{
+        font-size: clamp(9px, 1vw, 0.75rem);
+    }
+
     .promedio-titulo-container h4{
         font-size: clamp(9px, 1vw, 0.8rem);
     }
@@ -842,16 +893,12 @@
         margin-top: -3px;
     }
 
-    .promedio-medio-container{
-        margin-top: 2px;
-    }
-
-    .categoria-medicion-container .color-medicion{
+    .categoria-medicion-container .color-medicion, .categoria-promedio-container .color-promedio{
         width: clamp(12px, 1vw, 15px);
         height: clamp(12px, 1vw, 15px);
     }
 
-    .categoria-medicion-container .texto-medicion{
+    .categoria-medicion-container .texto-medicion, .categoria-promedio-container .texto-promedio{
         margin-top: -2px;
     }
 
