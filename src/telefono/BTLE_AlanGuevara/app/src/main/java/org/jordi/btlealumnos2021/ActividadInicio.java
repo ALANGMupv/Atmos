@@ -135,7 +135,7 @@ public class ActividadInicio extends AppCompatActivity {
     // Termina el onboarding y marca que ya se vio.
     private void finalizar() {
         preferencias.marcarNoPrimeraVez();
-        startActivity(new Intent(this, InicioSesionActivity.class));
+        startActivity(new Intent(this, RegistroActivity.class));
         finish();
     }
 }
