@@ -384,10 +384,14 @@ public class LogicaFake {
      */
     public interface ResumenUsuarioCallback {
         void onSinPlaca();                                    // Usuario no tiene placa asociada
-        void onConPlaca(String placa, double ultima, double promedio);  // Usuario con placa y datos
+        void onConPlaca(String placa, double ultimaValor, String ultimaFecha, double promedio);  // Usuario con placa y datos
         void onErrorServidor();                               // Error en la simulación/petición
         void onErrorInesperado();                             // Excepción inesperada
     }
+
+    // =========================================================
+// RESUMEN USUARIO POR GAS
+// =========================================================
 
     /**
      * Nombre Método: resumenUsuario
@@ -404,7 +408,7 @@ public class LogicaFake {
      * Autor: Nerea Aguilar Forés
      * Modificado por: Alan Guevara Martínez (20/11/2025)
      */
-    public static void resumenUsuario(
+    public static void resumenUsuarioPorGas(
             int idUsuario,
             int tipoGas,
             RequestQueue queue,

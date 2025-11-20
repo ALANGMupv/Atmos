@@ -67,67 +67,48 @@
             <LinearLayout
                 android:id="@+id/layoutSinSensor"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:layout_height="match_parent"
                 android:gravity="center"
+                android:orientation="vertical"
                 android:padding="32dp"
                 android:visibility="gone">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:fontFamily="@font/roboto_bold"
                     android:text="Ups… aún no has vinculado tu sensor"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
                     android:textColor="@color/black"
-                    android:layout_marginBottom="16dp"/>
+                    android:textSize="18sp" />
 
-                <Button
-                    android:id="@+id/btnVincularSensor"
+                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Vincular sensor"
-                    android:backgroundTint="@color/verde_principal"
-                    android:textColor="@color/white" />
+                    android:layout_marginBottom="16dp"
+                    android:fontFamily="@font/roboto"
+                    android:text="Para comenzar a ver datos de calidad del aire y activar todas las funciones, vincula tu sensor."
+                    android:textColor="@color/black"
+                    android:textSize="14sp" />
 
-            </LinearLayout>
-
-            <!-- *************************************************************
-                 SELECTOR DE CONTAMINANTE
-                 ************************************************************* -->
-
-            <LinearLayout
-                android:id="@+id/layoutSelector"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:paddingTop="8dp"
-                android:paddingBottom="8dp">
-
-                <!-- =============================================================
-                ICONO DE INFORMACIÓN
-                ============================================================= -->
                 <ImageView
-                    android:id="@+id/iconoInfo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="0dp"
                     android:layout_marginTop="8dp"
                     android:layout_marginEnd="12dp"
-                    android:contentDescription="Información"
                     android:padding="0dp"
-                    android:src="@drawable/ic_info" />
+                    android:src="@drawable/imagen_sin_sensor" />
 
-                <Spinner
-                    android:id="@+id/spinnerContaminante"
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:background="@drawable/spinner_borde"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="12dp"
-                    android:spinnerMode="dropdown" />
+
+                <Button
+                    android:id="@+id/btnVincularSensor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:backgroundTint="@color/verde_principal"
+                    android:text="Vincular sensor"
+                    android:textColor="@color/white" />
+
             </LinearLayout>
 
             <!-- *************************************************************
@@ -140,12 +121,51 @@
                 android:orientation="vertical"
                 android:visibility="gone">
 
-                <!-- AQUÍ YA NO HAY SCROLLVIEW, SOLO EL CONTENIDO -->
+
+                <!-- CONTENIDO -->
                 <LinearLayout
                     android:orientation="vertical"
                     android:padding="8dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
+
+                    <!-- *************************************************************
+                 SELECTOR DE CONTAMINANTE
+                 ************************************************************* -->
+
+                    <LinearLayout
+                        android:id="@+id/layoutSelector"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="8dp">
+
+                        <!-- =============================================================
+                        ICONO DE INFORMACIÓN
+                        ============================================================= -->
+                        <ImageView
+                            android:id="@+id/iconoInfo"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="0dp"
+                            android:layout_marginTop="8dp"
+                            android:layout_marginEnd="12dp"
+                            android:contentDescription="Información"
+                            android:padding="0dp"
+                            android:src="@drawable/ic_info" />
+
+                        <Spinner
+                            android:id="@+id/spinnerContaminante"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:background="@drawable/spinner_borde"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="12dp"
+                            android:spinnerMode="dropdown" />
+                    </LinearLayout>
 
                     <!-- =====================================================
                          FILA 1: Estado del Sensor + Distancia al Sensor
@@ -298,6 +318,7 @@
                                         android:fontFamily="@font/roboto_bold"/>
 
                                     <TextView
+                                        android:id="@+id/tv_promedio_gas"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
                                         android:layout_marginStart="4dp"
@@ -314,12 +335,14 @@
                                     android:layout_marginTop="10dp">
 
                                     <ImageView
+                                        android:id="@+id/img_promedio_calidad"
                                         android:layout_width="16dp"
                                         android:layout_height="16dp"
                                         android:layout_marginEnd="4dp"
                                         android:src="@drawable/ic_estado_bueno" />
 
                                     <TextView
+                                        android:id="@+id/tv_promedio_calidad"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
                                         android:text="Buena"
@@ -377,6 +400,7 @@
                                         android:fontFamily="@font/roboto_bold"/>
 
                                     <TextView
+                                        android:id="@+id/tv_ultima_gas"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
                                         android:layout_marginStart="4dp"
@@ -393,12 +417,14 @@
                                     android:layout_marginTop="10dp">
 
                                     <ImageView
+                                        android:id="@+id/img_ultima_calidad"
                                         android:layout_width="16dp"
                                         android:layout_height="16dp"
                                         android:layout_marginEnd="4dp"
                                         android:src="@drawable/ic_estado_bueno" />
 
                                     <TextView
+                                        android:id="@+id/tv_ultima_calidad"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
                                         android:text="Buena"
@@ -435,12 +461,112 @@
                                 android:textColor="#000"
                                 android:textSize="16sp" />
 
-                            <FrameLayout
-                                android:id="@+id/grafica_container"
+                            <!-- TARJETA COMPLETA DE LA GRÁFICA -->
+                            <LinearLayout
+                                android:id="@+id/layoutGraficaCalidad"
                                 android:layout_width="match_parent"
-                                android:layout_height="0dp"
-                                android:layout_weight="1"
-                                android:layout_marginTop="10dp" />
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:padding="10dp">
+
+                                <!-- FILA SUPERIOR: título + info + D/H + carita -->
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center_vertical"
+                                    android:orientation="horizontal">
+
+                                    <!-- TÍTULO -->
+                                    <TextView
+                                        android:id="@+id/txtTituloGrafica"
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:text="Gráfica de Calidad del aire"
+                                        android:textSize="14sp"
+                                        android:textStyle="bold" />
+
+                                    <!-- ICONO INFO -->
+                                    <ImageView
+                                        android:id="@+id/btnInfoGrafica"
+                                        android:layout_width="20dp"
+                                        android:layout_height="20dp"
+                                        android:layout_marginEnd="8dp"
+                                        android:src="@drawable/ic_info"
+                                        android:contentDescription="Información" />
+
+                                    <!-- CONTENEDOR D/H -->
+                                    <LinearLayout
+                                        android:id="@+id/layoutModoGrafica"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="horizontal">
+
+                                        <TextView
+                                            android:id="@+id/btnModoDia"
+                                            android:layout_width="32dp"
+                                            android:layout_height="28dp"
+                                            android:gravity="center"
+                                            android:text="D"
+                                            android:textSize="12sp"
+                                            android:background="@drawable/bg_modo_unselected" />
+
+                                        <TextView
+                                            android:id="@+id/btnModoHora"
+                                            android:layout_width="32dp"
+                                            android:layout_height="28dp"
+                                            android:layout_marginStart="4dp"
+                                            android:gravity="center"
+                                            android:text="H"
+                                            android:textSize="12sp"
+                                            android:background="@drawable/bg_modo_unselected" />
+                                    </LinearLayout>
+
+                                    <!-- CARITA -->
+                                    <LinearLayout
+                                        android:id="@+id/layoutEstadoCalidad"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="12dp"
+                                        android:orientation="vertical"
+                                        android:gravity="center_horizontal">
+
+                                        <ImageView
+                                            android:id="@+id/iconEstadoCalidad"
+                                            android:layout_width="32dp"
+                                            android:layout_height="32dp"
+                                            android:src="@drawable/ic_estado_regular" />
+
+                                        <TextView
+                                            android:id="@+id/txtEstadoCalidad"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="Insalubre"
+                                            android:textSize="10sp" />
+                                    </LinearLayout>
+                                </LinearLayout>
+
+                                <!-- RANGO DE FECHAS -->
+                                <TextView
+                                    android:id="@+id/txtRangoFechasGrafica"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="17/11 al 23/11"
+                                    android:textSize="11sp"
+                                    android:layout_marginTop="4dp" />
+
+                                <View
+                                    android:layout_width="match_parent"
+                                    android:layout_height="8dp" />
+
+                                <!-- LA GRÁFICA MPAndroidChart -->
+                                <com.github.mikephil.charting.charts.BarChart
+                                    android:id="@+id/barChartCalidadAire"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="160dp" />
+
+                            </LinearLayout>
+
 
                         </LinearLayout>
                     </androidx.cardview.widget.CardView>
