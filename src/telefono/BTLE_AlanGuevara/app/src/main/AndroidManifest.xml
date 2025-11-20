@@ -105,12 +105,6 @@
             android:name=".ActividadInicio"
             android:exported="false"/>
 
-        <service
-            android:name=".BeaconScanService"
-            android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="location" />
-
     </application>
 
 </manifest>
