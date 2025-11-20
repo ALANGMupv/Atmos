@@ -1,0 +1,449 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <!-- ===========================================================
+         BOTÓN X (CERRAR)
+         =========================================================== -->
+    <ImageView
+        android:id="@+id/btnCerrar"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:layout_margin="12dp"
+        android:contentDescription="Cerrar"
+        android:foregroundGravity="center"
+        android:padding="6dp"
+        android:src="@drawable/ic_cerrar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- ===========================================================
+     TÍTULO DE LA PÁGINA
+     =========================================================== -->
+    <TextView
+        android:id="@+id/tituloPagina"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/roboto_bold"
+        android:text="Información de contaminantes"
+        android:textColor="#1F2B38"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="@+id/btnCerrar"
+        app:layout_constraintEnd_toEndOf="@id/btnCerrar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/btnCerrar" />
+
+
+    <!-- ===========================================================
+         TABLA DE RANGOS (ARRIBA, FIJA)
+         =========================================================== -->
+    <LinearLayout
+        android:id="@+id/contenedorTabla"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/bg_tabla"
+        android:elevation="3dp"
+        android:orientation="vertical"
+        android:padding="12dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnCerrar">
+
+        <TextView
+            android:id="@+id/tituloTabla"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:fontFamily="@font/roboto_bold"
+            android:text="Rangos de calidad del aire (ppm)"
+            android:textColor="#1F2B38"
+            android:textSize="18sp" />
+
+        <!-- TABLA REAL -->
+        <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:stretchColumns="*">
+
+            <!-- ENCABEZADOS -->
+            <TableRow>
+
+                <TextView
+                    android:padding="6dp"
+                    android:text="Gas"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:padding="6dp"
+                    android:text="Bueno"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:padding="6dp"
+                    android:text="Moderado"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:padding="6dp"
+                    android:text="Insalubre"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:padding="6dp"
+                    android:text="Malo"
+                    android:textStyle="bold" />
+            </TableRow>
+
+            <!-- =============================== CO =============================== -->
+            <TableRow>
+
+                <TextView
+                    android:padding="6dp"
+                    android:text="CO" />
+
+                <TextView
+                    android:background="@drawable/bg_verde"
+                    android:padding="6dp"
+                    android:text="0 – 1.7"
+                    android:textColor="#000000" />
+
+                <TextView
+                    android:background="@drawable/bg_amarillo"
+                    android:padding="6dp"
+                    android:text="1.7 – 4.4"
+                    android:textColor="#000000" />
+
+                <TextView
+                    android:background="@drawable/bg_naranja"
+                    android:padding="6dp"
+                    android:text="4.4 – 8.7"
+                    android:textColor="#FFFFFF" />
+
+                <TextView
+                    android:background="@drawable/bg_rojo"
+                    android:padding="6dp"
+                    android:text="> 8.7"
+                    android:textColor="#FFFFFF" />
+            </TableRow>
+
+            <!-- =============================== NO2 =============================== -->
+            <TableRow>
+
+                <TextView
+                    android:padding="6dp"
+                    android:text="NO₂" />
+
+                <TextView
+                    android:background="@drawable/bg_verde"
+                    android:padding="6dp"
+                    android:text="0 – 0.02"
+                    android:textColor="#000000" />
+
+                <TextView
+                    android:background="@drawable/bg_amarillo"
+                    android:padding="6dp"
+                    android:text="0.02 – 0.05"
+                    android:textColor="#000000" />
+
+                <TextView
+                    android:background="@drawable/bg_naranja"
+                    android:padding="6dp"
+                    android:text="0.05 – 0.11"
+                    android:textColor="#FFFFFF" />
+
+                <TextView
+                    android:background="@drawable/bg_rojo"
+                    android:padding="6dp"
+                    android:text="> 0.11"
+                    android:textColor="#FFFFFF" />
+            </TableRow>
+
+            <!-- =============================== O3 =============================== -->
+            <TableRow>
+
+                <TextView
+                    android:padding="6dp"
+                    android:text="O₃" />
+
+                <TextView
+                    android:background="@drawable/bg_verde"
+                    android:padding="6dp"
+                    android:text="0 – 0.03"
+                    android:textColor="#000000" />
+
+                <TextView
+                    android:background="@drawable/bg_amarillo"
+                    android:padding="6dp"
+                    android:text="0.03 – 0.06"
+                    android:textColor="#000000" />
+
+                <TextView
+                    android:background="@drawable/bg_naranja"
+                    android:padding="6dp"
+                    android:text="0.06 – 0.09"
+                    android:textColor="#FFFFFF" />
+
+                <TextView
+                    android:background="@drawable/bg_rojo"
+                    android:padding="6dp"
+                    android:text="> 0.09"
+                    android:textColor="#FFFFFF" />
+            </TableRow>
+
+            <!-- =============================== SO2 =============================== -->
+            <TableRow>
+
+                <TextView
+                    android:padding="6dp"
+                    android:text="SO₂" />
+
+                <TextView
+                    android:background="@drawable/bg_verde"
+                    android:padding="6dp"
+                    android:text="0 – 0.008"
+                    android:textColor="#000000" />
+
+                <TextView
+                    android:background="@drawable/bg_amarillo"
+                    android:padding="6dp"
+                    android:text="0.008 – 0.02"
+                    android:textColor="#000000" />
+
+                <TextView
+                    android:background="@drawable/bg_naranja"
+                    android:padding="6dp"
+                    android:text="0.02 – 0.04"
+                    android:textColor="#FFFFFF" />
+
+                <TextView
+                    android:background="@drawable/bg_rojo"
+                    android:padding="6dp"
+                    android:text="> 0.04"
+                    android:textColor="#FFFFFF" />
+            </TableRow>
+
+        </TableLayout>
+    </LinearLayout>
+
+    <!-- ===========================================================
+         SCROLL VIEW CON LAS FICHAS (ABAJO)
+         =========================================================== -->
+    <!-- CONTENIDO SCROLLABLE -->
+    <ScrollView
+        android:id="@+id/scrollInfo"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_margin="8dp"
+        android:layout_marginTop="12dp"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/contenedorTabla">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:orientation="vertical">
+
+            <!-- ============================================================
+                NO2 – DIÓXIDO DE NITRÓGENO
+            ============================================================ -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto_bold"
+                android:text="NO₂ – Dióxido de Nitrógeno"
+                android:textColor="#000"
+                android:textSize="18sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:fontFamily="@font/roboto_light"
+                android:text="Origen: Emisiones de tráfico, combustión de vehículos diésel y procesos industriales."
+                android:textSize="14sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:fontFamily="@font/roboto_light"
+                android:text="Efectos: Irritación de vías respiratorias, empeoramiento del asma y disminución de la función pulmonar."
+                android:textSize="14sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:fontFamily="@font/roboto_light"
+                android:text="Consejo: Evita actividad física intensa en exteriores cuando los niveles sean altos."
+                android:textSize="14sp" />
+
+            <ImageView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="8dp"
+                android:src="@drawable/car" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="12dp"
+                android:background="#CCCCCC" />
+
+            <!-- ============================================================
+                CO – MONÓXIDO DE CARBONO
+            ============================================================ -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto_bold"
+                android:text="CO – Monóxido de Carbono"
+                android:textColor="#000"
+                android:textSize="18sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:fontFamily="@font/roboto_light"
+                android:text="Origen: Combustión incompleta de combustibles fósiles, motores de vehículos y calefacciones defectuosas."
+                android:textSize="14sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:fontFamily="@font/roboto_light"
+                android:text="Efectos: Reduce el transporte de oxígeno en sangre; causa mareos, dolor de cabeza y fatiga."
+                android:textSize="14sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:fontFamily="@font/roboto_light"
+                android:text="Consejo: Mantén buena ventilación y revisa regularmente sistemas de combustión en interiores."
+                android:textSize="14sp" />
+
+            <ImageView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="8dp"
+                android:src="@drawable/oil" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="12dp"
+                android:background="#CCCCCC" />
+
+            <!-- ============================================================
+                O3 – OZONO TROPOSFÉRICO
+            ============================================================ -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto_bold"
+                android:text="O₃ – Ozono Troposférico"
+                android:textColor="#000"
+                android:textSize="18sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:fontFamily="@font/roboto_light"
+                android:text="Origen: Reacciones fotoquímicas entre rayos UV, NOx y compuestos orgánicos volátiles."
+                android:textSize="14sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:fontFamily="@font/roboto_light"
+                android:text="Efectos: Irritación pulmonar, tos, dolor en el pecho y dificultad para respirar."
+                android:textSize="14sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:fontFamily="@font/roboto_light"
+                android:text="Consejo: Evita actividades al aire libre en horas de máxima radiación solar."
+                android:textSize="14sp" />
+
+            <ImageView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="8dp"
+                android:src="@drawable/sun" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="12dp"
+                android:background="#CCCCCC" />
+
+            <!-- ============================================================
+                SO3 – TRIOXIDO DE AZUFRE
+            ============================================================ -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto_bold"
+                android:text="SO₃ – Trióxido de Azufre"
+                android:textColor="#000"
+                android:textSize="18sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:fontFamily="@font/roboto_light"
+                android:text="Origen: Procesos industriales, especialmente en la producción de ácido sulfúrico y combustión de carbón."
+                android:textSize="14sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:fontFamily="@font/roboto_light"
+                android:text="Efectos: Causa irritación severa en ojos, nariz y garganta. Con humedad forma ácido sulfúrico."
+                android:textSize="14sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:fontFamily="@font/roboto_light"
+                android:text="Consejo: Evita zonas cercanas a industrias en funcionamiento y usa protección respiratoria si es necesario."
+                android:textSize="14sp" />
+
+            <ImageView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="8dp"
+                android:src="@drawable/fabrica" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
