@@ -276,6 +276,8 @@ async function cargarDatosDeGas(tipoGas) {
 //      - PPM reales en tooltip
 //      - Fechas reales en tooltip
 //      - Fechas debajo de cada barra (doble línea)
+//      - Esquinas redondeadas
+//      - Sin líneas verticales de separación
 // ======================================================================
 function renderizarGraficaCalidad(labels, valores) {
 
@@ -301,8 +303,18 @@ function renderizarGraficaCalidad(labels, valores) {
             datasets: [{
                 label: "ppm",
                 data: valoresConvertidos,
-                originalValues: valores,      // guardamos ppm reales
-                backgroundColor: valores.map(v => clasificarMedida(v, tipoGasActual).color)
+                originalValues: valores,
+                backgroundColor: valores.map(v => clasificarMedida(v, tipoGasActual).color),
+
+                // esquinas redondeadas
+                borderRadius: {
+                    topLeft: 5,
+                    topRight: 5,
+                    bottomLeft: 0,
+                    bottomRight: 0
+                },
+
+                borderSkipped: false
             }]
         },
 
@@ -414,6 +426,11 @@ function renderizarGraficaCalidad(labels, valores) {
 
                             return label;
                         }
+                    },
+
+                    // 🚫 Quitar líneas verticales
+                    grid: {
+                        display: false
                     }
                 },
 
