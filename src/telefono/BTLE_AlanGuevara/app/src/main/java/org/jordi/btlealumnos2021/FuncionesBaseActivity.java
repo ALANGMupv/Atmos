@@ -49,13 +49,13 @@ public class FuncionesBaseActivity extends AppCompatActivity {
 
         if (btnNotificaciones != null) {
             btnNotificaciones.setOnClickListener(v -> {
-                // startActivity(new Intent(this, NotificacionesActivity.class));
+                startActivity(new Intent(this, NotificacionesActivity.class));
             });
         }
 
         if (btnPerfil != null) {
             btnPerfil.setOnClickListener(v -> {
-                // startActivity(new Intent(this, PerfilActivity.class));
+                startActivity(new Intent(this, PerfilActivity.class));
             });
         }
     }
