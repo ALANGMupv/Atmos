@@ -84,7 +84,7 @@ public class InicioSesionActivity extends FuncionesBaseActivity {
     private boolean validarLogin(String email, String password) {
 
         if (email.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Rellena todos los campos", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Por favor, rellena todos los campos", Toast.LENGTH_SHORT).show();
             return false;
         }
 
@@ -128,9 +128,10 @@ public class InicioSesionActivity extends FuncionesBaseActivity {
                             );
 
                 })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show()
-                );
+                .addOnFailureListener(e -> {
+                    String errorTraducido = traducirErrorFirebase(e.getMessage());
+                    Toast.makeText(this, errorTraducido, Toast.LENGTH_LONG).show();
+                });
     }
 
     /**
@@ -194,6 +195,39 @@ public class InicioSesionActivity extends FuncionesBaseActivity {
                     }
                 }
         );
+    }
+
+    /**
+     * Traduce los mensajes de error de Firebase al español.
+     */
+    private String traducirErrorFirebase(String mensajeOriginal) {
+
+        if (mensajeOriginal == null) return "Error desconocido";
+
+        mensajeOriginal = mensajeOriginal.toLowerCase();
+
+        if (mensajeOriginal.contains("password is invalid")) {
+            return "La contraseña es incorrecta";
+        }
+
+        if (mensajeOriginal.contains("no user record")) {
+            return "El usuario no existe";
+        }
+
+        if (mensajeOriginal.contains("email address is badly formatted")) {
+            return "El correo electrónico no es válido";
+        }
+
+        if (mensajeOriginal.contains("network error")) {
+            return "Error de conexión. Revisa tu internet.";
+        }
+
+        if (mensajeOriginal.contains("too many unsuccessful login attempts")
+                || mensajeOriginal.contains("blocked")) {
+            return "Demasiados intentos fallidos. Inténtalo más tarde.";
+        }
+
+        return "Error: " + mensajeOriginal;
     }
 
 }
