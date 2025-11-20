@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-$active = 'mapas';
+$active = 'solucion';
 $isGuest = !isset($_SESSION['usuario']);
 
 if ($isGuest) {
@@ -16,7 +16,7 @@ if ($isGuest) {
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ATMOS - Mapas (Próximamente)</title>
+    <title>ATMOS - Cómo Funciona (Próximamente)</title>
 
     <!-- Fuentes (Asumo que ya las cargas en el header, pero por si acaso) -->
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&family=Roboto:wght@500;700&display=swap" rel="stylesheet">
@@ -40,14 +40,14 @@ if ($isGuest) {
         <div class="coming-soon-card">
             <!-- Icono animado -->
             <div class="icon-container">
-                <i class="fa-solid fa-map-location-dot"></i>
+                <i class="fa-solid fa-gear fa-spin"></i>
             </div>
 
             <!-- Textos -->
-            <h1 class="cs-title">Estamos construyendo el mundo</h1>
+            <h1 class="cs-title">Estamos mejorando Atmos</h1>
             <p class="cs-subtitle">
-                Nuestra sección de <strong>Mapas Interactivos</strong> está casi lista.
-                Pronto podrás visualizar la calidad del aire en tiempo real en tu zona.
+                Nuestra sección de <strong>Cómo Funciona</strong> está casi lista.
+                 En breve podrás entender paso a paso cómo Atmos monitoriza la calidad del aire.
             </p>
 
             <!-- Barra de progreso decorativa -->
