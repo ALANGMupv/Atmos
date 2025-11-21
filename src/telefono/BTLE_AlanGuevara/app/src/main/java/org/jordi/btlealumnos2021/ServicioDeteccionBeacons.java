@@ -197,7 +197,7 @@ public class ServicioDeteccionBeacons extends Service {
     /**
      * Procesa cada anuncio BLE recibido.
      * Aquí replicamos la lógica de Jordi en MainActivity.buscarEsteDispositivoBTLE():
-     *   1) Filtrar por NOMBRE del dispositivo (dispositivoBuscado).
+     *   1) Filtrar por UUID.
      *   2) SOLO si el nombre coincide → parsear TramaIBeacon.
      *   3) Extraer uuid, major, minor igual que antes.
      *   4) Enviar medición al backend.
@@ -211,69 +211,95 @@ public class ServicioDeteccionBeacons extends Service {
         try {
             if (result.getScanRecord() == null) return;
 
-            BluetoothDevice bluetoothDevice = result.getDevice();
-            String nombre = bluetoothDevice.getName();
-
-            // Si aún no sabemos qué placa tiene el usuario → no hacemos nada
-            if (placaVinculada == null) {
-                Log.d(TAG, "placaVinculada aún es null, ignorando beacon.");
-                return;
-            }
-
-            // Igual que en MainActivity: filtrar solo por nombre
-            if (nombre == null || !nombre.equals(placaVinculada)) {
-                return;
-            }
-
-            // Llegados aquí, ES la placa del usuario (por nombre BT)
-            Log.d(TAG, ">> Beacon de la placa detectado: " + nombre);
-
-            // Obtener bytes crudos del anuncio BLE
+            // Extraer bytes crudos
             byte[] bytes = result.getScanRecord().getBytes();
 
-            // Interpretar como trama iBeacon — igual que MainActivity
+            // Interpretar trama iBeacon con la clase de Jordi
             TramaIBeacon tib = new TramaIBeacon(bytes);
 
-            // Extraer UUID como texto (solo para log, no para API — igual que antes)
-            String uuid = Utilidades.bytesToString(tib.getUUID());
-            Log.d(TAG, "UUID detectado para la placa = '" + uuid + "'");
+            // ---------------------------------------------------------
+            // 1) UUID EN ASCII EXACTO (igual que hacía tu compañera)
+            // ---------------------------------------------------------
+            String uuidLeidoAscii = Utilidades.bytesToString(tib.getUUID());
+            if (uuidLeidoAscii != null) {
+                uuidLeidoAscii = uuidLeidoAscii.trim();
+            }
 
-            // Registrar último beacon recibido
+            if (placaVinculada == null) {
+                Log.d(TAG, "placaVinculada null, ignorando beacon.");
+                return;
+            }
+
+            String uuidEsperado = placaVinculada.trim();
+
+            // ---------------------------------------------------------
+            // 2) COMPARACIÓN ASCII == ASCII  (sin hex, sin nombre BT)
+            // ---------------------------------------------------------
+            if (!uuidLeidoAscii.equals(uuidEsperado)) {
+                Log.d(TAG, "UUID no coincide. Leído='" + uuidLeidoAscii +
+                        "' esperado='" + uuidEsperado + "'");
+                return;
+            }
+
+            Log.d(TAG, ">> Beacon válido detectado. UUID ASCII coincidió: " + uuidLeidoAscii);
+
+            // Registrar actividad
             ultimoBeaconTimestamp = System.currentTimeMillis();
 
-            // Actualizar encendida = 1
+            // Marcar encendida
             logicaFake.actualizarEstadoPlaca(placaVinculada, 1);
 
-            // Obtener RSSI
+            // Obtener RSSI real
             int rssi = result.getRssi();
 
-            // EXTRAER DATOS EXACTAMENTE COMO MAINACTIVITY
-            int major = Utilidades.bytesToInt(tib.getMajor());   // NO usar bytesToIntOK
+            // ---------------------------------------------------------
+            // 3) Leer major y minor usando Utilidades (Jordi)
+            // ---------------------------------------------------------
+            int major = Utilidades.bytesToInt(tib.getMajor());
             int minor = Utilidades.bytesToInt(tib.getMinor());
 
-            int tipoGas   = (major >> 8) & 0xFF;
-            int contador  = (major & 0xFF);
+            int tipoGas = (major >> 8) & 0xFF;
+            float valorMedido = minor / 10000.0f;
 
-            float valorMedido = minor / 1000.0f;
-
-            // Enviar medición TAL CUAL hacía MainActivity:
-            // - placaVinculada = nombre de la emisora
+            // ---------------------------------------------------------
+            // 4) Enviar medición EXACTAMENTE como siempre
+            // ---------------------------------------------------------
             logicaFake.guardarMedicion(
-                    placaVinculada, // EXACTAMENTE como MainActivity
+                    placaVinculada,
                     tipoGas,
                     valorMedido,
                     rssi
             );
 
-            Log.d(TAG, "Medición enviada OK. Gas=" + tipoGas +
-                    " Valor=" + valorMedido +
-                    " RSSI=" + rssi);
+            Log.d(TAG, "Medición enviada OK. gas=" + tipoGas +
+                    " valor=" + valorMedido +
+                    " rssi=" + rssi);
 
         } catch (Exception e) {
             Log.e(TAG, "Error procesando beacon", e);
         }
     }
 
+
+    private String extraerUUIDTexto(ScanResult result) {
+        try {
+            if (result.getScanRecord() == null) return null;
+
+            byte[] bytes = result.getScanRecord().getBytes();
+
+            TramaIBeacon trama = new TramaIBeacon(bytes);
+
+            // EXACTAMENTE igual que hacía la app de tu compañera
+            String uuidTexto = Utilidades.bytesToString(trama.getUUID());
+
+            Log.d(TAG, "UUID (texto) leído = '" + uuidTexto + "'");
+
+            return uuidTexto;
+        } catch (Exception e) {
+            Log.e(TAG, "Error extrayendo UUID texto", e);
+            return null;
+        }
+    }
 
 
     /**

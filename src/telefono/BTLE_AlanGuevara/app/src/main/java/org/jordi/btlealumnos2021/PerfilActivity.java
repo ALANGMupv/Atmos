@@ -159,6 +159,9 @@ public class PerfilActivity extends FuncionesBaseActivity {
         AppCompatButton btnConfirmar = popupView.findViewById(R.id.btnConfirmarCerrar);
         if (btnConfirmar != null) {
             btnConfirmar.setOnClickListener(view -> {
+                // 0. DETENER SERVICIO DE BEACONS
+                stopService(new Intent(PerfilActivity.this, ServicioDeteccionBeacons.class));
+
                 // 1. Cerrar sesión en Firebase (usuario actual)
                 FirebaseAuth.getInstance().signOut();
 
