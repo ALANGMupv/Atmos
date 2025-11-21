@@ -989,13 +989,13 @@ async obtenerNotificacionesUsuario(id_usuario) {
     const id_placa = await this.obtenerPlacaDeUsuario(id_usuario);
     if (!id_placa) return notificaciones;
 
-    // Configuración rápida de umbrales (ahora para O₃)
-    const TIPO_O3 = 13;
-    const UMBRAL_O3_CRITICO   = 2000;  // ajusta después si quieres
-    const UMBRAL_O3_PICO_ALTO = 1000;  // para resumen diario
-    const MINUTOS_SENSOR_INACTIVO = 5; // prueba / demo
-    const MIN_O3_ESPERADO = 0;
-    const MAX_O3_ESPERADO = 5000;
+    // Configuración rápida de umbrales (para O₃ normalizado 0–1 o 0–100)
+        const TIPO_O3 = 13;
+        const UMBRAL_O3_CRITICO   = 0.9;  // “crítico”
+        const UMBRAL_O3_PICO_ALTO = 0.4;  // pico alto para resumen diario
+        const MINUTOS_SENSOR_INACTIVO = 5;  // prueba
+        const MIN_O3_ESPERADO = 0;
+        const MAX_O3_ESPERADO = 100;
 
     // -------------------------------------
     // Notificación 1 — Nivel crítico O₃
@@ -1005,7 +1005,7 @@ async obtenerNotificacionesUsuario(id_usuario) {
         notificaciones.push({
             tipo: "O3_CRITICO",
             titulo: "Nivel crítico de ozono",
-            texto: `Nivel de O₃ crítico: ${Math.round(ultimaO3.valor)} unidades.`,
+            texto: `Nivel de O₃ crítico: ${Math.round(ultimaO3.valor)} ppm.`,
             icono: "alerta",
             fecha_hora: ultimaO3.fecha_hora,
             leido: false
@@ -1070,20 +1070,35 @@ async obtenerNotificacionesUsuario(id_usuario) {
         });
     }
 
-    // -------------------------------------
-    // Notificación 5 — Distancia con el sensor
-    // -------------------------------------
-    const distanciaBD = await this.obtenerDistanciaPlaca(id_placa);
-    if (distanciaBD) {
-        notificaciones.push({
-            tipo: "DISTANCIA_SENSOR",
-            titulo: "Distancia con el sensor",
-            texto: `Tu sensor estuvo a ${distanciaBD} durante la última conexión.`,
-            icono: "ubicacion",
-            fecha_hora: new Date(),
-            leido: false
-        });
+// -------------------------------------
+// Notificación 5 — Distancia con el sensor
+// -------------------------------------
+const rssi = await this.obtenerDistanciaPlaca(id_placa);
+
+if (rssi !== null) {
+
+    let etiqueta = "fuera de alcance";
+
+    if (rssi <= -40 && rssi >= -55) {
+        etiqueta = "muy cerca del teléfono";
+    } else if (rssi <= -56 && rssi >= -70) {
+        etiqueta = "cerca del teléfono";
+    } else if (rssi <= -71 && rssi >= -85) {
+        etiqueta = "a una distancia media";
+    } else if (rssi <= -86 && rssi >= -95) {
+        etiqueta = "lejos del teléfono";
     }
+
+    notificaciones.push({
+        tipo: "DISTANCIA_SENSOR",
+        titulo: "Distancia con el sensor",
+        texto: `Tu sensor está ${etiqueta}.`,
+        icono: "ubicacion",
+        fecha_hora: new Date(),
+        leido: false
+    });
+}
+
 
     return notificaciones;
 }
