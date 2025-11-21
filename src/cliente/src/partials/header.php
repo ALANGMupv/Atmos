@@ -10,7 +10,7 @@ if (!isset($isGuest)) { $isGuest = true; }
     <nav class="navbar" aria-label="Navegación principal">
 
       <!-- LOGO -->
-        <a href="landing.php" class="brand">
+        <a href="index.php" class="brand">
             <img src="img/logoHeader.svg" alt="ATMOS" class="brand-logo">
         </a>
 
