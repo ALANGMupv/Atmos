@@ -433,6 +433,12 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d(ETIQUETA_LOG, " onCreate(): termina ");
 
+        // --- ARRANCAR SERVICIO DE DETECCIÓN DE BEACONS ---
+        Intent s = new Intent(MainActivity.this, ServicioDeteccionBeacons.class);
+        startForegroundService(s);
+        Log.d(ETIQUETA_LOG, "ServicioDeteccionBeacons arrancado desde MainActivity");
+
+
     } // onCreate()
 
     // --------------------------------------------------------------

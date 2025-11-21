@@ -309,6 +309,8 @@ public class EditarPerfilActivity extends FuncionesBaseActivity {
 
         // Botón confirmar:
         btnConfirmar.setOnClickListener(view -> {
+            stopService(new Intent(EditarPerfilActivity.this, ServicioDeteccionBeacons.class));
+
             // 1. Cerrar sesión en Firebase
             FirebaseAuth.getInstance().signOut();
 
