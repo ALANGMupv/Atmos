@@ -72,6 +72,9 @@
         <activity android:name=".NotificacionesActivity"
             android:exported="true" />
 
+        <activity android:name=".InfoContaminantesActivity"
+            android:exported="true"/>
+
         <service
             android:name=".ServicioDeteccionBeacons"
             android:foregroundServiceType="location"

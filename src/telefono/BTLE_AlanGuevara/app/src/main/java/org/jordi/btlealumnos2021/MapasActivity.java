@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -25,6 +26,13 @@ public class MapasActivity extends FuncionesBaseActivity {
 
         // FORZAMOS que se pidan permisos tras cargar la activity
         runOnUiThread(() -> verificarPermisosYArrancarServicio());
+
+
+        ImageView infoBtn = findViewById(R.id.infoContaminantes);
+        infoBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(this, InfoContaminantesActivity.class);
+            startActivity(intent);
+        });
     }
 
     private boolean permisosBLEOK() {
