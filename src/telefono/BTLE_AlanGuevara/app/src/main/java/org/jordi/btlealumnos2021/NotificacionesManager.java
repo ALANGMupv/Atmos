@@ -56,11 +56,9 @@ public class NotificacionesManager {
         // 1) Resolver qué id_usuario vamos a usar
         int idUsuario;
         if (idUsuarioForzado > 0) {
-            // Modo pruebas / depuración: usamos el ID que nos pasas (ej: 34)
-            idUsuario = idUsuarioForzado;
+            idUsuario = idUsuarioForzado; // modo pruebas
         } else {
-            // Modo normal: lo sacamos de la sesión
-            idUsuario = SesionManager.obtenerIdUsuario(ctx);
+            idUsuario = SesionManager.obtenerIdUsuario(ctx); // modo normal
         }
 
         if (idUsuario <= 0) {
@@ -98,10 +96,39 @@ public class NotificacionesManager {
                                 String texto     = nJson.optString("texto", "");
                                 String fechaHora = nJson.optString("fecha_hora", "");
 
-                                // Recorta fecha → HH:mm
+                                // ------------------------------------------------------------------
+                                // 🔥 Conversión correcta de fecha UTC ("...Z") → hora local del móvil
+                                // ------------------------------------------------------------------
                                 String horaCorta = fechaHora;
-                                if (fechaHora.length() >= 16) {
-                                    horaCorta = fechaHora.substring(11, 16);
+                                try {
+                                    if (fechaHora != null && fechaHora.endsWith("Z")) {
+
+                                        // Ejemplo que viene del backend:
+                                        // 2025-11-21T19:30:00.000Z
+                                        java.text.SimpleDateFormat parser =
+                                                new java.text.SimpleDateFormat(
+                                                        "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+                                                        java.util.Locale.getDefault()
+                                                );
+                                        parser.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
+
+                                        java.util.Date date = parser.parse(fechaHora);
+
+                                        java.text.SimpleDateFormat formatter =
+                                                new java.text.SimpleDateFormat(
+                                                        "HH:mm",
+                                                        java.util.Locale.getDefault()
+                                                );
+                                        formatter.setTimeZone(java.util.TimeZone.getDefault());
+
+                                        horaCorta = formatter.format(date);
+
+                                    } else if (fechaHora.length() >= 16) {
+                                        // Fallback: cortar hora HH:mm al estilo antiguo
+                                        horaCorta = fechaHora.substring(11, 16);
+                                    }
+                                } catch (Exception e) {
+                                    horaCorta = fechaHora; // fallback si algo falla
                                 }
 
                                 boolean leido = nJson.optBoolean("leido", false);
