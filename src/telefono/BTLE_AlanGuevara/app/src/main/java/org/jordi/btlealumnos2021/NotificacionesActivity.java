@@ -36,19 +36,18 @@ public class NotificacionesActivity extends AppCompatActivity {
 
     private RecyclerView recyclerNotificaciones;
     private NotificacionAdapter adapter;
-    private ArrayList<NotificacionAtmos> listaNotis;
 
-    // 🔁 Handler para refresco periódico
-    private Handler handler = new Handler(Looper.getMainLooper());
-    private static final long INTERVALO_REFRESH_MS = 5_000; // 5 segundos
+    private ArrayList<NotificacionAtmos> listaNuevas;
+    private ArrayList<NotificacionAtmos> listaLeidas;
 
-    // Runnable que se ejecuta cada X tiempo
+    // 🔁 Handler para refrescar cada 30s
+    private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable refrescoPeriodico = new Runnable() {
         @Override
         public void run() {
             cargarNotificacionesDesdeServidor();
-            // Programamos la siguiente ejecución
-            handler.postDelayed(this, INTERVALO_REFRESH_MS);
+            // vuelve a programarse en 30 segundos
+            handler.postDelayed(this, 5_000);
         }
     };
 
@@ -63,70 +62,81 @@ public class NotificacionesActivity extends AppCompatActivity {
             btnBack.setOnClickListener(v -> finish());
         }
 
-        // RecyclerView
         recyclerNotificaciones = findViewById(R.id.recyclerNotificaciones);
         recyclerNotificaciones.setLayoutManager(new LinearLayoutManager(this));
 
-        // Lista local + adapter
-        listaNotis = new ArrayList<>();
-        adapter = new NotificacionAdapter(listaNotis, new NotificacionAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(int position) {
-                // Marcar como leída al tocar la tarjeta
-                NotificacionAtmos n = listaNotis.get(position);
-                if (!n.isLeida()) {
-                    n.setLeida(true);
-                    adapter.notifyItemChanged(position);
-                }
-            }
+        listaNuevas = new ArrayList<>();
+        listaLeidas = new ArrayList<>();
 
-            @Override
-            public void onDeleteClick(int position) {
-                // Borrar solo esta notificación (localmente)
-                if (position >= 0 && position < listaNotis.size()) {
-                    listaNotis.remove(position);
-                    adapter.notifyItemRemoved(position);
-                    adapter.notifyItemRangeChanged(position, listaNotis.size() - position);
+        adapter = new NotificacionAdapter(
+                listaNuevas,
+                listaLeidas,
+                new NotificacionAdapter.OnItemClickListener() {
+                    @Override
+                    public void onNotificacionClick(boolean esNueva, int indexEnLista) {
+                        // Pulsar una NUEVA → pasa a LEÍDAS y pierde el punto
+                        if (esNueva) {
+                            if (indexEnLista >= 0 && indexEnLista < listaNuevas.size()) {
+                                NotificacionAtmos n = listaNuevas.remove(indexEnLista);
+                                n.setLeida(true);
+                                listaLeidas.add(0, n); // la más reciente al principio
+                                adapter.notifyDataSetChanged();
+                            }
+                        } else {
+                            // De momento, tocar una leída no hace nada especial
+                        }
+                    }
+
+                    @Override
+                    public void onDeleteClick(boolean esNueva, int indexEnLista) {
+                        if (esNueva) {
+                            if (indexEnLista >= 0 && indexEnLista < listaNuevas.size()) {
+                                listaNuevas.remove(indexEnLista);
+                            }
+                        } else {
+                            if (indexEnLista >= 0 && indexEnLista < listaLeidas.size()) {
+                                listaLeidas.remove(indexEnLista);
+                            }
+                        }
+                        adapter.notifyDataSetChanged();
+                    }
                 }
-            }
-        });
+        );
 
         recyclerNotificaciones.setAdapter(adapter);
 
-        // Botón "Eliminar todas" (icono de basura en el header de la lista)
+        // Botón "Eliminar todas" (solo limpia en local)
         ImageView btnBorrarTodas = findViewById(R.id.btnBorrarTodas);
         if (btnBorrarTodas != null) {
             btnBorrarTodas.setOnClickListener(v -> {
-                listaNotis.clear();
+                listaNuevas.clear();
+                // si quieres también vaciar leídas, descomenta:
+                // listaLeidas.clear();
                 adapter.notifyDataSetChanged();
-                // Solo borra en la app, no en el backend.
             });
         }
 
-        // Carga inicial
+        // Primera carga inmediata
         cargarNotificacionesDesdeServidor();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        // Cada vez que vuelves a esta pantalla:
-        cargarNotificacionesDesdeServidor();
-        // 🔁 Empieza refresco periódico
-        handler.postDelayed(refrescoPeriodico, INTERVALO_REFRESH_MS);
+        // Empieza el refresco periódico
+        handler.post(refrescoPeriodico);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        // 🛑 Detener refresco cuando sales de la pantalla
+        // Paramos el refresco cuando sales de la pantalla
         handler.removeCallbacks(refrescoPeriodico);
     }
 
     private void cargarNotificacionesDesdeServidor() {
 
-        // MODO PRUEBA → usuario 23
-        int idUsuarioParaPruebas = 23;
+        int idUsuarioParaPruebas = 23; // 👈 user fijo que dijiste
 
         NotificacionesManager
                 .getInstance(this)
@@ -135,21 +145,41 @@ public class NotificacionesActivity extends AppCompatActivity {
                         idUsuarioParaPruebas,
                         new NotificacionesManager.Listener() {
                             @Override
-                            public void onResultado(List<NotificacionAtmos> lista, boolean hayAlgoNuevo) {
-                                listaNotis.clear();
-                                listaNotis.addAll(lista);
+                            public void onResultado(List<NotificacionAtmos> nuevas, boolean hayAlgoNuevo) {
+
+                                // Solo tocamos la lista de NUEVAS
+                                listaNuevas.clear();
+
+                                for (NotificacionAtmos n : nuevas) {
+                                    // Evitar duplicar notis que ya están en leídas
+                                    boolean yaLeida = false;
+                                    for (NotificacionAtmos l : listaLeidas) {
+                                        String hashN = n.getTipo() + "|" + n.getTexto() + "|" + n.getHora();
+                                        String hashL = l.getTipo() + "|" + l.getTexto() + "|" + l.getHora();
+                                        if (hashN.equals(hashL)) {
+                                            yaLeida = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!yaLeida) {
+                                        n.setLeida(false);
+                                        listaNuevas.add(n);
+                                    }
+                                }
+
                                 adapter.notifyDataSetChanged();
                             }
 
                             @Override
                             public void onError(String mensaje) {
-                                // Si quieres debug visual:
-                                // Toast.makeText(NotificacionesActivity.this, mensaje, Toast.LENGTH_SHORT).show();
+                                // Aquí si quieres puedes meter un Toast de debug
                             }
                         }
                 );
     }
 }
+
+
 
 
 

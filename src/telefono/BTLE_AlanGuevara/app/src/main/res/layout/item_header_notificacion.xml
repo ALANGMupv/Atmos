@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:paddingTop="8dp"
+    android:paddingBottom="4dp">
+
+    <TextView
+        android:id="@+id/tvTituloSeccion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Sección"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:textColor="#777777" />
+</LinearLayout>

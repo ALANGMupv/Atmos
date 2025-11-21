@@ -814,20 +814,14 @@ async obtenerUltimaMedidaPlaca(id_placa) {
 
 
 /* --------------------------------------------------------------------------
- * Método: obtenerUltimaMedidaCO2()
+ * Método: obtenerUltimaMedidaO3()
  * --------------------------------------------------------------------------
  * Descripción:
- *   Devuelve la última medida de tipo CO₂ (tipo = 11) para una placa.
- *
- * Parámetros:
- *   - id_placa {number}
- *
- * Devuelve:
- *   - {Promise<Object|null>}
+ *   Devuelve la última medida de tipo O₃ (tipo = 13) para una placa.
  * -------------------------------------------------------------------------- */
-async obtenerUltimaMedidaCO2(id_placa) {
-    const TIPO_CO2 = 11;
-    return this.obtenerUltimaMedidaPorGas(id_placa, TIPO_CO2);
+async obtenerUltimaMedidaO3(id_placa) {
+    const TIPO_O3 = 13;
+    return this.obtenerUltimaMedidaPorGas(id_placa, TIPO_O3);
 }
 
 
@@ -995,25 +989,25 @@ async obtenerNotificacionesUsuario(id_usuario) {
     const id_placa = await this.obtenerPlacaDeUsuario(id_usuario);
     if (!id_placa) return notificaciones;
 
-    // Configuración rápida de umbrales
-    const TIPO_CO2 = 11;
-    const UMBRAL_CO2_CRITICO = 2000;    // ppm
-    const UMBRAL_CO2_PICO_ALTO = 1000;  // para resumen diario
-    const MINUTOS_SENSOR_INACTIVO = 5;  // prueba / demo
-    const MIN_CO2_ESPERADO = 0;
-    const MAX_CO2_ESPERADO = 5000;
+    // Configuración rápida de umbrales (ahora para O₃)
+    const TIPO_O3 = 13;
+    const UMBRAL_O3_CRITICO   = 2000;  // ajusta después si quieres
+    const UMBRAL_O3_PICO_ALTO = 1000;  // para resumen diario
+    const MINUTOS_SENSOR_INACTIVO = 5; // prueba / demo
+    const MIN_O3_ESPERADO = 0;
+    const MAX_O3_ESPERADO = 5000;
 
     // -------------------------------------
-    // Notificación 1 — Nivel crítico CO2
+    // Notificación 1 — Nivel crítico O₃
     // -------------------------------------
-    const ultimaCO2 = await this.obtenerUltimaMedidaCO2(id_placa);
-    if (ultimaCO2 && ultimaCO2.valor > UMBRAL_CO2_CRITICO) {
+    const ultimaO3 = await this.obtenerUltimaMedidaO3(id_placa);
+    if (ultimaO3 && ultimaO3.valor > UMBRAL_O3_CRITICO) {
         notificaciones.push({
-            tipo: "CO2_CRITICO",
-            titulo: "Nivel crítico",
-            texto: `Nivel de CO₂ crítico: ${Math.round(ultimaCO2.valor)} ppm.`,
+            tipo: "O3_CRITICO",
+            titulo: "Nivel crítico de ozono",
+            texto: `Nivel de O₃ crítico: ${Math.round(ultimaO3.valor)} unidades.`,
             icono: "alerta",
-            fecha_hora: ultimaCO2.fecha_hora,
+            fecha_hora: ultimaO3.fecha_hora,
             leido: false
         });
     }
@@ -1034,13 +1028,13 @@ async obtenerNotificacionesUsuario(id_usuario) {
     }
 
     // -------------------------------------
-    // Notificación 3 — Lecturas erróneas
+    // Notificación 3 — Lecturas erróneas (O₃ fuera de rango)
     // -------------------------------------
     const lecturasFuera = await this.contarLecturasFueraDeRango(
         id_placa,
-        TIPO_CO2,
-        MIN_CO2_ESPERADO,
-        MAX_CO2_ESPERADO,
+        TIPO_O3,
+        MIN_O3_ESPERADO,
+        MAX_O3_ESPERADO,
         4
     );
 
@@ -1056,10 +1050,10 @@ async obtenerNotificacionesUsuario(id_usuario) {
     }
 
     // -------------------------------------
-    // Notificación 4 — Resumen diario
+    // Notificación 4 — Resumen diario (O₃)
     // -------------------------------------
-    const promedioHoy = await this.obtenerPromedioPorGasHoy(id_placa, TIPO_CO2);
-    const numPicos = await this.contarPicosAltosHoy(id_placa, TIPO_CO2, UMBRAL_CO2_PICO_ALTO);
+    const promedioHoy = await this.obtenerPromedioPorGasHoy(id_placa, TIPO_O3);
+    const numPicos = await this.contarPicosAltosHoy(id_placa, TIPO_O3, UMBRAL_O3_PICO_ALTO);
 
     if (promedioHoy !== null) {
         let nivel = "baja";
@@ -1069,7 +1063,7 @@ async obtenerNotificacionesUsuario(id_usuario) {
         notificaciones.push({
             tipo: "RESUMEN_DIARIO",
             titulo: "Resumen del día",
-            texto: `Tu exposición al aire hoy fue ${nivel}. ${numPicos} picos altos detectados.`,
+            texto: `Tu exposición al ozono hoy fue ${nivel}. ${numPicos} picos altos detectados.`,
             icono: "resumen",
             fecha_hora: new Date(),
             leido: false
@@ -1093,8 +1087,6 @@ async obtenerNotificacionesUsuario(id_usuario) {
 
     return notificaciones;
 }
-
-
 
 
 }

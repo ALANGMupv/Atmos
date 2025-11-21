@@ -26,107 +26,246 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-public class NotificacionAdapter extends RecyclerView.Adapter<NotificacionAdapter.NotiViewHolder> {
+public class NotificacionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    public interface OnItemClickListener {
-        void onItemClick(int position);     // tocar la tarjeta → marcar leída
-        void onDeleteClick(int position);   // tocar la X → borrar
-    }
+    private static final int VIEW_TYPE_HEADER_NUEVAS = 0;
+    private static final int VIEW_TYPE_ITEM_NUEVA    = 1;
+    private static final int VIEW_TYPE_HEADER_LEIDAS = 2;
+    private static final int VIEW_TYPE_ITEM_LEIDA    = 3;
 
-    private final List<NotificacionAtmos> notificaciones;
+    private final List<NotificacionAtmos> listaNuevas;
+    private final List<NotificacionAtmos> listaLeidas;
     private final OnItemClickListener listener;
 
-    public NotificacionAdapter(List<NotificacionAtmos> notificaciones, OnItemClickListener listener) {
-        this.notificaciones = notificaciones;
+    public interface OnItemClickListener {
+        void onNotificacionClick(boolean esNueva, int indexEnLista);
+        void onDeleteClick(boolean esNueva, int indexEnLista);
+    }
+
+    public NotificacionAdapter(List<NotificacionAtmos> listaNuevas,
+                               List<NotificacionAtmos> listaLeidas,
+                               OnItemClickListener listener) {
+        this.listaNuevas = listaNuevas;
+        this.listaLeidas = listaLeidas;
         this.listener = listener;
     }
 
-    @NonNull
-    @Override
-    public NotiViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View vista = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_notificacion, parent, false);
-        return new NotiViewHolder(vista);
+    // ------------------- Helpers para mapear posición → sección -------------------
+
+    private static class PosInfo {
+        int viewType;
+        boolean esNueva; // solo tiene sentido en items
+        int index;       // índice dentro de listaNuevas / listaLeidas, -1 si header
     }
 
-    @Override
-    public void onBindViewHolder(@NonNull NotiViewHolder holder, int position) {
-        NotificacionAtmos n = notificaciones.get(position);
+    private PosInfo resolverPosicion(int position) {
+        PosInfo p = new PosInfo();
+        int pos = position;
 
-        holder.tituloNoti.setText(n.getTitulo());
-        holder.textoNoti.setText(n.getTexto());
-        holder.horaNoti.setText(n.getHora());
+        // Bloque de NUEVAS
+        if (!listaNuevas.isEmpty()) {
+            if (pos == 0) {
+                p.viewType = VIEW_TYPE_HEADER_NUEVAS;
+                p.esNueva = true;
+                p.index = -1;
+                return p;
+            }
+            pos--; // saltamos el header
 
-        // Puntito verde: visible si NO está leída
-        if (n.isLeida()) {
-            holder.estadoNotis.setVisibility(View.INVISIBLE);
-        } else {
-            holder.estadoNotis.setVisibility(View.VISIBLE);
+            if (pos < listaNuevas.size()) {
+                p.viewType = VIEW_TYPE_ITEM_NUEVA;
+                p.esNueva = true;
+                p.index = pos;
+                return p;
+            }
+            pos -= listaNuevas.size();
         }
 
-        // Icono según el tipo de notificación
-        holder.imagenNoti.setImageResource(obtenerIconoPorTipo(n.getTipo()));
-
-        // Tocar la tarjeta → marcar como leída
-        holder.itemView.setOnClickListener(v -> {
-            if (listener != null && holder.getAdapterPosition() != RecyclerView.NO_POSITION) {
-                listener.onItemClick(holder.getAdapterPosition());
+        // Bloque de LEÍDAS
+        if (!listaLeidas.isEmpty()) {
+            if (pos == 0) {
+                p.viewType = VIEW_TYPE_HEADER_LEIDAS;
+                p.esNueva = false;
+                p.index = -1;
+                return p;
             }
-        });
+            pos--; // saltamos header
 
-        // Tocar la X → borrar solo esta notificación
-        holder.btnEliminarNoti.setOnClickListener(v -> {
-            if (listener != null && holder.getAdapterPosition() != RecyclerView.NO_POSITION) {
-                listener.onDeleteClick(holder.getAdapterPosition());
+            if (pos < listaLeidas.size()) {
+                p.viewType = VIEW_TYPE_ITEM_LEIDA;
+                p.esNueva = false;
+                p.index = pos;
+                return p;
             }
-        });
+        }
+
+        // Fallback por si acaso (no debería llegar aquí)
+        p.viewType = VIEW_TYPE_ITEM_NUEVA;
+        p.esNueva = true;
+        p.index = 0;
+        return p;
+    }
+
+    // ------------------- Métodos obligatorios del adapter -------------------
+
+    @Override
+    public int getItemViewType(int position) {
+        return resolverPosicion(position).viewType;
     }
 
     @Override
     public int getItemCount() {
-        return notificaciones.size();
-    }
+        int count = 0;
 
-    // Mapea el tipo (string) al drawable correspondiente
-    private int obtenerIconoPorTipo(String tipo) {
-        if (tipo == null) {
-            return R.drawable.ic_alerta_generica;
+        if (!listaNuevas.isEmpty()) {
+            count += 1 + listaNuevas.size(); // header + items nuevas
         }
 
-        switch (tipo) {
-            case "CO2_CRITICO":
-                return R.drawable.ic_alerta_co2;
-            case "SENSOR_INACTIVO":
-                return R.drawable.ic_sensor_off;
-            case "LECTURAS_ERRONEAS":
-                return R.drawable.ic_warning;
-            case "RESUMEN_DIARIO":
-                return R.drawable.ic_resumen;
-            case "DISTANCIA_SENSOR":
-                return R.drawable.ic_distancia;
-            default:
-                return R.drawable.ic_alerta_generica;
+        if (!listaLeidas.isEmpty()) {
+            count += 1 + listaLeidas.size(); // header + items leídas
+        }
+
+        return count;
+    }
+
+    @NonNull
+    @Override
+    public RecyclerView.ViewHolder onCreateViewHolder(
+            @NonNull ViewGroup parent,
+            int viewType
+    ) {
+        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+
+        if (viewType == VIEW_TYPE_HEADER_NUEVAS || viewType == VIEW_TYPE_HEADER_LEIDAS) {
+            View v = inflater.inflate(R.layout.item_header_notificacion, parent, false);
+            return new HeaderViewHolder(v);
+        } else {
+            View v = inflater.inflate(R.layout.item_notificacion, parent, false);
+            return new NotiViewHolder(v);
         }
     }
 
-    public static class NotiViewHolder extends RecyclerView.ViewHolder {
+    @Override
+    public void onBindViewHolder(
+            @NonNull RecyclerView.ViewHolder holder,
+            int position
+    ) {
+        PosInfo posInfo = resolverPosicion(position);
 
-        ImageView imagenNoti;
-        TextView tituloNoti;
-        TextView textoNoti;
-        TextView horaNoti;
-        ImageView estadoNotis;
-        ImageView btnEliminarNoti;
+        switch (posInfo.viewType) {
 
-        public NotiViewHolder(@NonNull View itemView) {
+            case VIEW_TYPE_HEADER_NUEVAS: {
+                HeaderViewHolder hvh = (HeaderViewHolder) holder;
+                hvh.tvTituloSeccion.setText("Nuevas alertas");
+                break;
+            }
+
+            case VIEW_TYPE_HEADER_LEIDAS: {
+                HeaderViewHolder hvh = (HeaderViewHolder) holder;
+                hvh.tvTituloSeccion.setText("Leídas");
+                break;
+            }
+
+            case VIEW_TYPE_ITEM_NUEVA: {
+                NotificacionAtmos n = listaNuevas.get(posInfo.index);
+                ((NotiViewHolder) holder).bind(n, true, posInfo.index);
+                break;
+            }
+
+            case VIEW_TYPE_ITEM_LEIDA: {
+                NotificacionAtmos n = listaLeidas.get(posInfo.index);
+                ((NotiViewHolder) holder).bind(n, false, posInfo.index);
+                break;
+            }
+        }
+    }
+
+    // ------------------- ViewHolders -------------------
+
+    static class HeaderViewHolder extends RecyclerView.ViewHolder {
+        TextView tvTituloSeccion;
+
+        HeaderViewHolder(@NonNull View itemView) {
             super(itemView);
-            imagenNoti     = itemView.findViewById(R.id.imagenNoti);
-            tituloNoti     = itemView.findViewById(R.id.tituloNoti);
-            textoNoti      = itemView.findViewById(R.id.textoNoti);
-            horaNoti       = itemView.findViewById(R.id.horaNoti);
-            estadoNotis    = itemView.findViewById(R.id.estadoNotis);
-            btnEliminarNoti = itemView.findViewById(R.id.btnEliminarNoti);
+            tvTituloSeccion = itemView.findViewById(R.id.tvTituloSeccion);
         }
     }
+
+    class NotiViewHolder extends RecyclerView.ViewHolder {
+
+        TextView tvTitulo;
+        TextView tvTexto;
+        TextView tvHora;
+        ImageView ivEstado;     // puntito
+        ImageView ivEliminar;   // X
+        ImageView ivIcono;      // 🔹 icono de la notificación
+
+        NotiViewHolder(@NonNull View itemView) {
+            super(itemView);
+            tvTitulo  = itemView.findViewById(R.id.tituloNoti);
+            tvTexto   = itemView.findViewById(R.id.textoNoti);
+            tvHora    = itemView.findViewById(R.id.horaNoti);
+            ivEstado  = itemView.findViewById(R.id.estadoNotis);
+            ivEliminar = itemView.findViewById(R.id.btnEliminarNoti);
+            ivIcono   = itemView.findViewById(R.id.imagenNoti);
+        }
+
+        void bind(NotificacionAtmos n, boolean esNueva, int indexEnLista) {
+            tvTitulo.setText(n.getTitulo());
+            tvTexto.setText(n.getTexto());
+            tvHora.setText(n.getHora());
+
+            // 👀 Puntito solo en nuevas
+            if (ivEstado != null) {
+                ivEstado.setVisibility(esNueva ? View.VISIBLE : View.GONE);
+            }
+
+            // 🎨 ICONO según el tipo
+            if (ivIcono != null) {
+                int resId;
+
+                switch (n.getTipo()) {
+                    case "O3_CRITICO":
+                        resId = R.drawable.ic_alerta_co2;   // usa aquí el nombre real de tu drawable
+                        break;
+                    case "SENSOR_INACTIVO":
+                        resId = R.drawable.ic_sensor_off;
+                        break;
+                    case "LECTURAS_ERRONEAS":
+                        resId = R.drawable.ic_warning;
+                        break;
+                    case "RESUMEN_DIARIO":
+                        resId = R.drawable.ic_resumen;
+                        break;
+                    case "DISTANCIA_SENSOR":
+                        resId = R.drawable.ic_distancia;
+                        break;
+                    default:
+                        resId = R.drawable.ic_alerta_co2;
+                        break;
+                }
+
+                ivIcono.setImageResource(resId);
+            }
+
+            // Click en la tarjeta
+            itemView.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onNotificacionClick(esNueva, indexEnLista);
+                }
+            });
+
+            // Click en la X
+            if (ivEliminar != null) {
+                ivEliminar.setOnClickListener(v -> {
+                    if (listener != null) {
+                        listener.onDeleteClick(esNueva, indexEnLista);
+                    }
+                });
+            }
+        }
+    }
+
 }
+
 
