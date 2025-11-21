@@ -1057,8 +1057,9 @@ async obtenerNotificacionesUsuario(id_usuario) {
 
     if (promedioHoy !== null) {
         let nivel = "baja";
-        if (promedioHoy > 1500) nivel = "alta";
-        else if (promedioHoy > 800) nivel = "moderada";
+        if (promedioHoy > 0.7)      nivel = "alta";
+        else if (promedioHoy > 0.4) nivel = "moderada";
+
 
         notificaciones.push({
             tipo: "RESUMEN_DIARIO",
