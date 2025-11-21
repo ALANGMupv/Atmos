@@ -59,10 +59,13 @@ public class UserPageActivity extends FuncionesBaseActivity {
     private ImageView imgUltimaCalidad, imgPromedioCalidad;
     private Spinner spinner;
 
+    ImageView ivEstadoSensor;
+    TextView tvEstadoSensor;
+
     private GraficaHelper graficaHelper;
 
     // tipo de gas seleccionado en el spinner
-    private int tipoSeleccionado = 11;
+    private int tipoSeleccionado = 13;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +87,10 @@ public class UserPageActivity extends FuncionesBaseActivity {
         // ---------------------------------------------------------------
         txtUltimaFecha = findViewById(R.id.tv_ultima_fecha);
         txtPromedioFecha = findViewById(R.id.tv_promedio_fecha);
+
+        ivEstadoSensor = findViewById(R.id.iv_estado_sensor);
+        tvEstadoSensor = findViewById(R.id.tv_estado_texto);
+
 
         txtEstadoUltima = findViewById(R.id.tv_ultima_gas);
         txtEstadoPromedio = findViewById(R.id.tv_promedio_gas);
@@ -142,6 +149,7 @@ public class UserPageActivity extends FuncionesBaseActivity {
         );
 
         spinner.setAdapter(adapter);
+        spinner.setSelection(2);
 
         // =========================================================
         // Cada vez que el usuario cambie el gas en el spinner,
@@ -154,6 +162,36 @@ public class UserPageActivity extends FuncionesBaseActivity {
                 if (graficaHelper != null) {
                     graficaHelper.recargarGrafica(tipoSeleccionado());
                 };   // Gráfica
+
+                int idUsuario = SesionManager.obtenerIdUsuario(UserPageActivity.this);
+
+                // Estado del sensor
+                actualizarEstadoSensor(idUsuario);
+
+                // Señal del sensor
+                actualizarEstadoSenal(idUsuario);
+
+                // ======================================================
+                // REFRESCO AUTOMÁTICO DEL ESTADO DEL SENSOR (20s)
+                // ======================================================
+                new android.os.Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        actualizarEstadoSensor(idUsuario);
+                        new android.os.Handler().postDelayed(this, 20000);
+                    }
+                }, 20000);
+
+                // ======================================================
+                // REFRESCO AUTOMÁTICO DEL ESTADO DE LA SEÑAL (5s)
+                // ======================================================
+                new android.os.Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        actualizarEstadoSenal(idUsuario);
+                        new android.os.Handler().postDelayed(this, 5000);
+                    }
+                }, 5000);
 
             }
 
@@ -546,5 +584,143 @@ public class UserPageActivity extends FuncionesBaseActivity {
                 return "-";
         }
     }
+
+    /**
+     * Nombre Método: actualizarEstadoSensor
+     * Descripción:
+     *     Consulta la capa LogicaFake, que a su vez llama al endpoint
+     *     GET /estadoPlaca para obtener si la placa asociada al usuario
+     *     está activa, inactiva o si el usuario no tiene placa vinculada.
+     *
+     *     Según el estado recibido, actualiza la tarjeta izquierda en la UI:
+     *         - Cambia el icono del sensor
+     *         - Cambia el texto del estado
+     *         - Cambia el color del texto (verde/rojo/gris)
+     *
+     * Entradas:
+     *     - idUsuario : ID del usuario almacenado en sesión
+     *
+     * Salidas:
+     *     - Actualiza ivEstadoSensor y tvEstadoSensor en pantalla
+     *
+     * Autora: Nerea Aguilar Forés
+     * Fecha: 21/11/2025
+     */
+    private void actualizarEstadoSensor(int idUsuario) {
+
+        LogicaFake.estadoPlacaServidor(idUsuario, queue, new LogicaFake.EstadoPlacaCallback() {
+
+            @Override
+            public void onActivo() {
+                tvEstadoSensor.setText("Sensor activo");
+                tvEstadoSensor.setTextColor(Color.parseColor("#2ECC71"));  // verde
+                ivEstadoSensor.setImageResource(R.drawable.ic_sensor_activo);
+            }
+
+            @Override
+            public void onInactivo() {
+                tvEstadoSensor.setText("Sensor inactivo");
+                tvEstadoSensor.setTextColor(Color.parseColor("#E74C3C"));  // rojo
+                ivEstadoSensor.setImageResource(R.drawable.ic_sensor_inactivo);
+
+                ImageView icono = findViewById(R.id.img_wifi);
+                TextView texto = findViewById(R.id.tv_distancia);
+
+                texto.setText("Sin datos");
+                icono.setImageResource(R.drawable.ic_sin_senal);
+            }
+
+            @Override
+            public void onSinPlaca() {
+                tvEstadoSensor.setText("Sin placa asociada");
+                tvEstadoSensor.setTextColor(Color.GRAY);
+                ivEstadoSensor.setImageResource(R.drawable.ic_sensor_inactivo);
+            }
+
+            @Override
+            public void onErrorServidor() {
+                // No rompemos UI, solo opcionalmente log
+                Log.e("UserPageActivity", "Error en estadoPlacaServidor()");
+            }
+
+            @Override
+            public void onErrorInesperado() {
+                Log.e("UserPageActivity", "Error inesperado en estadoPlacaServidor()");
+            }
+        });
+    }
+
+    /**
+     * Nombre Método: actualizarEstadoSenal
+     * Descripción:
+     *     Consulta la capa LogicaFake, que llama al endpoint GET /estadoSenal
+     *     para obtener el nivel de intensidad de señal del sensor del usuario.
+     *
+     *     Según el nivel recibido (fuerte, media, baja, mala o sin_datos),
+     *     actualiza la tarjeta derecha en la pantalla:
+     *         - Cambia el icono de señal
+     *         - Cambia el texto descriptivo
+     *
+     * Entradas:
+     *     - idUsuario : ID del usuario almacenado en sesión
+     *
+     * Salidas:
+     *     - Actualiza img_wifi y tv_distancia en la interfaz de usuario
+     *
+     * Autora: Nerea Aguilar Forés
+     * Fecha: 21/11/2025
+     */
+    private void actualizarEstadoSenal(int idUsuario) {
+
+        LogicaFake.estadoSenalServidor(idUsuario, queue, new LogicaFake.EstadoSenalCallback() {
+
+            @Override
+            public void onResultado(String nivel, int rssi) {
+
+                ImageView icono = findViewById(R.id.img_wifi);
+                TextView texto = findViewById(R.id.tv_distancia);
+
+                switch (nivel) {
+
+                    case "fuerte":
+                        texto.setText("Señal alta");
+                        icono.setImageResource(R.drawable.ic_senal_alta);
+                        break;
+
+                    case "media":
+                        texto.setText("Señal regular");
+                        icono.setImageResource(R.drawable.ic_senal_media);
+                        break;
+
+                    case "baja":
+                        texto.setText("Señal baja");
+                        icono.setImageResource(R.drawable.ic_senal_baja);
+                        break;
+
+                    case "mala":
+                        texto.setText("Señal muy baja");
+                        icono.setImageResource(R.drawable.ic_sin_senal);
+                        break;
+
+                    default:
+                        texto.setText("Sin datos");
+                        icono.setImageResource(R.drawable.ic_sin_senal);
+                        break;
+                }
+            }
+
+            @Override
+            public void onErrorServidor() {
+                Log.e("UserPageActivity", "Error en estadoSenalServidor()");
+            }
+
+            @Override
+            public void onErrorInesperado() {
+                Log.e("UserPageActivity", "Error inesperado en estadoSenalServidor()");
+            }
+        });
+    }
+
+
 
 }

@@ -972,6 +972,112 @@ public class LogicaFake {
         }
     }
 
+    public interface EstadoPlacaCallback {
+        void onActivo();
+        void onInactivo();
+        void onSinPlaca();
+        void onErrorServidor();
+        void onErrorInesperado();
+    }
+
+    /**
+     * Nombre Método: estadoPlacaServidor
+     * Descripción:
+     *     Llama al endpoint GET /estadoPlaca para obtener si la placa
+     *     del usuario está activa, inactiva o si no tiene placa.
+     *
+     * Autora: Nerea Aguilar Forés
+     * Fecha: 21/11/2025
+     */
+    public static void estadoPlacaServidor(
+            int idUsuario,
+            RequestQueue queue,
+            EstadoPlacaCallback callback
+    ) {
+
+        String url = "https://nagufor.upv.edu.es/estadoPlaca?id_usuario=" + idUsuario;
+
+        JsonObjectRequest req = new JsonObjectRequest(
+                Request.Method.GET,
+                url,
+                null,
+                response -> {
+                    try {
+                        String estado = response.optString("estado", "sin_placa");
+
+                        switch (estado) {
+                            case "activo":
+                                callback.onActivo();
+                                break;
+                            case "inactivo":
+                                callback.onInactivo();
+                                break;
+                            default:
+                                callback.onSinPlaca();
+                                break;
+                        }
+
+                    } catch (Exception e) {
+                        callback.onErrorInesperado();
+                    }
+                },
+                error -> callback.onErrorServidor()
+        );
+
+        queue.add(req);
+    }
+
+    public interface EstadoSenalCallback {
+        void onResultado(String nivel, int rssi);
+        void onErrorServidor();
+        void onErrorInesperado();
+    }
+
+    /**
+     * Nombre Método: estadoSenalServidor
+     * Descripción:
+     *     Llama al endpoint GET /estadoSenal para obtener la intensidad
+     *     de la señal del sensor del usuario (nivel + rssi).
+     *
+     * Autora: Nerea Aguilar Forés
+     * Fecha: 21/11/2025
+     */
+    public static void estadoSenalServidor(
+            int idUsuario,
+            RequestQueue queue,
+            EstadoSenalCallback callback
+    ) {
+
+        String url = "https://nagufor.upv.edu.es/estadoSenal?id_usuario=" + idUsuario;
+
+        JsonObjectRequest req = new JsonObjectRequest(
+                Request.Method.GET,
+                url,
+                null,
+                response -> {
+                    try {
+                        String status = response.optString("status", "");
+                        if (!"ok".equals(status)) {
+                            callback.onErrorServidor();
+                            return;
+                        }
+
+                        String nivel = response.optString("nivel", "sin_datos");
+                        int rssi = response.optInt("rssi", 0);
+
+                        callback.onResultado(nivel, rssi);
+
+                    } catch (Exception e) {
+                        callback.onErrorInesperado();
+                    }
+                },
+                error -> callback.onErrorServidor()
+        );
+
+        queue.add(req);
+    }
+
+
 
 }
 

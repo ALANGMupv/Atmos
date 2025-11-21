@@ -129,8 +129,8 @@
                     android:layout_height="wrap_content">
 
                     <!-- *************************************************************
-                 SELECTOR DE CONTAMINANTE
-                 ************************************************************* -->
+                    SELECTOR DE CONTAMINANTE
+                    ************************************************************* -->
 
                     <LinearLayout
                         android:id="@+id/layoutSelector"
@@ -241,6 +241,7 @@
                                     android:textSize="14sp" />
 
                                 <ImageView
+                                    android:id="@+id/img_wifi"
                                     android:layout_width="80dp"
                                     android:layout_height="80dp"
                                     android:layout_marginTop="10dp"
