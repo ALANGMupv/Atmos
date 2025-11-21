@@ -7,133 +7,176 @@ import org.json.JSONObject;
 
 /**
  * Nombre Fichero: SesionManager.java
- * Descripción: Clase encargada de gestionar la sesión local del usuario
- *              mediante SharedPreferences (guardar y recuperar datos básicos).
- * Autores: Nerea Aguilar Forés (ampliado en Perfil por Alan)
+ * Descripción:
+ *    Clase encargada de gestionar la sesión local del usuario mediante SharedPreferences.
+ *    Esta versión guarda el JSON COMPLETO del usuario (más robusto) y además expone
+ *    funciones para obtener campos individuales (nombre, email, apellidos…) para mantener
+ *    compatibilidad con EditarPerfil y el resto de la app.
+ *
+ * Autores:
+ *    - Original: Nerea Aguilar Forés y Alan Guevara Martínez
+ *    - Modificaciones: Judit Espinoza Cervera
+ *
  */
 
 public class SesionManager {
 
+    // ------------------------------------------------------------
     // Nombre del fichero de preferencias donde se guarda la sesión
-    private static final String NOMBRE_PREFERENCIAS = "SESION";
+    // ------------------------------------------------------------
+    private static final String PREFS = "SESION";
 
-    // Claves usadas dentro de SharedPreferences
-    private static final String CLAVE_ID_USUARIO = "id_usuario";
-    private static final String CLAVE_NOMBRE     = "nombre";
-    private static final String CLAVE_APELLIDOS  = "apellidos";
-    private static final String CLAVE_EMAIL      = "email";
-    private static final String CLAVE_ESTADO     = "estado";
+    // Clave única donde guardaremos el JSON completo
+    private static final String KEY_JSON = "usuario_json";
 
+
+    // ============================================================
+    // MÉTODO: guardarSesion
+    // ============================================================
     /**
      * Nombre Método: guardarSesion
-     * Descripción: Guarda en SharedPreferences los datos básicos del usuario.
+     * Descripción:
+     *      Guarda EN UNA SOLA CLAVE el JSON completo con todos los datos del usuario.
+     *      Esto evita errores si el backend cambia algún campo o añade nuevos.
+     *
      * Entradas:
-     *  - context: Contexto para acceder a SharedPreferences.
-     *  - userJson: Objeto JSON con los datos del usuario devueltos por el servidor.
+     *      - context : contexto Android
+     *      - userJson : objeto JSON devuelto por el backend al hacer login
+     *
      * Salidas:
-     *  - No retorna nada. Persiste los datos en el almacenamiento local.
+     *      - No retorna nada. Persiste la sesión localmente.
      */
     public static void guardarSesion(Context context, JSONObject userJson) {
         try {
-            SharedPreferences prefs = context.getSharedPreferences("SESION", Context.MODE_PRIVATE);
-            SharedPreferences.Editor e = prefs.edit();
-
-            e.putInt("id_usuario", userJson.getInt("id_usuario"));
-            e.putString("nombre", userJson.getString("nombre"));
-            e.putString("apellidos", userJson.getString("apellidos"));
-            e.putString("email", userJson.getString("email"));
-            e.putInt("estado", userJson.optInt("estado", 0));
-
-            e.apply();
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            SharedPreferences prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+            prefs.edit()
+                    .putString(KEY_JSON, userJson.toString())  // Guardamos el JSON ENTERO
+                    .apply();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
-    // =========================================================
-    // MÉTODOS DE LECTURA DE LA SESIÓN
-    // Autor: Alan Guevara Martínez
-    // Fecha: 17/11/2025
-    // =========================================================
+
+    // ============================================================
+    // MÉTODO: obtenerSesion
+    // ============================================================
+    /**
+     * Nombre Método: obtenerSesion
+     * Descripción:
+     *      Devuelve el JSON completo guardado en SharedPreferences.
+     *
+     * Entradas:
+     *      - context : contexto Android
+     *
+     * Salidas:
+     *      - JSONObject si existe sesión
+     *      - null si no existe sesión
+     */
+    public static JSONObject obtenerSesion(Context context) {
+        try {
+            SharedPreferences prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+            String json = prefs.getString(KEY_JSON, null);
+            if (json == null) return null;
+            return new JSONObject(json);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+
+    // ============================================================
+    // MÉTODOS DE ACCESO A CAMPOS INDIVIDUALES
+    // Compatibles con EditarPerfil y otras pantallas
+    // ============================================================
 
     /**
      * Nombre Método: obtenerIdUsuario
-     * Descripción: Devuelve el id_usuario guardado en la sesión.
-     * Entradas:
-     *  - context: Contexto para acceder a SharedPreferences.
-     * Salidas:
-     *  - int con el id_usuario, o -1 si no hay sesión guardada.
+     * Descripción: Devuelve el ID del usuario guardado.
      */
     public static int obtenerIdUsuario(Context context) {
-        SharedPreferences prefs = context.getSharedPreferences(NOMBRE_PREFERENCIAS, Context.MODE_PRIVATE);
-        return prefs.getInt(CLAVE_ID_USUARIO, -1);
+        JSONObject sesion = obtenerSesion(context);
+        if (sesion == null) return -1;
+        return sesion.optInt("id_usuario", -1);
     }
 
     /**
      * Nombre Método: obtenerNombre
-     * Descripción: Devuelve el nombre del usuario guardado en la sesión.
-     * Entradas:
-     *  - context: Contexto para acceder a SharedPreferences.
-     * Salidas:
-     *  - String con el nombre, o cadena vacía si no hay dato.
+     * Descripción: Devuelve el nombre guardado.
      */
     public static String obtenerNombre(Context context) {
-        SharedPreferences prefs = context.getSharedPreferences(NOMBRE_PREFERENCIAS, Context.MODE_PRIVATE);
-        return prefs.getString(CLAVE_NOMBRE, "");
+        JSONObject sesion = obtenerSesion(context);
+        if (sesion == null) return "";
+        return sesion.optString("nombre", "");
     }
 
     /**
      * Nombre Método: obtenerApellidos
-     * Descripción: Devuelve los apellidos del usuario guardados en la sesión.
-     * Entradas:
-     *  - context: Contexto para acceder a SharedPreferences.
-     * Salidas:
-     *  - String con los apellidos, o cadena vacía si no hay dato.
+     * Descripción: Devuelve los apellidos guardados.
      */
     public static String obtenerApellidos(Context context) {
-        SharedPreferences prefs = context.getSharedPreferences(NOMBRE_PREFERENCIAS, Context.MODE_PRIVATE);
-        return prefs.getString(CLAVE_APELLIDOS, "");
+        JSONObject sesion = obtenerSesion(context);
+        if (sesion == null) return "";
+        return sesion.optString("apellidos", "");
     }
 
     /**
      * Nombre Método: obtenerEmail
-     * Descripción: Devuelve el email del usuario guardado en la sesión.
-     * Entradas:
-     *  - context: Contexto para acceder a SharedPreferences.
-     * Salidas:
-     *  - String con el email, o cadena vacía si no hay dato.
+     * Descripción: Devuelve el email guardado.
      */
     public static String obtenerEmail(Context context) {
-        SharedPreferences prefs = context.getSharedPreferences(NOMBRE_PREFERENCIAS, Context.MODE_PRIVATE);
-        return prefs.getString(CLAVE_EMAIL, "");
+        JSONObject sesion = obtenerSesion(context);
+        if (sesion == null) return "";
+        return sesion.optString("email", "");
     }
 
+    /**
+     * Nombre Método: obtenerEstado
+     * Descripción: Devuelve el estado guardado (si existe).
+     */
+    public static int obtenerEstado(Context context) {
+        JSONObject sesion = obtenerSesion(context);
+        if (sesion == null) return 0;
+        return sesion.optInt("estado", 0);
+    }
+
+
+    // ============================================================
+    // MÉTODO: haySesionActiva
+    // ============================================================
     /**
      * Nombre Método: haySesionActiva
-     * Thecripción: Indica si parece haber una sesión guardada (id_usuario válido).
+     * Descripción:
+     *      Comprueba si existe una sesión guardada (JSON no nulo).
+     *
      * Entradas:
-     *  - context: Contexto para acceder a SharedPreferences.
+     *      - context : contexto Android
+     *
      * Salidas:
-     *  - true si id_usuario > 0, false en caso contrario.
+     *      - true si existe sesión
+     *      - false si no existe
      */
     public static boolean haySesionActiva(Context context) {
-        return obtenerIdUsuario(context) > 0;
+        return obtenerSesion(context) != null;
     }
 
+
+    // ============================================================
+    // MÉTODO: cerrarSesion
+    // ============================================================
     /**
      * Nombre Método: cerrarSesion
-     * Descripción: Elimina todos los datos de la sesión guardados en SharedPreferences.
+     * Descripción:
+     *      Elimina la sesión completa del dispositivo (logout).
+     *
      * Entradas:
-     *  - context: Contexto para acceder a SharedPreferences.
+     *      - context : contexto Android
+     *
      * Salidas:
-     *  - No retorna nada. Deja el fichero de sesión vacío.
+     *      - No retorna nada.
      */
     public static void cerrarSesion(Context context) {
-        SharedPreferences prefs = context.getSharedPreferences(NOMBRE_PREFERENCIAS, Context.MODE_PRIVATE);
-        SharedPreferences.Editor e = prefs.edit();
-        e.clear();   // Elimina todas las claves y valores
-        e.apply();   // Aplica los cambios de forma asíncrona
+        SharedPreferences prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        prefs.edit().clear().apply();
     }
-    // =========================================================
-    // =========================================================
 }

@@ -15,7 +15,6 @@ import androidx.appcompat.app.AppCompatActivity;
  */
 public class ActividadSplash extends AppCompatActivity {
 
-    // Duración de la pantalla de carga en milisegundos
     private static final int DURACION_SPLASH_MS = 2000;
 
     @Override
@@ -23,18 +22,24 @@ public class ActividadSplash extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.actividad_splash);
 
-        // Objeto que controla si el usuario ya vio el onboarding
         Preferencias preferencias = new Preferencias(this);
 
-        // Ejecutar código después de cierto tiempo
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
 
+            // 1️ Si hay sesión → ir directo a Mapas
+            if (SesionManager.haySesionActiva(this)) {
+                startActivity(new Intent(ActividadSplash.this, MapasActivity.class));
+                finish();
+                return;
+            }
+
+            // 2️ Si es la primera vez → mostrar onboarding
             if (preferencias.esPrimeraVez()) {
-                // MOSTRAR ONBOARDING
                 startActivity(new Intent(ActividadSplash.this, ActividadInicio.class));
-            } else {
-                // IR AL LOGIN DIRECTO
-                startActivity(new Intent(ActividadSplash.this, InicioSesionActivity.class));
+            }
+            //  En cualquier otro caso → registro
+            else {
+                startActivity(new Intent(ActividadSplash.this, RegistroActivity.class));
             }
 
             finish();
