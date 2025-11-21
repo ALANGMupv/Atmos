@@ -227,6 +227,14 @@ public class InicioSesionActivity extends FuncionesBaseActivity {
             return "Demasiados intentos fallidos. Inténtalo más tarde.";
         }
 
+        if (mensajeOriginal.contains("auth credential is incorrect") ||
+                mensajeOriginal.contains("auth credential") ||
+                mensajeOriginal.contains("malformed") ||
+                mensajeOriginal.contains("expired")) {
+
+            return "La sesión ha caducado o las credenciales no son válidas. Inicia sesión de nuevo.";
+        }
+
         return "Error: " + mensajeOriginal;
     }
 
