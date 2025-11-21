@@ -20,7 +20,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- FILA SUPERIOR: icono + título + hora + punto -->
+        <!-- FILA SUPERIOR: icono + título + X borrar -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -46,24 +46,13 @@
                 android:textSize="15sp"
                 android:textColor="#000000" />
 
-            <!-- Hora -->
-            <TextView
-                android:id="@+id/horaNoti"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="6dp"
-                android:text="2:20 PM"
-                android:textColor="#7A7A7A"
-                android:textSize="13sp" />
-
-            <!-- Puntito verde -->
+            <!-- Botón X para borrar esta notificación -->
             <ImageView
-                android:id="@+id/estadoNotis"
-                android:layout_width="9dp"
-                android:layout_height="9dp"
-                android:layout_marginStart="4dp"
-                android:src="@drawable/bg_boton_verde" />
-
+                android:id="@+id/btnEliminarNoti"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_cerrar"
+            android:contentDescription="Eliminar notificación" />
         </LinearLayout>
 
         <!-- TEXTO DE DESCRIPCIÓN -->
@@ -75,6 +64,32 @@
             android:text="Texto de la notificación"
             android:textSize="14sp"
             android:textColor="#333333" />
+
+        <!-- FILA INFERIOR: hora + puntito de leído, alineados a la derecha -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:gravity="end|center_vertical"
+            android:orientation="horizontal">
+
+            <!-- Hora abajo a la derecha -->
+            <TextView
+                android:id="@+id/horaNoti"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="2:20 PM"
+                android:textColor="#7A7A7A"
+                android:textSize="13sp" />
+
+            <!-- Puntito verde de leído / no leído -->
+            <ImageView
+                android:id="@+id/estadoNotis"
+                android:layout_width="9dp"
+                android:layout_height="9dp"
+                android:layout_marginStart="6dp"
+                android:src="@drawable/bg_boton_verde" />
+        </LinearLayout>
 
     </LinearLayout>
 
