@@ -85,8 +85,9 @@ public class RegistroActivity extends FuncionesBaseActivity {
         ss.setSpan(new ClickableSpan() {
             @Override
             public void onClick(@NonNull View widget) {
-                // Abrir pantalla terminos
-                // startActivity(new Intent(RegistroActivity.this, TerminosActivity.class));
+                // ABRIR PANTALLA DE PRIVACIDAD / TÉRMINOS
+                Intent intent = new Intent(RegistroActivity.this, PrivacidadActivity.class);
+                startActivity(intent);
             }
 
             @Override
