@@ -1,0 +1,497 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- BARRA SUPERIOR -->
+    <RelativeLayout
+        android:id="@+id/topBar"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:background="#FFFFFF"
+        android:elevation="4dp">
+
+        <TextView
+            android:id="@+id/titleHeader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Política de Privacidad"
+            android:fontFamily="@font/roboto_bold"
+            android:textSize="18sp"
+            android:textColor="#000000"
+            android:layout_centerVertical="true" />
+
+        <ImageView
+            android:id="@+id/btnClose"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:contentDescription="Cerrar"
+            android:src="@drawable/ic_cerrar" />
+    </RelativeLayout>
+
+    <!-- SCROLL GENERAL -->
+    <ScrollView
+        android:id="@+id/scrollContent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/topBar"
+        android:padding="20dp">
+
+        <LinearLayout
+            android:id="@+id/privacyContainer"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <!-- TITULO PRINCIPAL -->
+            <TextView
+                android:id="@+id/titulo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="POLÍTICA DE PRIVACIDAD DE ATMOS"
+                android:fontFamily="@font/roboto_bold"
+                android:textSize="22sp"
+                android:paddingBottom="12dp"
+                android:textColor="#000000"/>
+
+            <!-- FECHA -->
+            <TextView
+                android:id="@+id/fecha"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Última actualización: 29 de noviembre de 2025"
+                android:fontFamily="@font/roboto_light"
+                android:textSize="14sp"
+                android:paddingBottom="20dp" />
+
+            <!-- INTRO -->
+            <TextView
+                android:id="@+id/intro"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto_light"
+                android:textSize="15sp"
+                android:paddingBottom="20dp"
+                android:text="Esta Política de Privacidad explica cómo Atmos recopila, utiliza y protege los datos personales cuando utiliza la aplicación Atmos para Android y cuando visita la página web informativa de Atmos. El uso de la Aplicación implica la aceptación de esta Política de Privacidad."/>
+
+            <!-- SECCIÓN 1 -->
+            <TextView
+                android:id="@+id/s1_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="1. Definiciones"
+                android:fontFamily="@font/roboto_bold"
+                android:textSize="18sp"
+                android:paddingBottom="12dp" />
+
+            <TextView
+                android:id="@+id/s1_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto_light"
+                android:textSize="15sp"
+                android:paddingBottom="20dp"
+                android:text="Cuenta: perfil único creado para acceder a la Aplicación.\nAplicación: Atmos.\nWeb: sitio web informativo de Atmos.\nEmpresa: Atmos.\nDatos Personales: información identificable.\nDatos de Uso: información técnica recopilada automáticamente.\nProveedor de Servicios: terceros que procesan datos.\nUsted: persona que utiliza la Aplicación o la Web."/>
+
+            <!-- SECCIÓN 2 -->
+            <TextView
+                android:id="@+id/s2_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="2. Datos que Recopilamos"
+                android:fontFamily="@font/roboto_bold"
+                android:textSize="18sp"
+                android:paddingBottom="12dp" />
+
+            <!-- 2.1 -->
+            <TextView
+                android:id="@+id/s21_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="2.1. Datos proporcionados por el usuario"
+                android:fontFamily="@font/roboto"
+                android:textSize="16sp"
+                android:paddingBottom="6dp" />
+
+            <TextView
+                android:id="@+id/s21_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto_light"
+                android:textSize="15sp"
+                android:paddingBottom="16dp"
+                android:text="Se solicitan nombre, apellidos y correo electrónico para registrar y mantener la cuenta del usuario."/>
+
+            <!-- 2.2 -->
+            <TextView
+                android:id="@+id/s22_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="2.2. Datos técnicos y de uso"
+                android:fontFamily="@font/roboto"
+                android:textSize="16sp"
+                android:paddingBottom="6dp" />
+
+            <TextView
+                android:id="@+id/s22_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto_light"
+                android:textSize="15sp"
+                android:paddingBottom="16dp"
+                android:text="Incluyen modelo del dispositivo, sistema operativo, versión de la App, dirección IP, identificadores únicos y registros de funcionamiento."/>
+
+            <!-- 2.3 -->
+            <TextView
+                android:id="@+id/s23_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="2.3. Datos de ubicación"
+                android:fontFamily="@font/roboto"
+                android:textSize="16sp"
+                android:paddingBottom="6dp" />
+
+            <TextView
+                android:id="@+id/s23_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto_light"
+                android:textSize="15sp"
+                android:paddingBottom="16dp"
+                android:text="La Aplicación utiliza la ubicación únicamente para asociar mediciones ambientales a un punto geográfico. La ubicación solo se registra si el usuario concede permiso."/>
+
+            <!-- 2.4 -->
+            <TextView
+                android:id="@+id/s24_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="2.4. Acceso a la cámara"
+                android:fontFamily="@font/roboto"
+                android:textSize="16sp"
+                android:paddingBottom="6dp" />
+
+            <TextView
+                android:id="@+id/s24_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto_light"
+                android:textSize="15sp"
+                android:paddingBottom="16dp"
+                android:text="La cámara se utiliza exclusivamente para escanear códigos QR y vincular sensores o dispositivos compatibles."/>
+
+            <!-- 2.5 -->
+            <TextView
+                android:id="@+id/s25_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="2.5. Datos generados dentro de Atmos"
+                android:fontFamily="@font/roboto"
+                android:textSize="16sp"
+                android:paddingBottom="6dp" />
+
+            <TextView
+                android:id="@+id/s25_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto_light"
+                android:textSize="15sp"
+                android:paddingBottom="26dp"
+                android:text="Se almacenan lecturas del sensor Atmos, configuraciones del usuario e información relevante de los dispositivos vinculados."/>
+            <!-- ============================= -->
+            <!-- SECCIÓN 3 -->
+            <!-- ============================= -->
+
+            <TextView
+                android:id="@+id/s3_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="3. Servicios de Terceros Utilizados"
+                android:fontFamily="@font/roboto_bold"
+                android:textSize="18sp"
+                android:paddingBottom="12dp" />
+
+            <!-- 3.1 -->
+            <TextView
+                android:id="@+id/s31_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="3.1. Firebase Authentication"
+                android:fontFamily="@font/roboto"
+                android:textSize="16sp"
+                android:paddingBottom="6dp" />
+
+            <TextView
+                android:id="@+id/s31_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto_light"
+                android:textSize="15sp"
+                android:paddingBottom="16dp"
+                android:text="Gestiona el registro, inicio de sesión, verificación de correos y recuperación de contraseñas. Firebase puede procesar identificadores técnicos y datos de acceso."/>
+
+            <!-- 3.2 -->
+            <TextView
+                android:id="@+id/s32_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="3.2. Firestore / Realtime Database"
+                android:fontFamily="@font/roboto"
+                android:textSize="16sp"
+                android:paddingBottom="6dp" />
+
+            <TextView
+                android:id="@+id/s32_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto_light"
+                android:textSize="15sp"
+                android:paddingBottom="16dp"
+                android:text="Se utiliza para almacenar datos del perfil, configuraciones, preferencias del usuario y lecturas generadas por los sensores o dispositivos vinculados."/>
+
+            <!-- 3.3 -->
+            <TextView
+                android:id="@+id/s33_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="3.3. Firebase Analytics"
+                android:fontFamily="@font/roboto"
+                android:textSize="16sp"
+                android:paddingBottom="6dp" />
+
+            <TextView
+                android:id="@+id/s33_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto_light"
+                android:textSize="15sp"
+                android:paddingBottom="26dp"
+                android:text="La versión actual de Atmos no utiliza Firebase Analytics. En caso de habilitarlo en una versión futura, la Política será actualizada."/>
+
+            <!-- ============================= -->
+            <!-- SECCIÓN 4 -->
+            <!-- ============================= -->
+
+            <TextView
+                android:id="@+id/s4_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="4. Uso de los Datos"
+                android:fontFamily="@font/roboto_bold"
+                android:textSize="18sp"
+                android:paddingBottom="12dp" />
+
+            <TextView
+                android:id="@+id/s4_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto_light"
+                android:textSize="15sp"
+                android:paddingBottom="26dp"
+                android:text="Los datos se utilizan para ofrecer, mantener y mejorar la Aplicación; asociar mediciones con la ubicación; gestionar la cuenta del usuario; garantizar la seguridad; detectar fallos; proporcionar soporte y cumplir obligaciones legales."/>
+
+            <!-- ============================= -->
+            <!-- SECCIÓN 5 -->
+            <!-- ============================= -->
+
+            <TextView
+                android:id="@+id/s5_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="5. Datos Recopilados en la Web"
+                android:fontFamily="@font/roboto_bold"
+                android:textSize="18sp"
+                android:paddingBottom="12dp" />
+
+            <TextView
+                android:id="@+id/s5_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto_light"
+                android:textSize="15sp"
+                android:paddingBottom="26dp"
+                android:text="La Web de Atmos tiene carácter informativo. No vende productos, no realiza pagos y no recopila datos personales salvo contacto voluntario por correo electrónico."/>
+
+            <!-- ============================= -->
+            <!-- SECCIÓN 6 -->
+            <!-- ============================= -->
+
+            <TextView
+                android:id="@+id/s6_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="6. Conservación de Datos"
+                android:fontFamily="@font/roboto_bold"
+                android:textSize="18sp"
+                android:paddingBottom="12dp" />
+
+            <TextView
+                android:id="@+id/s6_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto_light"
+                android:textSize="15sp"
+                android:paddingBottom="26dp"
+                android:text="Los datos personales se conservarán mientras la cuenta esté activa o mientras sea necesario para cumplir obligaciones legales o de mantenimiento del servicio."/>
+
+            <!-- ============================= -->
+            <!-- SECCIÓN 7 -->
+            <!-- ============================= -->
+
+            <TextView
+                android:id="@+id/s7_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="7. Transferencia de Datos"
+                android:fontFamily="@font/roboto_bold"
+                android:textSize="18sp"
+                android:paddingBottom="12dp" />
+
+            <TextView
+                android:id="@+id/s7_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto_light"
+                android:textSize="15sp"
+                android:paddingBottom="26dp"
+                android:text="Los datos pueden procesarse fuera de España mediante servicios de Google Firebase, que cumplen el Reglamento General de Protección de Datos mediante Cláusulas Contractuales Tipo."/>
+
+            <!-- ============================= -->
+            <!-- SECCIÓN 8 -->
+            <!-- ============================= -->
+
+            <TextView
+                android:id="@+id/s8_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="8. Derechos del Usuario"
+                android:fontFamily="@font/roboto_bold"
+                android:textSize="18sp"
+                android:paddingBottom="12dp" />
+
+            <TextView
+                android:id="@+id/s8_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto_light"
+                android:textSize="15sp"
+                android:paddingBottom="26dp"
+                android:text="Puede ejercer los derechos de acceso, rectificación, eliminación, limitación u oposición escribiendo a: soporte.atmos@gmail.com."/>
+
+            <!-- ============================= -->
+            <!-- SECCIÓN 9 -->
+            <!-- ============================= -->
+
+            <TextView
+                android:id="@+id/s9_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="9. Eliminación de la Cuenta y de los Datos"
+                android:fontFamily="@font/roboto_bold"
+                android:textSize="18sp"
+                android:paddingBottom="12dp" />
+
+            <TextView
+                android:id="@+id/s9_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto_light"
+                android:textSize="15sp"
+                android:paddingBottom="26dp"
+                android:text="La eliminación de la cuenta puede solicitarse desde la Aplicación o por correo electrónico. Algunos datos pueden conservarse si existe obligación legal."/>
+
+            <!-- ============================= -->
+            <!-- SECCIÓN 10 -->
+            <!-- ============================= -->
+
+            <TextView
+                android:id="@+id/s10_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="10. Seguridad de los Datos"
+                android:fontFamily="@font/roboto_bold"
+                android:textSize="18sp"
+                android:paddingBottom="12dp" />
+
+            <TextView
+                android:id="@+id/s10_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto_light"
+                android:textSize="15sp"
+                android:paddingBottom="26dp"
+                android:text="Atmos aplica medidas técnicas y organizativas como encriptación, servidores seguros y controles de acceso interno. No obstante, ningún sistema puede garantizar seguridad absoluta."/>
+
+            <!-- ============================= -->
+            <!-- SECCIÓN 11 -->
+            <!-- ============================= -->
+
+            <TextView
+                android:id="@+id/s11_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="11. Privacidad de Menores"
+                android:fontFamily="@font/roboto_bold"
+                android:textSize="18sp"
+                android:paddingBottom="12dp" />
+
+            <TextView
+                android:id="@+id/s11_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto_light"
+                android:textSize="15sp"
+                android:paddingBottom="26dp"
+                android:text="Atmos no está dirigida a menores de 13 años. Si se detectan datos de un menor, serán eliminados de inmediato."/>
+
+            <!-- ============================= -->
+            <!-- SECCIÓN 12 -->
+            <!-- ============================= -->
+
+            <TextView
+                android:id="@+id/s12_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="12. Cambios en esta Política"
+                android:fontFamily="@font/roboto_bold"
+                android:textSize="18sp"
+                android:paddingBottom="12dp" />
+
+            <TextView
+                android:id="@+id/s12_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto_light"
+                android:textSize="15sp"
+                android:paddingBottom="26dp"
+                android:text="La Empresa puede actualizar esta Política en cualquier momento. La versión vigente estará disponible en la Aplicación y en la Web."/>
+
+            <!-- ============================= -->
+            <!-- SECCIÓN 13 -->
+            <!-- ============================= -->
+
+            <TextView
+                android:id="@+id/s13_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="13. Contacto"
+                android:fontFamily="@font/roboto_bold"
+                android:textSize="18sp"
+                android:paddingBottom="12dp" />
+
+            <TextView
+                android:id="@+id/s13_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto_light"
+                android:textSize="15sp"
+                android:paddingBottom="50dp"
+                android:text="Correo de contacto: soporte.atmos@gmail.com"/>
+
+        </LinearLayout>
+    </ScrollView>
+
+</RelativeLayout>
