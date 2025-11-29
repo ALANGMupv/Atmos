@@ -89,7 +89,7 @@
 
                     <span class="texto-politica">
                         Aceptas nuestros
-                        <a href="politica.php">términos de servicio y política de privacidad</a>
+                        <a href="privacidad.php">términos de servicio y política de privacidad</a>
                     </span>
                 </div>
 
