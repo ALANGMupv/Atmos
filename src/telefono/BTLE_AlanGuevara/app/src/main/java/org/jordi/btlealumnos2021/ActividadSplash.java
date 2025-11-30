@@ -26,9 +26,9 @@ public class ActividadSplash extends AppCompatActivity {
 
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
 
-            // 1️ Si hay sesión → ir directo a Mapas
+            // 1️ Si hay sesión → ir a la pantalla de login (que mostrará la huella)
             if (SesionManager.haySesionActiva(this)) {
-                startActivity(new Intent(ActividadSplash.this, MapasActivity.class));
+                startActivity(new Intent(ActividadSplash.this, InicioSesionActivity.class));
                 finish();
                 return;
             }
@@ -36,12 +36,12 @@ public class ActividadSplash extends AppCompatActivity {
             // 2️ Si es la primera vez → mostrar onboarding
             if (preferencias.esPrimeraVez()) {
                 startActivity(new Intent(ActividadSplash.this, ActividadInicio.class));
-            }
-            //  En cualquier otro caso → registro
-            else {
-                startActivity(new Intent(ActividadSplash.this, RegistroActivity.class));
+                finish();
+                return;
             }
 
+            // 3️ Si NO es primera vez → mostrar LOGIN (NO registro)
+            startActivity(new Intent(ActividadSplash.this, InicioSesionActivity.class));
             finish();
 
         }, DURACION_SPLASH_MS);
