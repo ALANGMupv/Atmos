@@ -1,7 +1,14 @@
 package org.jordi.btlealumnos2021;
 
+import static androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG;
+import static androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL;
+
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
+
+import androidx.biometric.BiometricManager;
+
 import android.os.Bundle;
 import android.text.method.PasswordTransformationMethod;
 import android.util.Patterns;
@@ -12,7 +19,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.biometric.BiometricPrompt;
+import androidx.core.content.ContextCompat;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
@@ -21,11 +32,13 @@ import com.google.firebase.auth.FirebaseUser;
 
 import org.json.JSONObject;
 
+import java.util.concurrent.Executor;
+
 
 /**
  * Nombre Fichero: InicioSesionActivity.java
  * Descripción: Pantalla encargada del inicio de sesión de usuarios ya registrados.
- *              Valida los datos, inicia sesión en Firebase y envía el token al servidor.
+ * Valida los datos, inicia sesión en Firebase y envía el token al servidor.
  * Autora: Nerea Aguilar Forés
  * Fecha: 2025
  */
@@ -36,6 +49,11 @@ public class InicioSesionActivity extends FuncionesBaseActivity {
     private Button loginBoton;
     private TextView olvidasteContrasenya, enlaceRegistro;
     private RequestQueue queue;
+
+
+    //  BIOMETRÍA
+    private BiometricPrompt biometricPrompt;
+    private BiometricPrompt.PromptInfo promptInfo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,17 +86,28 @@ public class InicioSesionActivity extends FuncionesBaseActivity {
 
         // Pulsar ojo para ver contraseña
         habilitarToggleContrasena(contrasenyaCampo);
+
+        // -----------------------------------------------------------
+        // INICIO AUTOMÁTICO CON HUELLA SI YA HAY SESIÓN GUARDADA
+        // -----------------------------------------------------------
+        if (SesionManager.haySesionActiva(this) && puedeUsarBiometria()) {
+            configurarBiometria();
+            biometricPrompt.authenticate(promptInfo);
+        }
+
+        System.out.println("DEBUG_SESION: " + SesionManager.obtenerSesion(this));
+
     }
 
     /**
      * Nombre Método: validarLogin
      * Descripción: Comprueba que los campos de email y contraseña sean válidos.
      * Entradas:
-     *  - email: Texto introducido en el campo correo.
-     *  - password: Texto introducido en el campo contraseña.
+     * - email: Texto introducido en el campo correo.
+     * - password: Texto introducido en el campo contraseña.
      * Salidas:
-     *  - true si los datos son válidos.
-     *  - false si falta algún campo o el email no es válido.
+     * - true si los datos son válidos.
+     * - false si falta algún campo o el email no es válido.
      * Autora: Nerea Aguilar Forés
      */
     private boolean validarLogin(String email, String password) {
@@ -138,9 +167,9 @@ public class InicioSesionActivity extends FuncionesBaseActivity {
      * Nombre Método: enviarLoginAlServidor
      * Descripción: Envía el token de Firebase al servidor usando LogicaFake.
      * Entradas:
-     *  - idToken: Token de Firebase autenticado.
+     * - idToken: Token de Firebase autenticado.
      * Salidas:
-     *  - No retorna nada. Gestiona resultados por callback.
+     * - No retorna nada. Gestiona resultados por callback.
      * Autora: Nerea Aguilar Forés
      */
     private void enviarLoginAlServidor(String idToken) {
@@ -236,6 +265,147 @@ public class InicioSesionActivity extends FuncionesBaseActivity {
         }
 
         return "Error: " + mensajeOriginal;
+    }
+
+    //BIOMETRIA
+
+    /**
+     * Nombre Método: puedeUsarBiometria
+     * Descripción: Comprueba si el dispositivo soporta autenticación biométrica
+     * (huella, reconocimiento facial o credenciales del dispositivo).
+     * Entradas:
+     * - Ninguna (usa el contexto de la Activity).
+     * Salidas:
+     * - boolean: true si se puede usar biometría, false en caso contrario.
+     * Autora: Nerea Aguilar Forés
+     */
+    private boolean puedeUsarBiometria() {
+        BiometricManager manager = BiometricManager.from(this);
+
+        int res = manager.canAuthenticate(BIOMETRIC_STRONG | DEVICE_CREDENTIAL);
+        // DEBUG: Ver estado biométrico
+        System.out.println("DEBUG_BIOMETRIA: " + res);
+
+        switch (res) {
+            case BiometricManager.BIOMETRIC_SUCCESS:
+                return true;
+
+            case BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED:
+                mostrarDialogoConfigurarHuella();
+                return false;
+
+            case BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE:
+                Toast.makeText(this, "Este dispositivo no tiene lector de huella.", Toast.LENGTH_LONG).show();
+                return false;
+
+            case BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE:
+                Toast.makeText(this, "Lector biométrico no disponible.", Toast.LENGTH_LONG).show();
+                return false;
+
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Nombre Método: mostrarDialogoConfigurarHuella
+     * Descripción: Muestra un diálogo informando al usuario que debe registrar
+     * una huella en los ajustes del dispositivo para poder usar biometría.
+     * Entradas:
+     * - Ninguna.
+     * Salidas:
+     * - No retorna nada. Interactúa mediante botones con el usuario.
+     * Autora: Nerea Aguilar Forés
+     */
+    private void mostrarDialogoConfigurarHuella() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Configurar huella");
+        builder.setMessage("Para usar este acceso, primero registra una huella en los ajustes del dispositivo.");
+
+        builder.setPositiveButton("Ir a Ajustes", (dialog, which) -> {
+            Intent intent = new Intent(android.provider.Settings.ACTION_SECURITY_SETTINGS);
+            startActivity(intent);
+        });
+
+        builder.setNegativeButton("Cancelar", (dialog, which) -> {
+            dialog.dismiss();
+        });
+
+        builder.create().show();
+    }
+
+    /**
+     * Nombre Método: configurarBiometria
+     * Descripción: Inicializa los componentes necesarios para el uso de biometría,
+     * incluyendo el BiometricPrompt y el mensaje del cuadro de autenticación.
+     * Entradas:
+     * - Ninguna (usa contexto de la Activity).
+     * Salidas:
+     * - No retorna nada. Deja preparado el prompt biométrico.
+     * Autora: Nerea Aguilar Forés
+     */
+    private void configurarBiometria() {
+
+        Executor executor = ContextCompat.getMainExecutor(this);
+
+        biometricPrompt = new BiometricPrompt(this, executor,
+                new BiometricPrompt.AuthenticationCallback() {
+
+                    @Override
+                    public void onAuthenticationSucceeded(
+                            @NonNull BiometricPrompt.AuthenticationResult result) {
+                        super.onAuthenticationSucceeded(result);
+                        accederConSesionGuardada();
+                    }
+
+                    @Override
+                    public void onAuthenticationError(int errorCode,
+                                                      @NonNull CharSequence errString) {
+                        Toast.makeText(InicioSesionActivity.this,
+                                "Error: " + errString, Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onAuthenticationFailed() {
+                        Toast.makeText(InicioSesionActivity.this,
+                                "Huella incorrecta", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        promptInfo = new BiometricPrompt.PromptInfo.Builder()
+                .setTitle("Iniciar sesión con huella")
+                .setSubtitle("Usa tu huella para acceder a Atmos")
+                .setNegativeButtonText("Cancelar")
+                .build();
+    }
+
+    /**
+     * Nombre Método: accederConSesionGuardada
+     * Descripción: Obtiene el token almacenado de forma segura y, si existe,
+     * permite el acceso automático a la aplicación tras autenticación biométrica.
+     * Entradas:
+     * - Ninguna.
+     * Salidas:
+     * - No retorna nada. Realiza navegación a UserPageActivity si el token existe.
+     * Autora: Nerea Aguilar Forés
+     */
+    private void accederConSesionGuardada() {
+
+        try {
+            JSONObject usuario = SesionManager.obtenerSesion(this);
+
+            if (usuario != null) {
+                Intent intent = new Intent(this, UserPageActivity.class);
+                startActivity(intent);
+                finish();
+            } else {
+                Toast.makeText(this, "No hay sesión guardada.", Toast.LENGTH_SHORT).show();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }
