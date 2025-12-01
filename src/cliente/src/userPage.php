@@ -97,9 +97,9 @@ $usuario = $_SESSION['usuario'];
                     <div class="selector-gases-container">
                         <p>Selecciona un gas contaminante:</p>
                         <select id="gasSelector">
-                            <option value="NO₂" selected >NO₂</option>
+                            <option value="NO₂">NO₂</option>
                             <option value="CO">CO</option>
-                            <option value="O₃">O₃</option>
+                            <option value="O₃" selected>O₃</option>
                             <option value="SO₂">SO₂</option>
                         </select>
                     </div>
@@ -196,7 +196,9 @@ $usuario = $_SESSION['usuario'];
 
                                     <div class="carita-grafica">
                                         <img src="img/estadoAireIcono.svg" alt="">
+                                        <div id="tooltipCarita" class="tooltip-carita hidden"></div>
                                     </div>
+
                                 </div>
                             </div>
 

@@ -79,6 +79,13 @@ let modoGraficaActual = "D";
 // Instancia de Chart.js para poder destruirla y recrearla
 let graficaCalidadChart = null;
 
+// Control del intervalo de actualización de la señal del sensor
+let intervaloSenal = null;
+
+// Variable global: indica si el sensor está activo o no
+let sensorActivo = true;
+
+
 // Referencias a elementos de la gráfica
 const ctxGrafica = document.getElementById("graficaCalidad")
     ? document.getElementById("graficaCalidad").getContext("2d")
@@ -450,6 +457,8 @@ function renderizarGraficaCalidad(labels, valores) {
 // ======================================================================
 function actualizarCaritaGrafica(promedio) {
 
+    window.promedioGraficaActual = promedio;
+
     if (!caritaGraficaImg) return;
 
     // Si no hay datos → carita neutra
@@ -483,8 +492,51 @@ function actualizarCaritaGrafica(promedio) {
             caritaGraficaImg.src = "img/estadoAireIcono.svg";
             break;
     }
-}
 
+    // ======================================================================
+    //  Mensajes para cada categoría de la carita
+    // ======================================================================
+    const mensajesCarita = {
+        "Buena": "En promedio, la calidad del aire es buena.",
+        "Moderada": "En promedio, la calidad del aire es moderada. Las personas sensibles pueden notar molestias.",
+        "Insalubre": "En promedio, la calidad del aire es insalubre con varios picos de contaminación.",
+        "Mala": "En promedio, la calidad del aire es mala. Evita la exposición prolongada.",
+        "Sin datos": "Aún no hay suficiente información para evaluar la calidad del aire."
+    };
+
+    // ======================================================================
+    // Tooltip dinámico en la carita
+    // ======================================================================
+    const tooltipCarita = document.getElementById("tooltipCarita");
+
+    if (caritaGraficaImg && tooltipCarita) {
+
+        caritaGraficaImg.addEventListener("mouseenter", () => {
+
+            // Determinar categoría actual a partir del promedio
+            const promedio = window.promedioGraficaActual || null;
+            let categoria = "Sin datos";
+
+            if (promedio !== null && !isNaN(promedio)) {
+                categoria = clasificarMedida(promedio, tipoGasActual).texto;
+            }
+
+            // Establecer texto del tooltip
+            tooltipCarita.textContent = mensajesCarita[categoria] || "Sin datos";
+
+            // Mostrar tooltip
+            tooltipCarita.classList.remove("hidden");
+        });
+
+        caritaGraficaImg.addEventListener("mouseleave", () => {
+            tooltipCarita.classList.add("hidden");
+        });
+    }
+
+    caritaGraficaImg.addEventListener("mouseenter", () => {
+        console.log("HOVER DETECTADO en la carita");
+    });
+}
 
 
 // ======================================================================
@@ -622,13 +674,11 @@ botonesModoGrafica.forEach(btn => {
 });
 
 // -----------------------------------------------------------------------------
-//  9. Función: actualizarEstadoSensor()
+//  Función: actualizarEstadoSensor()
 // -----------------------------------------------------------------------------
-//  Descripción:
-//     Consulta al backend cada cierto tiempo para saber si el sensor está
-//     encendido o apagado. Según la respuesta, actualiza el texto y el icono.
-//     Además, si el sensor NO está activo → automáticamente se resetea
-//     la tarjeta de “Distancia al sensor” a “Sin datos”.
+//  Consulta al backend si la placa está encendida o apagada.
+//  Si está apagada, INMEDIATAMENTE fuerza la tarjeta "Distancia al sensor"
+//  a mostrar "Sin datos", sin esperar los 5 segundos del intervalo.
 // -----------------------------------------------------------------------------
 async function actualizarEstadoSensor() {
 
@@ -645,33 +695,50 @@ async function actualizarEstadoSensor() {
             return;
         }
 
-        // --------- SENSOR ACTIVO ---------
+        // ========= SENSOR ACTIVO =========
         if (data.estado === "activo") {
+            sensorActivo = true;
+
             texto.textContent = "Sensor activo";
-            icono.src = "img/estadoActivoSensorIcono.svg";
-            texto.style.color = "#000"; // restaurar color normal
-            return;
-        }
-
-        // --------- SENSOR INACTIVO ---------
-        if (data.estado === "inactivo") {
-            texto.textContent = "Sensor inactivo";
-            icono.src = "img/estadoInactivoSensorIcono.svg";
             texto.style.color = "#000";
-
-            // cuando el sensor está apagado, la tarjeta de señal
-            // DEBE mostrar obligatoriamente "Sin datos".
-            resetearEstadoSenal();
+            icono.src = "img/estadoActivoSensorIcono.svg";
             return;
         }
 
-        // --------- SIN PLACA ---------
+        // ========= SENSOR INACTIVO =========
+        if (data.estado === "inactivo") {
+            sensorActivo = false;
+
+            texto.textContent = "Sensor inactivo";
+            texto.style.color = "#000";
+            icono.src = "img/estadoInactivoSensorIcono.svg";
+
+            //  FORZAR que "Distancia al sensor" muestre SIN DATOS inmediatamente
+            const iconoSenal = document.getElementById("iconoSenal");
+            const textoSenal = document.getElementById("textoSenal");
+
+            if (iconoSenal && textoSenal) {
+                iconoSenal.src = "img/sinSeñalDistanciaIcono.svg";
+                textoSenal.textContent = "Sin datos";
+            }
+
+            return;
+        }
+
+        // ========= SIN PLACA =========
+        sensorActivo = false;
+
         texto.textContent = "Sin placa asociada";
-        texto.style.color = "#777"; // gris
+        texto.style.color = "#777";
         icono.src = "img/estadoInactivoSensorIcono.svg";
 
-        // si el usuario no tiene placa, tampoco hay señal que mostrar
-        resetearEstadoSenal();
+        const iconoSenal = document.getElementById("iconoSenal");
+        const textoSenal = document.getElementById("textoSenal");
+
+        if (iconoSenal && textoSenal) {
+            iconoSenal.src = "img/sinSeñalDistanciaIcono.svg";
+            textoSenal.textContent = "Sin datos";
+        }
 
     } catch (err) {
         console.error("Error consultando estado del sensor:", err);
@@ -679,39 +746,45 @@ async function actualizarEstadoSensor() {
 }
 
 
+
 // ======================================================================
 // Función: resetearEstadoSenal()
 // ----------------------------------------------------------------------
-// Se llama automáticamente cuando:
-//   • El sensor está INACTIVO
-//   • El usuario NO tiene placa asociada
-//
-// ¿Qué hace?
-//   * Muestra el icono de "sin señal"
-//   * Muestra el texto "Sin datos"
-//   * Ignora cualquier dato real del endpoint /estadoSenal
+// Se llama cuando la placa está INACTIVA o NO hay placa asociada.
+// Pone inmediatamente la tarjeta de señal como "Sin datos" sin esperar.
 // ======================================================================
 function resetearEstadoSenal() {
-
     const icono = document.getElementById("iconoSenal");
     const texto = document.getElementById("textoSenal");
 
-    if (!icono || !texto) return;
-
-    icono.src = "img/sinSeñalDistanciaIcono.svg";
-    texto.textContent = "Sin datos";
+    if (icono) icono.src = "img/sinSeñalDistanciaIcono.svg";
+    if (texto) texto.textContent = "Sin datos";
 }
 
 
 // ======================================================================
 // Función: actualizarEstadoSenal()
 // ----------------------------------------------------------------------
-// Llama al backend /estadoSenal y muestra:
-//   - icono según el nivel
-//   - texto según el nivel
+// Solo consulta señal si el sensor está ACTIVO.
+// Si está inactivo → muestra "Sin datos" inmediatamente (sin esperar).
 // ======================================================================
 async function actualizarEstadoSenal() {
 
+    // Si el sensor está apagado → no pedir al backend, mostrar “Sin datos”
+    if (!sensorActivo) {
+
+        const icono = document.getElementById("iconoSenal");
+        const texto = document.getElementById("textoSenal");
+
+        if (icono && texto) {
+            icono.src = "img/sinSeñalDistanciaIcono.svg";
+            texto.textContent = "Sin datos";
+        }
+
+        return;
+    }
+
+    // Sensor activo → SÍ consultar señal
     const resp = await fetch(`/estadoSenal?id_usuario=${ID_USUARIO}`);
     const data = await resp.json();
 
@@ -721,7 +794,6 @@ async function actualizarEstadoSenal() {
     const texto = document.getElementById("textoSenal");
 
     switch (data.nivel) {
-
         case "fuerte":
             icono.src = "img/señalAltaDistanciaIcono.svg";
             texto.textContent = "Señal alta";
@@ -749,51 +821,35 @@ async function actualizarEstadoSenal() {
 }
 
 
-
 // ======================================================================
-// 9. Inicialización automática al cargar la página
-// ----------------------------------------------------------------------
-// Selecciona automáticamente el primer gas del selector y carga datos.
+//  9. Inicialización automática al cargar la página
 // ======================================================================
 window.addEventListener("DOMContentLoaded", async () => {
 
-    // Asegurar que existe el selector
     if (!gasSelector || gasSelector.options.length === 0) return;
 
-    // Seleccionar el primer gas del desplegable
-    gasSelector.selectedIndex = 0;
+    gasSelector.selectedIndex = 2;
 
-    // Obtener el nombre del gas (ej. "NO₂")
     const gasInicial = gasSelector.value;
-
-    // Obtener el tipo numérico del gas (11, 12, 13, 14)
     const tipoInicial = MAPA_GASES[gasInicial];
 
-    // Guardar estado global
     tipoGasActual = tipoInicial;
 
-    // Actualizar textos de tarjetas
     gasUltima.textContent   = gasInicial;
     gasPromedio.textContent = gasInicial;
 
-    // Cargar tarjetas
     await cargarDatosDeGas(tipoInicial);
-
-    // Cargar gráfica en modo inicial (D)
     await cargarGraficaSegunModo();
 
-    // Consultar estado del sensor al cargar la página
+    // --- Estado del sensor ---
     actualizarEstadoSensor();
+    setInterval(actualizarEstadoSensor, 500);
 
-    // Consultarlo cada 20 segundos
-    setInterval(actualizarEstadoSensor, 20000);
-
-    // Consultar la señal del sensor
-    actualizarEstadoSenal();
-
-    // Consultarla cada 5 segundos
-    setInterval(actualizarEstadoSenal, 5000);
+    // --- Estado de señal ---
+    actualizarEstadoSenal();                       // primera llamada
+    intervaloSenal = setInterval(actualizarEstadoSenal, 500);  // autorefresco
 });
+
 
 
 
