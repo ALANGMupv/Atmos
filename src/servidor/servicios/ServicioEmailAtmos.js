@@ -154,7 +154,10 @@ async function enviarCorreoVerificacionAtmos(destinatario, nombreUsuario, enlace
 
     try {
         const info = await transportistaCorreo.sendMail({
-            from: `"Atmos" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+            from: {
+                name: "Atmos",
+                address: process.env.SMTP_FROM || process.env.SMTP_USER
+            },
             to: destinatario,
             subject: "Verifica tu cuenta de Atmos",
             html

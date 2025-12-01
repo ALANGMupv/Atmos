@@ -18,7 +18,7 @@
 //  Importación de módulos de Firebase
 // --------------------------------------------------------------------------
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { getAuth, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+import { getAuth} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
 // --------------------------------------------------------------------------
 //  Configuración e inicialización de Firebase

@@ -91,7 +91,10 @@ async function enviarCorreoReset(destinatario, nombreUsuario, enlace) {
     const html = generarHtmlReset(nombreUsuario, enlace);
 
     return transporteCorreo.sendMail({
-        from: `"Atmos" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+        from: {
+            name: "Atmos",
+            address: process.env.SMTP_FROM || process.env.SMTP_USER
+        },
         to: destinatario,
         subject: "Restablece tu contraseña - Atmos",
         html
