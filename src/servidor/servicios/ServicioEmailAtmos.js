@@ -72,10 +72,9 @@ function generarHtmlVerificacionAtmos(nombreUsuario, enlaceVerificacion) {
 
                 <!-- LOGO / CABECERA -->
                 <div style="text-align:center; margin-bottom:20px;">
-                    <!-- Cambia la URL de la imagen por tu logo real -->
-                    <img src="../img/logoAtmos.png"
-                         alt="Logo Atmos"
-                         style="width:120px; margin-bottom:10px;" />
+                    <img src="https://nagufor.upv.edu.es/cliente/img/logoAtmosCorreo.png"
+                    alt="Logo Atmos"
+                    style="width:120px; margin-bottom:10px;" />
                     <h1 style="margin:0; font-size:22px; color:#111827;">
                         Bienvenido/a a <span style="color:#10B981;">Atmos</span>
                     </h1>
@@ -161,10 +160,10 @@ async function enviarCorreoVerificacionAtmos(destinatario, nombreUsuario, enlace
             html
         });
 
-        console.log("✔ Email ENVIADO correctamente:", info.messageId);
+        console.log("Email ENVIADO correctamente:", info.messageId);
 
     } catch (error) {
-        console.error("❌ ERROR enviando email ATMOS:");
+        console.error("ERROR enviando email ATMOS:");
         console.error(error);
     }
 
