@@ -18,6 +18,10 @@ const bcrypt = require("bcrypt");                   // Para futuras validaciones
 // NUEVO: servicio de email Atmos
 const servicioEmail = require("../servicios/ServicioEmailAtmos.js");
 
+// NUEVO: servicio de restablecimiento de contraseña
+const servicioEmailReset = require("../servicios/ServicioEmailResetAtmos.js");
+
+
 
 /**
  * Crea y devuelve un router de Express con las rutas REST definidas.
@@ -363,18 +367,15 @@ function reglasREST(logica) {
     //   - Si existe, retornamos sus datos para crear la sesión PHP.
     //   - Si no existe, devolvemos un error.
     // -------------------------------------------------------------
+
     router.post("/login", verificarToken, async (req, res) => {
         try {
-            // ---------------------------------------------------------------------
-            // req.user lo rellena el middleware verificarToken.
-            // Aquí tenemos: uid, email, email_verified...
-            // ---------------------------------------------------------------------
             const email = req.user.email;
+            const uid = req.user.uid;
+            const emailVerificado = req.user.email_verified;
 
             // ---------------------------------------------------------------------
-            // Buscar en MySQL el usuario cuyo email coincide con el de Firebase.
-            // Si no existe, significa que está registrado en Firebase pero
-            // NO se ha creado en MySQL todavía (caso raro pero posible).
+            // Buscar usuario en MySQL
             // ---------------------------------------------------------------------
             const usuario = await logica.buscarUsuarioPorEmail(email);
 
@@ -385,9 +386,26 @@ function reglasREST(logica) {
             }
 
             // ---------------------------------------------------------------------
-            // Devolver al frontend los datos necesarios para:
-            //   - guardar la sesión en PHP (guardarSesion.php)
-            //   - sincronizar contraseña si procede
+            // Sincronizar estado de verificación entre Firebase y MySQL
+            // ---------------------------------------------------------------------
+            /*
+            Comprueba si el email está verificado en Firebase (req.user.email_verified)
+            Consulta MySQL
+            Si MySQL tiene estado = 0 pero Firebase dice true → lo actualiza
+            Devuelve el usuario con el estado actualizado (0 o 1)
+            */
+            if (emailVerificado && usuario.estado === 0) {
+                try {
+                    await logica.actualizarEstadoVerificado(uid);
+                    usuario.estado = 1; // actualizamos el valor en la respuesta
+                    console.log("Estado sincronizado para", email);
+                } catch (e) {
+                    console.error("Error sincronizando estado:", e);
+                }
+            }
+
+            // ---------------------------------------------------------------------
+            // Respuesta al frontend
             // ---------------------------------------------------------------------
             return res.json({
                 status: "ok",
@@ -395,15 +413,12 @@ function reglasREST(logica) {
                     id_usuario: usuario.id_Usuario,
                     nombre: usuario.nombre,
                     apellidos: usuario.apellidos,
-                    email: usuario.email
+                    email: usuario.email,
+                    estado: usuario.estado   // <-- AHORA DEVUELVE EL ESTADO ACTUALIZADO
                 }
             });
 
         } catch (error) {
-            // ---------------------------------------------------------------------
-            // Si ocurre cualquier problema en la lógica interna, logueamos el error
-            // y devolvemos un 500 al cliente.
-            // ---------------------------------------------------------------------
             console.error("Error en POST /login:", error);
             return res.status(500).json({ error: "Error interno en login" });
         }
@@ -833,7 +848,80 @@ function reglasREST(logica) {
         }
     });
 
+    // -----------------------------------------------------------------------------
+    // POST /resetPasswordAtmos
+    // -----------------------------------------------------------------------------
+    /**
+     * @brief Endpoint que genera un enlace de restablecimiento de contraseña
+     *        y envía un correo personalizado al usuario.
+     *
+     * @route POST /resetPasswordAtmos
+     *
+     * @param {string} req.body.correo  Correo del usuario que solicita el reset.
+     *
+     * @returns {JSON}
+     *  {
+     *    "status": "ok"
+     *  }
+     *  o
+     *  {
+     *    "status": "error",
+     *    "msg": "Motivo del error"
+     *  }
+     *
+     * Flujo:
+     *  1. Recibe el correo del usuario desde el frontend.
+     *  2. Busca el usuario en MySQL (para obtener su nombre, si existe).
+     *  3. Genera un enlace de restablecimiento usando Firebase Admin.
+     *  4. Envía un correo HTML bonito usando ServicioEmailResetAtmos.
+     *  5. Devuelve status "ok" si todo fue correcto.
+     * 
+     * @author Alan Guevara Martínez
+     * @date 01/12/2025
+     */
+    router.post("/resetPasswordAtmos", async (req, res) => {
+        try {
+            const correo = req.body.correo;
 
+            console.log("[Reset] Solicitud de reset para:", correo);
+
+            // 0) Validación básica
+            if (!correo) {
+                return res.status(400).json({
+                    status: "error",
+                    msg: "Falta correo"
+                });
+            }
+
+            // 1) Buscar usuario en MySQL para sacar su nombre (opcional)
+            const usuarioBD = await logica.buscarUsuarioPorEmail(correo);
+            const nombreUsuario = usuarioBD?.nombre || "usuario/a";
+
+            console.log("[Reset] Nombre del usuario:", nombreUsuario);
+
+            // 2) Generar enlace seguro de Firebase para restablecer contraseña
+            const enlace = await admin.auth().generatePasswordResetLink(correo, {
+                url: "https://nagufor.upv.edu.es/cliente/resetPasswordAtmos.php",
+                handleCodeInApp: false
+            });
+
+            console.log("[Reset] Enlace generado correctamente");
+
+            // 3) Enviar email personalizado de Atmos
+            await servicioEmailReset.enviarCorreoReset(correo, nombreUsuario, enlace);
+
+            console.log("[Reset] Email enviado correctamente");
+
+            return res.json({ status: "ok" });
+
+        } catch (error) {
+            console.error("[Reset] Error:", error);
+            return res.json({
+                status: "error",
+                msg: "No se pudo enviar el correo"
+            });
+        }
+    });
 
     // --------------------------------------------------------------------------
     //  Devolvemos el router con todas las rutas activas

@@ -66,19 +66,25 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         try {
+
             // ----------------------------------------------------------------------
-            //  2) Enviar correo de restablecimiento de contraseña con Firebase
+            //  2) Enviar correo de restablecimiento de contraseña
             // ----------------------------------------------------------------------
-            /**
-             * El método sendPasswordResetEmail envía un correo automático
-             * con un enlace seguro de Firebase para cambiar la contraseña.
-             *
-             * La propiedad 'url' define a qué página se redirige el usuario
-             * una vez que completa el proceso de restablecimiento.
-             */
-            await sendPasswordResetEmail(auth, correo, {
-                url: "https://nagufor.upv.edu.es/cliente/login.php" // Página destino tras restablecer
+            // Enviar solicitud al backend personalizado
+            const respuesta = await fetch("https://nagufor.upv.edu.es/resetPasswordAtmos", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ correo })
             });
+
+            const datos = await respuesta.json();
+
+            if (datos.status !== "ok") {
+                alert("No se ha podido enviar el correo de recuperación.");
+                return;
+            }
 
             // ----------------------------------------------------------------------
             //  3) Mostrar mensaje de confirmación al usuario
