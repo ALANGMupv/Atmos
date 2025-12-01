@@ -168,8 +168,10 @@ public class RegistroActivity extends FuncionesBaseActivity {
                         return;
                     }
 
-                    // 2) ENVIAR EMAIL DE VERIFICACIÓN
-                    user.sendEmailVerification();
+                    // 2) IMPORTANTE:
+                    // Ya NO enviamos el email de verificación desde Android.
+                    // El backend Atmos se encarga de generar el enlace y
+                    // enviar el correo con un diseño personalizado.
 
                     // 3) OBTENER TOKEN ID
                     user.getIdToken(true).addOnSuccessListener(result -> {
