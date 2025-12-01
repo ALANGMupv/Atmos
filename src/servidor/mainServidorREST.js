@@ -15,12 +15,20 @@
  * Autores: Alan Guevara Martínez y Santiago Fuenmayor Ruiz
  */
 
+/* Para que node.js lea las variables de entorno desde el archivo .env */
+const path = require("path");
+require("dotenv").config({
+    path: path.join(__dirname, ".env")
+});
+
+
 const fs = require("fs");
 const express = require("express");
 const cors = require("cors");
 const mysql = require("mysql2/promise");
 const Logica = require("./logica/Logica");
 const reglasREST = require("./apiREST/ReglasREST");
+
 
 // --------------------------------------------------------------------------
 //  Configuración de logging

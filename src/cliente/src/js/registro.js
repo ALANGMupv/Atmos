@@ -18,7 +18,7 @@
 //  Importación de módulos de Firebase
 // --------------------------------------------------------------------------
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
 
 // --------------------------------------------------------------------------
@@ -97,6 +97,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // ----------------------------------------------------------------------
+  //  Envío del formulario de registro
+  // ----------------------------------------------------------------------
+
   form.addEventListener("submit", async (evt) => {
     evt.preventDefault();
 
@@ -128,18 +132,20 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    // ------------------------------------------------------------------
     // Flujo principal de registro
+    // ------------------------------------------------------------------
     try {
-      // Crear usuario en Firebase
+      // 1) Crear usuario en Firebase
       const cred = await createUserWithEmailAndPassword(auth, correo, contrasena);
 
-      // Enviar email de verificación
-      await sendEmailVerification(cred.user);
+      // DESACTIVA email automático
+      auth.settings.appVerificationDisabledForTesting = true;
 
-      // Obtener token JWT
+      // 2) Obtener token JWT (ID Token) de Firebase
       const idToken = await cred.user.getIdToken();
 
-      // Guardar usuario en backend
+      // 3) Guardar usuario en backend (MySQL) - el backend enviará el email
       const response = await fetch("https://nagufor.upv.edu.es/usuario", {
         method: "POST",
         headers: {
@@ -156,8 +162,18 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await response.json();
 
       if (data.status === "ok") {
-        alert("Usuario registrado correctamente. Valida tu correo para poder inciar sesión. Revisa tu carpeta de spam.");
-        window.location.href = "login.php"; // Redirección añadida
+        // Mensaje adaptado según si el backend pudo enviar el correo
+        if (data.emailVerificacionEnviado) {
+          alert("Usuario registrado correctamente. Te hemos enviado un correo de verificación a " +
+              correo + ". Revisa también tu carpeta de spam.");
+        } else {
+          alert("Usuario registrado correctamente. " +
+              "No se ha podido enviar el correo de verificación automáticamente. " +
+              "Si no te llega en unos minutos, contacta con soporte.");
+        }
+
+        window.location.href = "login.php"; // Redirección a login
+
       } else {
         alert("Error en el registro: " + (data.error || "Error desconocido"));
       }
