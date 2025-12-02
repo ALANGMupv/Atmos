@@ -68,7 +68,7 @@ switch ($mode) {
      * @details Redirige al script de verificación de correo propio de Atmos.
      */
     case "verifyEmail":
-        header("Location: https://atmos-e3f6c.firebaseapp.com/__/auth/action?mode=verifyEmail&oobCode=$code&apiKey=$apiKey");
+        header("Location: verificarEmailAtmos.php?oobCode=$code");
         exit;
 
     /**
