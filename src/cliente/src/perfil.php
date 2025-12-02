@@ -15,17 +15,11 @@ session_start();
 // Para poder mostrar el hover del header.
 $active = 'perfil';
 
-/*
- * Comprobación de sesión:
- * Este bloque normalmente redirige al usuario si no ha iniciado sesión.
- * Está comentado temporalmente para permitir acceso en local.
- */
-/*
 if (!isset($_SESSION['usuario'])) {
     header("Location: mapas.php");
     exit;
 }
-*/
+
 
 // Recuperación segura de los datos del usuario almacenados en sesión.
 // Se utiliza el operador ?? para evitar errores si no existen claves,
@@ -54,6 +48,7 @@ $email     = htmlspecialchars($usuario['email'] ?? 'Correo electrónico de Usuar
 <body>
 
 <?php
+// Cabecera general del sitio (menú, logo, etc.)
 include __DIR__ . '/partials/headerLogueado.php';
 ?>
 
@@ -76,8 +71,6 @@ include __DIR__ . '/partials/headerLogueado.php';
     <!-- COLUMNA DERECHA: Información del usuario + botones -->
     <section class="perfil-right">
 
-        <!-- Avatar o ícono representativo del usuario -->
-        <img src="img/icnPagPerfil.svg" class="perfil-avatar" alt="Avatar">
 
         <!-- Bloque que muestra los datos del usuario -->
         <div class="perfil-info">
