@@ -923,6 +923,65 @@ function reglasREST(logica) {
         }
     });
 
+    /**
+ * @route POST /verificarEmailAtmos
+ * @brief Endpoint encargado de procesar el código de verificación de correo (oobCode)
+ *        enviado por Firebase y actualizar el estado del usuario en la base de datos.
+ *
+ * El cliente envía un JSON con:
+ * @param {string} oobCode - Código de verificación generado por Firebase.
+ *
+ * Proceso:
+ *  - Valida que llegue el oobCode.
+ *  - Firebase verifica dicho código mediante applyActionCode().
+ *  - Obtiene el email asociado al código.
+ *  - Busca el usuario correspondiente en Firebase Authentication.
+ *  - Llama a la lógica de negocio para marcar al usuario como verificado en la BD.
+ *
+ * @return {JSON} Respuesta con estado "ok" o "error".
+ * 
+ * @author Alan Guevara Martínez
+ * @date 02/12/2025
+ */
+    router.post("/verificarEmailAtmos", async (req, res) => {
+        try {
+            const { oobCode } = req.body;
+
+            /**
+             * @brief Validación de parámetros.
+             * Si no se recibe el código, se detiene el flujo.
+             */
+            if (!oobCode)
+                return res.json({ status: "error", msg: "Falta oobCode" });
+
+            /**
+             * @brief Firebase procesa el código de verificación.
+             * @throws Error si el código ya no es válido o expiró.
+             */
+            const info = await admin.auth().applyActionCode(oobCode);
+            const email = info.data.email;
+
+            /** Obtiene al usuario en Firebase Authentication mediante su email. */
+            const usuarioFirebase = await admin.auth().getUserByEmail(email);
+
+            /**
+             * @brief Actualiza en la BD el estado de verificación del usuario.
+             * Se utiliza el UID interno de Firebase.
+             */
+            await logica.actualizarEstadoVerificado(usuarioFirebase.uid);
+
+            return res.json({ status: "ok" });
+
+        } catch (err) {
+            /**
+             * @brief Manejo de errores (Firebase, BD, lógica, etc.)
+             */
+            console.error(err);
+            return res.json({ status: "error", msg: err.message });
+        }
+    });
+
+
     // --------------------------------------------------------------------------
     //  Devolvemos el router con todas las rutas activas
     // --------------------------------------------------------------------------

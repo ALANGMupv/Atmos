@@ -13,8 +13,14 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
+
+import org.json.JSONObject;
 
 
 /**
@@ -87,43 +93,61 @@ public class RestablecerContrasenaActivity extends AppCompatActivity {
             return;
         }
 
-                    // -------------------------------------------------------------------------
-                    //  → Enviar correo de restablecimiento mediante Firebase Authentication
-                    //
-                    //    Este método es EXACTAMENTE el equivalente al usado en la web:
-                    //    sendPasswordResetEmail()
-                    //
-                    //    Firebase se encargará de:
-                    //       - Verificar si el correo existe
-                    //       - Enviar automáticamente el email
-                    //       - Gestionar toda la seguridad
-                    // -------------------------------------------------------------------------
-                    auth.sendPasswordResetEmail(correo)
-                            .addOnSuccessListener(aVoid -> {
+        // ------------------------------
+        // 1) LLAMAR AL BACKEND ATMOS para reestablecer la contraseña, en vez de con firebase que hacíamos antes
+        // ------------------------------
 
-                                // ÉXITO: el correo existe y Firebase ha enviado el email.
+        try {
+            JSONObject json = new JSONObject();
+            json.put("correo", correo);
+
+            RequestQueue queue = Volley.newRequestQueue(this);
+
+            JsonObjectRequest request = new JsonObjectRequest(
+                    Request.Method.POST,
+                    "https://nagufor.upv.edu.es/resetPasswordAtmos",
+                    json,
+                    response -> {
+
+                        try {
+                            if (response.getString("status").equals("ok")) {
+
                                 Toast.makeText(
                                         this,
                                         "Correo enviado. Revisa tu bandeja de entrada o spam.",
                                         Toast.LENGTH_LONG
                                 ).show();
 
-                                // Redirigir al login después del éxito
+                                // Ir a login
                                 Intent intent = new Intent(this, InicioSesionActivity.class);
                                 startActivity(intent);
                                 finish();
-                            })
-                            .addOnFailureListener(e -> {
 
-                                // Firebase devuelve mensajes en inglés → los traducimos
-                                String error = e.getMessage();
-                                String mensaje = "Error al enviar el correo de restablecimiento.";
+                            } else {
+                                Toast.makeText(
+                                        this,
+                                        "No se ha podido enviar el correo.",
+                                        Toast.LENGTH_LONG
+                                ).show();
+                            }
 
-                                if (error != null && error.contains("invalid-email")) {
-                                    mensaje = "El formato del correo electrónico no es válido.";
-                                }
+                        } catch (Exception e) {
+                            Toast.makeText(this, "Error inesperado.", Toast.LENGTH_LONG).show();
+                        }
+                    },
+                    error -> {
+                        Toast.makeText(
+                                this,
+                                "Error con el servidor. Inténtalo más tarde.",
+                                Toast.LENGTH_LONG
+                        ).show();
+                    }
+            );
 
-                                Toast.makeText(this, mensaje, Toast.LENGTH_LONG).show();
-                            });
+            queue.add(request);
+
+        } catch (Exception e) {
+            Toast.makeText(this, "Error inesperado.", Toast.LENGTH_LONG).show();
+        }
     }
 }
