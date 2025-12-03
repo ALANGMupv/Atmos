@@ -66,7 +66,7 @@ $usuario = $_SESSION['usuario'];
                             </div>
                         </div>
                     </div>
-                    <button>Ver Mapa</button>
+                    <button onclick="window.location.href='mapaUser.php'">Ver Mapa</button>
                 </div>
 
                 <!-- Menú de acciones -->
