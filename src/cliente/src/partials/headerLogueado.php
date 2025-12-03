@@ -38,7 +38,7 @@ if (!isset($active))  { $active = null; }
                     MI PORTAL
                 </a>
 
-                <a href="mapas.php"
+                <a href="mapaUser.php"
                    class="nav-link <?php echo $active === 'mapas' ? 'is-active' : ''; ?>"
                     <?php echo $active === 'mapas' ? 'aria-current="page"' : ''; ?>>
                     MAPA CONTAMINACIÓN
