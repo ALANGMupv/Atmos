@@ -70,6 +70,23 @@ if (!$oobCode) {
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        /* ------------------------------
+           ESTILOS AÑADIDOS PARA EL MENSAJE
+           ------------------------------ */
+        #mensaje {
+            display:none;
+            margin-top:20px;
+            padding:15px;
+            border-radius:10px;
+            font-size:16px;
+            background:#D1FAE5;
+            color:#065F46;
+        }
+        #mensaje.error {
+            background:#FEE2E2;
+            color:#991B1B;
+        }
     </style>
 </head>
 
@@ -83,6 +100,9 @@ if (!$oobCode) {
     <h2>Verificando tu correo…</h2>
     <div class="loader"></div>
     <p>Un momento por favor.</p>
+
+    <!-- MENSAJE DE RESULTADO (OCULTO AL PRINCIPIO) -->
+    <div id="mensaje"></div>
 </div>
 
 <script type="module">
@@ -122,6 +142,9 @@ if (!$oobCode) {
      * @return void
      */
     async function verificarCorreo() {
+
+        const mensajeDiv = document.getElementById("mensaje");
+
         try {
             // Aplica el código de verificación en Firebase
             await applyActionCode(auth, oobCode);
@@ -136,13 +159,27 @@ if (!$oobCode) {
                 body: JSON.stringify({ oobCode })
             });
 
-            alert("Tu correo ha sido verificado con éxito.");
-            window.location.href = "login.php";
+            // MOSTRAR MENSAJE EN PANTALLA (sin alert)
+            mensajeDiv.textContent = "Tu correo ha sido verificado con éxito. Redirigiendo…";
+            mensajeDiv.classList.remove("error");
+            mensajeDiv.style.display = "block";
+
+            // Espera 2 segundos y redirige
+            setTimeout(() => {
+                window.location.href = "login.php";
+            }, 2000);
 
         } catch (e) {
             console.error(e);
-            alert("El enlace ha expirado o no es válido.");
-            window.location.href = "login.php";
+
+            // MENSAJE DE ERROR EN PANTALLA
+            mensajeDiv.textContent = "El enlace ha expirado o no es válido. Redirigiendo…";
+            mensajeDiv.classList.add("error");
+            mensajeDiv.style.display = "block";
+
+            setTimeout(() => {
+                window.location.href = "login.php";
+            }, 2500);
         }
     }
 
