@@ -1,15 +1,20 @@
 package org.jordi.btlealumnos2021;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -126,7 +131,7 @@ public class UserPageActivity extends FuncionesBaseActivity {
         );
 
         // ACTIVAR TOOLTIP DE LA CARITA
-        activarTooltipCarita(iconEstadoCalidad, txtEstadoCalidad);
+        activarMensajeCarita(iconEstadoCalidad, txtEstadoCalidad);
 
         // ---------------------------------------------------------------
         // SPINNER
@@ -766,40 +771,76 @@ public class UserPageActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * Nombre Método: activarTooltipCarita
+     * Nombre Método: activarMensajeCarita
      * Descripción:
-     *     Asocia un comportamiento tipo "tooltip" al icono de la carita de la gráfica.
+     *     Muestra un mensaje flotante (PopupWindow) junto a la carita,
+     *     sin bloquear la pantalla, imitando el estilo de la versión web.
      *
-     *     Cuando el usuario toca la carita:
-     *         - Se obtiene la categoría de calidad actual (texto bajo la carita)
-     *         - Se llama a mensajePorCategoria()
-     *         - Se muestra un Toast explicativo igual que el tooltip de la versión web
+     *     El popup aparece cerca del icono, tiene fondo blanco
+     *     con borde redondeado y se cierra automáticamente a los 3s.
      *
      * Entradas:
-     *     - iconCarita : ImageView que representa la carita del estado
-     *     - txtEstado  : TextView que contiene el texto de la categoría ("Buena", "Mala", etc.)
+     *     - iconCarita : ImageView que el usuario toca
+     *     - txtEstado  : Texto que contiene "Buena", "Mala", etc.
      *
      * Salidas:
-     *     - Ninguna. Actualiza la interfaz mediante un Toast.
+     *     - Muestra un popup ligero estilo tooltip.
      *
-     * Autora: Nerea Aguilar Forés
+     * Autor: Alan + ChatGPT
      * Fecha: 06/12/2025
      */
-    private void activarTooltipCarita(ImageView iconCarita, TextView txtEstado) {
+    private void activarMensajeCarita(ImageView iconCarita, TextView txtEstado) {
 
         iconCarita.setOnClickListener(v -> {
 
-            // Categoría actual mostrada bajo la carita
             String categoria = txtEstado.getText().toString().trim();
-
-            // Obtener mensaje explicativo
             String mensaje = mensajePorCategoria(categoria);
 
-            // Mostrar mensaje al usuario
-            Toast.makeText(UserPageActivity.this, mensaje, Toast.LENGTH_LONG).show();
+            // Inflar layout
+            View popupView = getLayoutInflater().inflate(R.layout.mensaje_carita, null);
+
+            TextView txt = popupView.findViewById(R.id.txtMensajeCarita);
+            txt.setText(mensaje);
+
+            // Medir popup antes
+            popupView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+            int popupWidth = popupView.getMeasuredWidth();
+            int popupHeight = popupView.getMeasuredHeight();
+
+            // Crear PopupWindow
+            final PopupWindow popupWindow = new PopupWindow(
+                    popupView,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    false
+            );
+
+            popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            popupWindow.setOutsideTouchable(true);
+
+            // Obtener posición ABSOLUTA del icono
+            int[] loc = new int[2];
+            iconCarita.getLocationOnScreen(loc);
+
+            int iconX = loc[0];
+            int iconY = loc[1];
+
+            // -----------------------------
+            // POSICIÓN PERFECTA:
+            // A la izquierda, MISMA ALTURA
+            // -----------------------------
+            int popupX = iconX - popupWidth - 40;    // ajusta más o menos a la izquierda
+            int popupY = iconY - (popupHeight / 2) + (iconCarita.getHeight() / 2);
+
+            // Mostrar popup EXACTAMENTE ahí
+            popupWindow.showAtLocation(iconCarita, Gravity.NO_GRAVITY, popupX, popupY);
+
+            // Fade in
+            popupView.setAlpha(0f);
+            popupView.animate().alpha(1f).setDuration(150).start();
+
+            // Auto cerrar
+            new android.os.Handler().postDelayed(popupWindow::dismiss, 3000);
         });
     }
-
-
-
 }
