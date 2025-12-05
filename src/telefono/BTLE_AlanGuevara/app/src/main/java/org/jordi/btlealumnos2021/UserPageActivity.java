@@ -125,6 +125,8 @@ public class UserPageActivity extends FuncionesBaseActivity {
                 idUsuario
         );
 
+        // ACTIVAR TOOLTIP DE LA CARITA
+        activarTooltipCarita(iconEstadoCalidad, txtEstadoCalidad);
 
         // ---------------------------------------------------------------
         // SPINNER
@@ -718,6 +720,83 @@ public class UserPageActivity extends FuncionesBaseActivity {
             public void onErrorInesperado() {
                 Log.e("UserPageActivity", "Error inesperado en estadoSenalServidor()");
             }
+        });
+    }
+
+    // Mensajes caritas
+    /**
+     * Nombre Método: mensajePorCategoria
+     * Descripción:
+     *     Devuelve el mensaje descriptivo asociado a cada categoría de calidad
+     *     del aire, similar a los tooltips usados en la versión web.
+     *
+     *     Los textos explican de forma sencilla el estado promedio de la calidad
+     *     del aire según la categoría actual (Buena, Moderada, Insalubre o Mala).
+     *
+     * Entradas:
+     *     - categoria : Texto que indica la calidad actual ("Buena", "Regular",
+     *                   "Moderada", "Insalubre" o "Mala").
+     *
+     * Salidas:
+     *     - String con el mensaje explicativo que debe mostrarse al usuario.
+     *
+     * Autora: Nerea Aguilar Forés
+     * Fecha: 06/12/2025
+     */
+    private String mensajePorCategoria(String categoria) {
+
+        switch (categoria) {
+
+            case "Buena":
+                return "En promedio, la calidad del aire es buena.";
+
+            case "Regular":     // versión usada en Android
+            case "Moderada":    // versión usada en la web (compatibilidad)
+                return "En promedio, la calidad del aire es moderada. Las personas sensibles pueden notar molestias.";
+
+            case "Insalubre":
+                return "En promedio, la calidad del aire es insalubre con varios picos de contaminación.";
+
+            case "Mala":
+                return "En promedio, la calidad del aire es mala. Evita la exposición prolongada.";
+
+            default:
+                return "Aún no hay suficiente información para evaluar la calidad del aire.";
+        }
+    }
+
+    /**
+     * Nombre Método: activarTooltipCarita
+     * Descripción:
+     *     Asocia un comportamiento tipo "tooltip" al icono de la carita de la gráfica.
+     *
+     *     Cuando el usuario toca la carita:
+     *         - Se obtiene la categoría de calidad actual (texto bajo la carita)
+     *         - Se llama a mensajePorCategoria()
+     *         - Se muestra un Toast explicativo igual que el tooltip de la versión web
+     *
+     * Entradas:
+     *     - iconCarita : ImageView que representa la carita del estado
+     *     - txtEstado  : TextView que contiene el texto de la categoría ("Buena", "Mala", etc.)
+     *
+     * Salidas:
+     *     - Ninguna. Actualiza la interfaz mediante un Toast.
+     *
+     * Autora: Nerea Aguilar Forés
+     * Fecha: 06/12/2025
+     */
+    private void activarTooltipCarita(ImageView iconCarita, TextView txtEstado) {
+
+        iconCarita.setOnClickListener(v -> {
+
+            // Categoría actual mostrada bajo la carita
+            String categoria = txtEstado.getText().toString().trim();
+
+            // Obtener mensaje explicativo
+            String mensaje = mensajePorCategoria(categoria);
+
+            // Mostrar mensaje al usuario
+            Toast.makeText(UserPageActivity.this, mensaje, Toast.LENGTH_LONG).show();
         });
     }
 
