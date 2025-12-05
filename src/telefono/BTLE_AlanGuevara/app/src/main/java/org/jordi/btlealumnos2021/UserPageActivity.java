@@ -1,15 +1,20 @@
 package org.jordi.btlealumnos2021;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -125,6 +130,8 @@ public class UserPageActivity extends FuncionesBaseActivity {
                 idUsuario
         );
 
+        // ACTIVAR TOOLTIP DE LA CARITA
+        activarMensajeCarita(iconEstadoCalidad, txtEstadoCalidad);
 
         // ---------------------------------------------------------------
         // SPINNER
@@ -721,6 +728,119 @@ public class UserPageActivity extends FuncionesBaseActivity {
         });
     }
 
+    // Mensajes caritas
+    /**
+     * Nombre Método: mensajePorCategoria
+     * Descripción:
+     *     Devuelve el mensaje descriptivo asociado a cada categoría de calidad
+     *     del aire, similar a los tooltips usados en la versión web.
+     *
+     *     Los textos explican de forma sencilla el estado promedio de la calidad
+     *     del aire según la categoría actual (Buena, Moderada, Insalubre o Mala).
+     *
+     * Entradas:
+     *     - categoria : Texto que indica la calidad actual ("Buena", "Regular",
+     *                   "Moderada", "Insalubre" o "Mala").
+     *
+     * Salidas:
+     *     - String con el mensaje explicativo que debe mostrarse al usuario.
+     *
+     * Autora: Nerea Aguilar Forés
+     * Fecha: 06/12/2025
+     */
+    private String mensajePorCategoria(String categoria) {
 
+        switch (categoria) {
 
+            case "Buena":
+                return "En promedio, la calidad del aire es buena.";
+
+            case "Regular":     // versión usada en Android
+            case "Moderada":    // versión usada en la web (compatibilidad)
+                return "En promedio, la calidad del aire es moderada. Las personas sensibles pueden notar molestias.";
+
+            case "Insalubre":
+                return "En promedio, la calidad del aire es insalubre con varios picos de contaminación.";
+
+            case "Mala":
+                return "En promedio, la calidad del aire es mala. Evita la exposición prolongada.";
+
+            default:
+                return "Aún no hay suficiente información para evaluar la calidad del aire.";
+        }
+    }
+
+    /**
+     * Nombre Método: activarMensajeCarita
+     * Descripción:
+     *     Muestra un mensaje flotante (PopupWindow) junto a la carita,
+     *     sin bloquear la pantalla, imitando el estilo de la versión web.
+     *
+     *     El popup aparece cerca del icono, tiene fondo blanco
+     *     con borde redondeado y se cierra automáticamente a los 3s.
+     *
+     * Entradas:
+     *     - iconCarita : ImageView que el usuario toca
+     *     - txtEstado  : Texto que contiene "Buena", "Mala", etc.
+     *
+     * Salidas:
+     *     - Muestra un popup ligero estilo tooltip.
+     *
+     * Autor: Alan + ChatGPT
+     * Fecha: 06/12/2025
+     */
+    private void activarMensajeCarita(ImageView iconCarita, TextView txtEstado) {
+
+        iconCarita.setOnClickListener(v -> {
+
+            String categoria = txtEstado.getText().toString().trim();
+            String mensaje = mensajePorCategoria(categoria);
+
+            // Inflar layout
+            View popupView = getLayoutInflater().inflate(R.layout.mensaje_carita, null);
+
+            TextView txt = popupView.findViewById(R.id.txtMensajeCarita);
+            txt.setText(mensaje);
+
+            // Medir popup antes
+            popupView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+            int popupWidth = popupView.getMeasuredWidth();
+            int popupHeight = popupView.getMeasuredHeight();
+
+            // Crear PopupWindow
+            final PopupWindow popupWindow = new PopupWindow(
+                    popupView,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    false
+            );
+
+            popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            popupWindow.setOutsideTouchable(true);
+
+            // Obtener posición ABSOLUTA del icono
+            int[] loc = new int[2];
+            iconCarita.getLocationOnScreen(loc);
+
+            int iconX = loc[0];
+            int iconY = loc[1];
+
+            // -----------------------------
+            // POSICIÓN PERFECTA:
+            // A la izquierda, MISMA ALTURA
+            // -----------------------------
+            int popupX = iconX - popupWidth - 40;    // ajusta más o menos a la izquierda
+            int popupY = iconY - (popupHeight / 2) + (iconCarita.getHeight() / 2);
+
+            // Mostrar popup EXACTAMENTE ahí
+            popupWindow.showAtLocation(iconCarita, Gravity.NO_GRAVITY, popupX, popupY);
+
+            // Fade in
+            popupView.setAlpha(0f);
+            popupView.animate().alpha(1f).setDuration(150).start();
+
+            // Auto cerrar
+            new android.os.Handler().postDelayed(popupWindow::dismiss, 3000);
+        });
+    }
 }
