@@ -150,7 +150,26 @@ public class InicioSesionActivity extends FuncionesBaseActivity {
                         return;
                     }
 
-                    // 1. Obtener token ID
+                    /* -------- Bloqueo por email no verificado -------- */
+                    // Recargar usuario para que Firebase actualice el estado real
+                    user.reload().addOnCompleteListener(task -> {
+
+                        if (!user.isEmailVerified()) {
+                            Toast.makeText(this,
+                                    "Verifica tu correo antes de iniciar sesión",
+                                    Toast.LENGTH_LONG).show();
+                            return;
+                        }
+
+                        // SI está verificado, ahora sí obtenemos token fresco
+                        user.getIdToken(true)
+                                .addOnSuccessListener(result ->
+                                        enviarLoginAlServidor(result.getToken())
+                                );
+                    });
+                    /* ---------------------------------------------------- */
+
+                    // Obtener token ID
                     user.getIdToken(true)
                             .addOnSuccessListener(result ->
                                     enviarLoginAlServidor(result.getToken())
@@ -181,13 +200,22 @@ public class InicioSesionActivity extends FuncionesBaseActivity {
                     @Override
                     public void onLoginOk(JSONObject usuario) {
 
-                        // 1) Guardar sesión local
+                        /* Solo se puede acceder si el usuario ha verificado el correo */
+                        int estado = usuario.optInt("estado", 0);
+                        if (estado == 0) {
+                            Toast.makeText(InicioSesionActivity.this,
+                                    "Tu correo aún no está verificado",
+                                    Toast.LENGTH_LONG).show();
+                            return;
+                        }
+
+                        // Guardar sesión local
                         SesionManager.guardarSesion(InicioSesionActivity.this, usuario);
 
-                        // 3) Ir a mapas
+                        // Ir a mapas
                         startActivity(new Intent(InicioSesionActivity.this, MapasActivity.class));
 
-                        // 4) Cerrar pantalla de login
+                        // Cerrar pantalla de login
                         finish();
                     }
 
@@ -387,7 +415,7 @@ public class InicioSesionActivity extends FuncionesBaseActivity {
      * Entradas:
      * - Ninguna.
      * Salidas:
-     * - No retorna nada. Realiza navegación a UserPageActivity si el token existe.
+     * - No retorna nada. Realiza navegación a MapasActivity si el token existe.
      * Autora: Nerea Aguilar Forés
      */
     private void accederConSesionGuardada() {
@@ -396,7 +424,7 @@ public class InicioSesionActivity extends FuncionesBaseActivity {
             JSONObject usuario = SesionManager.obtenerSesion(this);
 
             if (usuario != null) {
-                Intent intent = new Intent(this, UserPageActivity.class);
+                Intent intent = new Intent(this, MapasActivity.class);
                 startActivity(intent);
                 finish();
             } else {
