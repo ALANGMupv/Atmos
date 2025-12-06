@@ -188,8 +188,8 @@ elPublicador.laEmisora.emitirAnuncioIBeaconLibre(datos, 21);
 */
 
 
-  esperar( 2500 ); // Ahora mismo sirve para que a Android le de tiempo a procesar y enviar el anuncio a la api
-  // Le añado 500ms más por precaución, no pierde y Android detecta todos los anuncios, pero como he tenido problemas: “Hombre prevenido vale por dos.”
+  esperar(2000); 
+
 
   // elPublicador.laEmisora.detenerAnuncio(); ESTO YA NO ME SIRVE, PUEDE DETENER EL ANUNCIO PERO NO LIMPIA BUFFER POR LO QUE NO EMITE UNO NUEVO, AHORA LIMPIO YA BUFFERS EN emitirAnuncioIBeacon()
   
