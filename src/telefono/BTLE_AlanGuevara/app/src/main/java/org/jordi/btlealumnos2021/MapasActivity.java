@@ -5,12 +5,14 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
 import org.osmdroid.config.Configuration;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.views.MapView;
 
 /**
@@ -26,18 +28,19 @@ import org.osmdroid.views.MapView;
  */
 public class MapasActivity extends FuncionesBaseActivity {
 
-    /** @brief Código interno para identificar la solicitud de permisos BLE. */
+    /**
+     * @brief Código interno para identificar la solicitud de permisos BLE.
+     */
     private static final int CODIGO_PERMISOS_BLE = 1001;
 
     /**
+     * @param savedInstanceState Estado previo en caso de recreación.
      * @brief Método llamado al crear la Activity.
-     *
+     * <p>
      * - Configura el layout.
      * - Ajusta el header y el menú inferior.
      * - Lanza la verificación de permisos BLE.
      * - Configura el botón de información sobre contaminantes.
-     *
-     * @param savedInstanceState Estado previo en caso de recreación.
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,9 +78,8 @@ public class MapasActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * @brief Comprueba si todos los permisos necesarios para BLE están concedidos.
-     *
      * @return true si todos los permisos están aprobados; false en caso contrario.
+     * @brief Comprueba si todos los permisos necesarios para BLE están concedidos.
      */
     private boolean permisosBLEOK() {
 
@@ -97,8 +99,8 @@ public class MapasActivity extends FuncionesBaseActivity {
 
     /**
      * @brief Verifica si los permisos BLE están concedidos y, si es así,
-     *        inicia el servicio de detección de beacons.
-     *
+     * inicia el servicio de detección de beacons.
+     * <p>
      * Si los permisos no están concedidos, se solicitan al usuario.
      */
     private void verificarPermisosYArrancarServicio() {
@@ -127,11 +129,10 @@ public class MapasActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * @brief Callback que recibe el resultado del diálogo de permisos.
-     *
      * @param requestCode Código identificador de la solicitud.
-     * @param permisos Lista de permisos solicitados.
-     * @param resultados Resultado de cada permiso (concedido o denegado).
+     * @param permisos    Lista de permisos solicitados.
+     * @param resultados  Resultado de cada permiso (concedido o denegado).
+     * @brief Callback que recibe el resultado del diálogo de permisos.
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permisos, @NonNull int[] resultados) {
@@ -159,64 +160,102 @@ public class MapasActivity extends FuncionesBaseActivity {
 
     /**
      * @brief Inicia el ServicioDeteccionBeacons como servicio en primer plano.
-     *
      * @note Este servicio requiere permisos BLE y location para funcionar.
-     *       En Android 12+ es obligatorio iniciarlo mediante startForegroundService().
+     * En Android 12+ es obligatorio iniciarlo mediante startForegroundService().
      */
     private void iniciarServicioBeacons() {
         Intent s = new Intent(MapasActivity.this, ServicioDeteccionBeacons.class);
         startForegroundService(s); ///< Obligatorio para servicios BLE en Android 12+
     }
 
+    // ------------------ MAPA CONTAMINACIÓN ------------------
+
     /**
      * @brief Inicializa el mapa OSM en su estado básico
+     * @date 07-12-2025
      */
     private void inicializarMapa() {
 
         MapView mapa = findViewById(R.id.mapaOSM);
 
-        mapa.setTileSource(org.osmdroid.tileprovider.tilesource.TileSourceFactory.MAPNIK);
+        // Usa 8 hilos para descargar tiles (más rápido que el valor por defecto)
+        Configuration.getInstance().setTileDownloadThreads((short) 8);
+
+        // Permite hasta 100 descargas en cola antes de procesarse
+        Configuration.getInstance().setTileDownloadMaxQueueSize((short) 100);
+
+        // Cantidad de tiles cacheados en memoria para evitar recargar
+        Configuration.getInstance().setCacheMapTileCount((short) 12);
+
+        // Escala los tiles según la densidad de pantalla (mejor nitidez)
+        mapa.setTilesScaledToDpi(true);
+
+        // Habilita uso de datos móviles/WiFi para descargar tiles
+        mapa.setUseDataConnection(true);
+
+        // Permite zoom con dos dedos y gestos multitouch
         mapa.setMultiTouchControls(true);
+
+        // Activa aceleración por hardware para mover el mapa más fluido
+        mapa.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+
+        // Usa la fuente de mapa MAPNIK (rápida y estándar de OpenStreetMap)
+        mapa.setTileSource(TileSourceFactory.MAPNIK);
+
+        // Zoom por defecto
         mapa.getController().setZoom(13.0);
 
-        // Vista inicial a Gandía (como en Leaflet)
+        // Vista inicial a Gandía
         mapa.getController().setCenter(
-                new org.osmdroid.util.GeoPoint(38.995, -0.160) // Ajusta si quieres otro punto
+                new org.osmdroid.util.GeoPoint(38.995, -0.160)
         );
 
-        // Geolocalización
+        // Geolocalización (cuando se le da al botón en el mapa)
         findViewById(R.id.btnMiUbicacion).setOnClickListener(v -> {
             pedirUbicacion(mapa);
         });
     }
 
     /**
-     * @brief Solicita la ubicación del usuario y centra el mapa.
-     * @param mapa Referencia al MapView OSM.
+     * Solicita la ubicación actual del usuario y centra el mapa en ese punto.
+     *
+     * @param mapa Vista del mapa OSM donde se hará el centrado.
      */
     private void pedirUbicacion(MapView mapa) {
 
+        // Comprobamos si el permiso de ubicación fina está concedido.
+        // Si no lo está, se solicita al usuario.
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
 
+            // Pedimos el permiso de ubicación (solo este, porque es el necesario).
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 2002);
-            return;
+            return; // Salimos para esperar la respuesta del usuario.
         }
 
-        android.location.LocationManager lm = (android.location.LocationManager)
-                getSystemService(LOCATION_SERVICE);
+        // Obtenemos el gestor de localización del sistema.
+        android.location.LocationManager lm =
+                (android.location.LocationManager) getSystemService(LOCATION_SERVICE);
 
-        android.location.Location loc = lm.getLastKnownLocation(android.location.LocationManager.GPS_PROVIDER);
+        // Intentamos obtener la última ubicación conocida vía GPS.
+        // Puede devolver null si el GPS nunca se ha usado o está desactivado.
+        android.location.Location loc =
+                lm.getLastKnownLocation(android.location.LocationManager.GPS_PROVIDER);
 
         if (loc != null) {
+            // Si existe una ubicación válida, centramos el mapa suavemente (animación).
             mapa.getController().animateTo(
                     new org.osmdroid.util.GeoPoint(loc.getLatitude(), loc.getLongitude())
             );
 
+            // Avisamos al usuario de que la acción tuvo éxito.
             Toast.makeText(this, "Ubicación centrada", Toast.LENGTH_SHORT).show();
+
         } else {
+            // Si no hay ubicación disponible, mostramos un mensaje de error.
             Toast.makeText(this, "No se pudo obtener la ubicación", Toast.LENGTH_SHORT).show();
         }
     }
 
+    // ---------------------------------------------------------
 }
