@@ -12,8 +12,15 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 
 import org.osmdroid.config.Configuration;
+import org.osmdroid.tileprovider.modules.MBTilesFileArchive;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.tileprovider.tilesource.XYTileSource;
+import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 
 /**
  * @class MapasActivity
@@ -244,9 +251,9 @@ public class MapasActivity extends FuncionesBaseActivity {
 
         if (loc != null) {
             // Si existe una ubicación válida, centramos el mapa suavemente (animación).
-            mapa.getController().animateTo(
-                    new org.osmdroid.util.GeoPoint(loc.getLatitude(), loc.getLongitude())
-            );
+            GeoPoint p = new GeoPoint(loc.getLatitude(), loc.getLongitude());
+            mapa.getController().setZoom(17.0);
+            mapa.getController().animateTo(p);
 
             // Avisamos al usuario de que la acción tuvo éxito.
             Toast.makeText(this, "Ubicación centrada", Toast.LENGTH_SHORT).show();
@@ -256,6 +263,5 @@ public class MapasActivity extends FuncionesBaseActivity {
             Toast.makeText(this, "No se pudo obtener la ubicación", Toast.LENGTH_SHORT).show();
         }
     }
-
     // ---------------------------------------------------------
 }
