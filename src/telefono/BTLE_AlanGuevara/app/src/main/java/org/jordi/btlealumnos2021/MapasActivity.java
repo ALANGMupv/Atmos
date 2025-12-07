@@ -252,7 +252,7 @@ public class MapasActivity extends FuncionesBaseActivity {
         if (loc != null) {
             // Si existe una ubicación válida, centramos el mapa suavemente (animación).
             GeoPoint p = new GeoPoint(loc.getLatitude(), loc.getLongitude());
-            mapa.getController().setZoom(17.0);
+            mapa.getController().setZoom(16.0);
             mapa.getController().animateTo(p);
 
             // Avisamos al usuario de que la acción tuvo éxito.
