@@ -4,10 +4,14 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+
+import org.osmdroid.config.Configuration;
+import org.osmdroid.views.MapView;
 
 /**
  * @class MapasActivity
@@ -38,6 +42,13 @@ public class MapasActivity extends FuncionesBaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // MUY IMPORTANTE: inicializar configuración de OSMDroid
+        Configuration.getInstance().load(
+                getApplicationContext(),
+                PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
+        );
+
         setContentView(R.layout.activity_mapas);
 
         /// Título del encabezado.
@@ -52,12 +63,15 @@ public class MapasActivity extends FuncionesBaseActivity {
          */
         runOnUiThread(() -> verificarPermisosYArrancarServicio());
 
-        /// Botón para abrir el panel de información de contaminantes.
+        /* Botón para abrir el panel de información de contaminantes. HAY QUE REACTIVARLO,
+        // CÓDIGO ANTIGUO EN GITHUB
         ImageView infoBtn = findViewById(R.id.infoContaminantes);
         infoBtn.setOnClickListener(v -> {
             Intent intent = new Intent(this, InfoContaminantesActivity.class);
             startActivity(intent);
-        });
+        });*/
+
+        inicializarMapa();
     }
 
     /**
@@ -153,4 +167,56 @@ public class MapasActivity extends FuncionesBaseActivity {
         Intent s = new Intent(MapasActivity.this, ServicioDeteccionBeacons.class);
         startForegroundService(s); ///< Obligatorio para servicios BLE en Android 12+
     }
+
+    /**
+     * @brief Inicializa el mapa OSM en su estado básico
+     */
+    private void inicializarMapa() {
+
+        MapView mapa = findViewById(R.id.mapaOSM);
+
+        mapa.setTileSource(org.osmdroid.tileprovider.tilesource.TileSourceFactory.MAPNIK);
+        mapa.setMultiTouchControls(true);
+        mapa.getController().setZoom(13.0);
+
+        // Vista inicial a Gandía (como en Leaflet)
+        mapa.getController().setCenter(
+                new org.osmdroid.util.GeoPoint(38.995, -0.160) // Ajusta si quieres otro punto
+        );
+
+        // Geolocalización
+        findViewById(R.id.btnMiUbicacion).setOnClickListener(v -> {
+            pedirUbicacion(mapa);
+        });
+    }
+
+    /**
+     * @brief Solicita la ubicación del usuario y centra el mapa.
+     * @param mapa Referencia al MapView OSM.
+     */
+    private void pedirUbicacion(MapView mapa) {
+
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 2002);
+            return;
+        }
+
+        android.location.LocationManager lm = (android.location.LocationManager)
+                getSystemService(LOCATION_SERVICE);
+
+        android.location.Location loc = lm.getLastKnownLocation(android.location.LocationManager.GPS_PROVIDER);
+
+        if (loc != null) {
+            mapa.getController().animateTo(
+                    new org.osmdroid.util.GeoPoint(loc.getLatitude(), loc.getLongitude())
+            );
+
+            Toast.makeText(this, "Ubicación centrada", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "No se pudo obtener la ubicación", Toast.LENGTH_SHORT).show();
+        }
+    }
+
 }

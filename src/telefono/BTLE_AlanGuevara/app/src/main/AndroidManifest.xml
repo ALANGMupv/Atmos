@@ -9,6 +9,7 @@
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -16,8 +17,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
-
-
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
 
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/>
@@ -39,13 +40,20 @@
         android:supportsRtl="true"
         android:theme="@style/Base.Theme.BTLE_AlanGuevara"
         android:networkSecurityConfig="@xml/network_security_config"
+        android:requestLegacyExternalStorage="true"
+        android:usesCleartextTraffic="true"
         >
-        <!-- Desde Android 12 es obligatorio indicar android:exported en actividades,
-     servicios o receivers con intent-filter. En MainActivity debe ser "true"
-     porque es la actividad de inicio accesible desde el sistema. -->
+        <!-- Esto de meta-data es para el mapa, ya veremos para qué -->
+
+        <meta-data
+            android:name="osmdroid.basePath"
+            android:value="osm"/>
+        <meta-data
+            android:name="osmdroid.cachePath"
+            android:value="osm/cache"/>
+
         <activity android:name=".MainActivity"
             android:exported="true"/>
-
 
         <activity android:name=".RegistroActivity"
             android:exported="true" />
