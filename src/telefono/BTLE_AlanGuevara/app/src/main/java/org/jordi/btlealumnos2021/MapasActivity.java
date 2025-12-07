@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -73,16 +75,99 @@ public class MapasActivity extends FuncionesBaseActivity {
          */
         runOnUiThread(() -> verificarPermisosYArrancarServicio());
 
-        /* Botón para abrir el panel de información de contaminantes. HAY QUE REACTIVARLO,
-        // CÓDIGO ANTIGUO EN GITHUB
-        ImageView infoBtn = findViewById(R.id.infoContaminantes);
-        infoBtn.setOnClickListener(v -> {
-            Intent intent = new Intent(this, InfoContaminantesActivity.class);
-            startActivity(intent);
-        });*/
-
+        /* Llamada al método que carga el mapa de leaflet */
         inicializarMapa();
+
+        /* ------------------- CONTAMINANTES -------------------*/
+        LinearLayout bottomSheet = findViewById(R.id.bottomSheetContaminantes);
+
+        // abrir
+        findViewById(R.id.chipContaminantes).setOnClickListener(v ->
+                bottomSheet.setVisibility(View.VISIBLE)
+        );
+
+        // cerrar
+        findViewById(R.id.btnCerrarContaminantes).setOnClickListener(v ->
+                bottomSheet.setVisibility(View.GONE)
+        );
+
+        // abrir info contaminantes
+        findViewById(R.id.btnInfoContaminantes).setOnClickListener(v ->
+                startActivity(new Intent(this, InfoContaminantesActivity.class))
+        );
+
+        /* ======== Seleccionar contaminantes (gases) ======== */
+
+        LinearLayout itemTodos = findViewById(R.id.itemTodos);
+        LinearLayout itemO3 = findViewById(R.id.itemO3);
+        LinearLayout itemNO2 = findViewById(R.id.itemNO2);
+        LinearLayout itemCO = findViewById(R.id.itemCO);
+        LinearLayout itemSO2 = findViewById(R.id.itemSO2);
+
+        // ENLACE AL TEXTO DEL CHIP SUPERIOR
+        TextView txtChip = findViewById(R.id.txtChipContaminantes);
+
+        // Listener común
+        // Listener común
+        View.OnClickListener listener = v -> {
+
+            // Cambia visualmente qué gas está seleccionado
+            seleccionarGas(v, itemTodos, itemO3, itemNO2, itemCO, itemSO2);
+
+            // CAMBIA EL TEXTO Y COLOR DEL CHIP SUPERIOR
+            if (v == itemTodos) {
+                txtChip.setText("Contaminantes");
+                txtChip.setTextColor(0xFF059669); // Verde Atmos por defecto
+            }
+            else if (v == itemO3) {
+                txtChip.setText("O₃");
+                txtChip.setTextColor(0xFF047857); // color cuando NO es "Todos"
+            }
+            else if (v == itemNO2) {
+                txtChip.setText("NO₂");
+                txtChip.setTextColor(0xFF047857);
+            }
+            else if (v == itemCO) {
+                txtChip.setText("CO");
+                txtChip.setTextColor(0xFF047857);
+            }
+            else if (v == itemSO2) {
+                txtChip.setText("SO₂");
+                txtChip.setTextColor(0xFF047857);
+            }
+        };
+
+        // Asignar listeners
+        itemTodos.setOnClickListener(listener);
+        itemO3.setOnClickListener(listener);
+        itemNO2.setOnClickListener(listener);
+        itemCO.setOnClickListener(listener);
+        itemSO2.setOnClickListener(listener);
+        /* ---------------- FIN SECCIÓN CONTAMINANTES -----------------*/
     }
+
+    /**
+     * @brief Cambia la selección visual de un elemento de gas.
+     * @param seleccionado Vista (LinearLayout) que el usuario ha seleccionado.
+     * @param todos Lista variable de todos los LinearLayout que forman parte del grupo.
+     */
+    private void seleccionarGas(View seleccionado, LinearLayout... todos) {
+
+        // Recorremos todos los elementos de la lista
+        for (LinearLayout item : todos) {
+
+            // Si este item es el que fue pulsado → lo marcamos como seleccionado
+            if (item == seleccionado) {
+                item.setBackgroundResource(R.drawable.bg_gasitem_selected);
+
+                // En caso contrario → lo dejamos con el estilo normal
+            } else {
+                item.setBackgroundResource(R.drawable.bg_gasitem);
+            }
+        }
+    }
+
+    // ------------------ PERMISOS BLE Y ARRANQUE SERVICIO ------------------
 
     /**
      * @return true si todos los permisos están aprobados; false en caso contrario.
@@ -174,6 +259,8 @@ public class MapasActivity extends FuncionesBaseActivity {
         Intent s = new Intent(MapasActivity.this, ServicioDeteccionBeacons.class);
         startForegroundService(s); ///< Obligatorio para servicios BLE en Android 12+
     }
+    // ---------------------------------------------------------
+
 
     // ------------------ MAPA CONTAMINACIÓN ------------------
 
