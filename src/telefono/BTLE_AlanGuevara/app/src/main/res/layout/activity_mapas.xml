@@ -153,9 +153,6 @@
     <!-- ==========================================================
          PANEL INFERIOR (BOTTOM SHEET) – CONTAMINANTES
          ========================================================== -->
-    <!-- ==========================================================
-      PANEL INFERIOR (BOTTOM SHEET) – CONTAMINANTES
- ========================================================== -->
     <LinearLayout
         android:id="@+id/bottomSheetContaminantes"
         android:layout_width="match_parent"
@@ -166,7 +163,7 @@
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintHeight_default="percent"
-        app:layout_constraintHeight_percent="0.45">
+        app:layout_constraintHeight_percent="0.55">
 
         <!-- TÍTULO + X cerrar -->
         <LinearLayout
@@ -372,6 +369,227 @@
     <!-- =========================================================
      AQUÍ ACABA PANEL INFERIOR (BOTTOM SHEET) – CONTAMINANTES
     ========================================================== -->
+
+    <!-- ==========================================================
+     PANEL INFERIOR (BOTTOM SHEET) – ÍNDICE DE CALIDAD
+    ========================================================== -->
+    <LinearLayout
+        android:id="@+id/bottomSheetIndice"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        android:background="@drawable/bg_bottomsheet"
+        android:padding="22dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHeight_default="percent"
+        app:layout_constraintHeight_percent="0.55">
+
+        <!-- TÍTULO + CERRAR -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="18dp">
+
+            <TextView
+                android:id="@+id/txtTituloIndice"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Índice de Calidad"
+                android:textSize="20sp"
+                android:textColor="#1F2B38"
+                android:fontFamily="@font/roboto_bold" />
+
+            <ImageView
+                android:id="@+id/btnCerrarIndice"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:padding="6dp"
+                android:src="@drawable/ic_close" />
+        </LinearLayout>
+
+        <!-- TEXTO DE CALIDAD -->
+        <TextView
+            android:id="@+id/txtCalidadIndice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Calidad Buena"
+            android:textSize="20sp"
+            android:gravity="center"
+            android:textColor="#059669"
+            android:layout_marginTop="6dp"
+            android:fontFamily="@font/roboto_bold" />
+
+
+        <!-- LISTA SCROLLEABLE -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.73"
+            android:paddingTop="18dp"
+            android:clipToPadding="false">
+
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- ITEM CALIDAD -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="32dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
+
+                    <View
+                        android:layout_width="10dp"
+                        android:layout_height="10dp"
+                        android:background="#10B981"
+                        android:layout_marginEnd="10dp"
+                        android:layout_marginStart="4dp"
+                        android:backgroundTint="#10B981"
+                        android:backgroundTintMode="src_in"/>
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Buena"
+                        android:textColor="#1F2B38"
+                        android:textSize="15sp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="70%"
+                        android:textSize="15sp"
+                        android:textColor="#64748B"/>
+                </LinearLayout>
+
+                <!-- MODERADA -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="32dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
+
+                    <View
+                        android:layout_width="10dp"
+                        android:layout_height="10dp"
+                        android:background="#FACC15"
+                        android:layout_marginEnd="10dp"
+                        android:layout_marginStart="4dp"/>
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Moderada"
+                        android:textColor="#1F2B38"
+                        android:textSize="15sp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="20%"
+                        android:textSize="15sp"
+                        android:textColor="#64748B"/>
+                </LinearLayout>
+
+                <!-- INSALUBRE -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="32dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
+
+                    <View
+                        android:layout_width="10dp"
+                        android:layout_height="10dp"
+                        android:background="#FB923C"
+                        android:layout_marginEnd="10dp"
+                        android:layout_marginStart="4dp"/>
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Insalubre"
+                        android:textColor="#1F2B38"
+                        android:textSize="15sp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="2%"
+                        android:textSize="15sp"
+                        android:textColor="#64748B"/>
+                </LinearLayout>
+
+                <!-- MALA -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="32dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <View
+                        android:layout_width="10dp"
+                        android:layout_height="10dp"
+                        android:background="#EF4444"
+                        android:layout_marginEnd="10dp"
+                        android:layout_marginStart="4dp"/>
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Mala"
+                        android:textColor="#1F2B38"
+                        android:textSize="15sp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="8%"
+                        android:textSize="15sp"
+                        android:textColor="#64748B"/>
+                </LinearLayout>
+
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- RECOMENDACIÓN -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="12dp"
+            android:background="#ECFDF5"
+            android:orientation="horizontal"
+            android:layout_marginTop="14dp"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="56dp"
+            android:backgroundTint="#D1FAE5">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Recomendación: La calidad del aire es excelente. Ideal para actividades al aire libre."
+                android:textColor="#065F46"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+    </LinearLayout>
+    <!-- ==========================================================
+         AQUÍ ACABA PANEL INFERIOR (BOTTOM SHEET) – ÍNDICE DE CALIDAD
+         ========================================================== -->
 
     <!-- ==========================================================
          BOTTOM NAV

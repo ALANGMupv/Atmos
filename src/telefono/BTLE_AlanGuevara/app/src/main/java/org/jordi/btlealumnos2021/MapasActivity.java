@@ -82,9 +82,10 @@ public class MapasActivity extends FuncionesBaseActivity {
         LinearLayout bottomSheet = findViewById(R.id.bottomSheetContaminantes);
 
         // abrir
-        findViewById(R.id.chipContaminantes).setOnClickListener(v ->
-                bottomSheet.setVisibility(View.VISIBLE)
-        );
+        findViewById(R.id.chipContaminantes).setOnClickListener(v -> {
+            cerrarTodosLosPopups();
+            bottomSheet.setVisibility(View.VISIBLE);
+        });
 
         // cerrar
         findViewById(R.id.btnCerrarContaminantes).setOnClickListener(v ->
@@ -144,6 +145,21 @@ public class MapasActivity extends FuncionesBaseActivity {
         itemCO.setOnClickListener(listener);
         itemSO2.setOnClickListener(listener);
         /* ---------------- FIN SECCIÓN CONTAMINANTES -----------------*/
+
+        /* ----------------- ÍNDICE CALIDAD DEL AIRE ------------------*/
+
+        //Abrir "popup"
+        findViewById(R.id.chipIndice).setOnClickListener(v -> {
+            cerrarTodosLosPopups();
+            findViewById(R.id.bottomSheetIndice).setVisibility(View.VISIBLE);
+        });
+
+        // Cerrar "popup"
+        findViewById(R.id.btnCerrarIndice).setOnClickListener(v ->
+                findViewById(R.id.bottomSheetIndice).setVisibility(View.GONE)
+        );
+
+        /* -------------- FIN SECCIÓN CALIDAD DEL AIRE ---------------*/
     }
 
     /**
@@ -350,5 +366,24 @@ public class MapasActivity extends FuncionesBaseActivity {
             Toast.makeText(this, "No se pudo obtener la ubicación", Toast.LENGTH_SHORT).show();
         }
     }
+
+    /**
+     * @brief Cierra todos los popups o paneles inferiores visibles.
+     *
+     * Este método oculta los distintos BottomSheets de la pantalla
+     * (contaminantes, índice, fecha —cuando exista—) para garantizar
+     * que solo un panel esté visible a la vez.
+     */
+    private void cerrarTodosLosPopups() {
+
+        // Oculta el panel de información de contaminantes
+        findViewById(R.id.bottomSheetContaminantes).setVisibility(View.GONE);
+
+        // Oculta el panel del índice de calidad del aire
+        findViewById(R.id.bottomSheetIndice).setVisibility(View.GONE);
+
+        // Aquí añadiremos el BottomSheet de "Fecha" cuando esté implementado
+    }
+
     // ---------------------------------------------------------
 }
