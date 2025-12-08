@@ -45,10 +45,10 @@ public class MapasActivity extends FuncionesBaseActivity {
      * @brief Variables privadas
      */
     private static final int CODIGO_PERMISOS_BLE = 1001;
-
     private String ultimaQuery = "";
     private android.os.Handler handler = new android.os.Handler();
     private Runnable tareaBusqueda = null;
+    private android.text.TextWatcher watcher;
 
 
 
@@ -173,6 +173,7 @@ public class MapasActivity extends FuncionesBaseActivity {
 
         /* ----------------- BUSCADOR DE UBICACIONES ------------------*/
         EditText edtBuscar = findViewById(R.id.edtBuscar);
+        ListView listaSugerencias = findViewById(R.id.listaSugerencias);
 
         edtBuscar.setOnEditorActionListener((v, actionId, event) -> {
             String texto = edtBuscar.getText().toString().trim();
@@ -182,8 +183,6 @@ public class MapasActivity extends FuncionesBaseActivity {
             return true;
         });
 
-        ListView listaSugerencias = findViewById(R.id.listaSugerencias);
-
         ArrayAdapter<String> adapterSugerencias = new ArrayAdapter<>(
                 this, android.R.layout.simple_list_item_1, new ArrayList<>());
 
@@ -192,7 +191,7 @@ public class MapasActivity extends FuncionesBaseActivity {
         /**
         * @brief Listener que detecta cambios en el texto para autocompletar.
         */
-        edtBuscar.addTextChangedListener(new android.text.TextWatcher() {
+        watcher = new android.text.TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
@@ -228,15 +227,20 @@ public class MapasActivity extends FuncionesBaseActivity {
                 // Espera 300ms antes de llamar a Nominatim → MUCHÍSIMO MÁS FLUIDO
                 handler.postDelayed(tareaBusqueda, 300);
             }
-
             @Override
             public void afterTextChanged(android.text.Editable s) {}
-        });
+        };
+
+        edtBuscar.addTextChangedListener(watcher);
 
         // Ocultar sugerencias al perder el foco
         edtBuscar.setOnFocusChangeListener((v, hasFocus) -> {
-            if (!hasFocus) listaSugerencias.setVisibility(View.GONE);
+            if (!hasFocus) {
+                handler.removeCallbacks(tareaBusqueda); // Cancela búsquedas pendientes
+                listaSugerencias.setVisibility(View.GONE);
+            }
         });
+
 
         /*----------------------------------------------------------------------------*/
 
@@ -247,14 +251,21 @@ public class MapasActivity extends FuncionesBaseActivity {
         listaSugerencias.setOnItemClickListener((parent, view, position, id) -> {
             String seleccionado = adapterSugerencias.getItem(position);
 
+            // Desactivar textWatcher para evitar que vuelva a aparecer
+            edtBuscar.removeTextChangedListener(watcher);
+
             edtBuscar.setText(seleccionado);
-            ultimaQuery = seleccionado;
+            edtBuscar.clearFocus();
+
+            // Reactivar textWatcher
+            edtBuscar.addTextChangedListener(watcher);
 
             listaSugerencias.setVisibility(View.GONE);
             adapterSugerencias.clear();
 
             buscarUbicacion(seleccionado);
         });
+
         /* -------------- FIN SECCIÓN BUSCADOR DE UBICACIONES ---------------*/
     }
 
