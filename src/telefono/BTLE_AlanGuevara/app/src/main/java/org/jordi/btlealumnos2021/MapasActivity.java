@@ -6,8 +6,11 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,10 +22,12 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.tileprovider.tilesource.XYTileSource;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.Marker;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 
 /**
  * @class MapasActivity
@@ -33,14 +38,19 @@ import java.io.InputStream;
  * el usuario ha concedido los permisos necesarios para realizar escaneo BLE en
  * segundo plano. Si no están concedidos, se solicitan al usuario.
  * @author Alan Guevara Martinez
- * @date 05/12/2025
+ * @date 05/12/2025 (fecha inicio)
  */
 public class MapasActivity extends FuncionesBaseActivity {
-
     /**
-     * @brief Código interno para identificar la solicitud de permisos BLE.
+     * @brief Variables privadas
      */
     private static final int CODIGO_PERMISOS_BLE = 1001;
+
+    private String ultimaQuery = "";
+    private android.os.Handler handler = new android.os.Handler();
+    private Runnable tareaBusqueda = null;
+
+
 
     /**
      * @param savedInstanceState Estado previo en caso de recreación.
@@ -160,6 +170,92 @@ public class MapasActivity extends FuncionesBaseActivity {
         );
 
         /* -------------- FIN SECCIÓN CALIDAD DEL AIRE ---------------*/
+
+        /* ----------------- BUSCADOR DE UBICACIONES ------------------*/
+        EditText edtBuscar = findViewById(R.id.edtBuscar);
+
+        edtBuscar.setOnEditorActionListener((v, actionId, event) -> {
+            String texto = edtBuscar.getText().toString().trim();
+            if (!texto.isEmpty()) {
+                buscarUbicacion(texto);
+            }
+            return true;
+        });
+
+        ListView listaSugerencias = findViewById(R.id.listaSugerencias);
+
+        ArrayAdapter<String> adapterSugerencias = new ArrayAdapter<>(
+                this, android.R.layout.simple_list_item_1, new ArrayList<>());
+
+        listaSugerencias.setAdapter(adapterSugerencias);
+
+        /**
+        * @brief Listener que detecta cambios en el texto para autocompletar.
+        */
+        edtBuscar.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                String texto = s.toString().trim();
+                ultimaQuery = texto;
+
+                // Si no hay texto → ocultar sugerencias
+                if (texto.length() < 3) {
+                    listaSugerencias.setVisibility(View.GONE);
+                    return;
+                }
+
+                // Cancelamos la última búsqueda programada
+                if (tareaBusqueda != null) handler.removeCallbacks(tareaBusqueda);
+
+                // Programamos una nueva búsqueda con retraso (debounce)
+                tareaBusqueda = () -> {
+                    autocompletar(texto, resultados -> {
+
+                        // Ignorar resultados que no coincidan con la última query
+                        if (!texto.equals(ultimaQuery)) return;
+
+                        adapterSugerencias.clear();
+                        adapterSugerencias.addAll(resultados);
+                        adapterSugerencias.notifyDataSetChanged();
+                        listaSugerencias.setVisibility(View.VISIBLE);
+                    });
+                };
+
+                // Espera 300ms antes de llamar a Nominatim → MUCHÍSIMO MÁS FLUIDO
+                handler.postDelayed(tareaBusqueda, 300);
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {}
+        });
+
+        // Ocultar sugerencias al perder el foco
+        edtBuscar.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) listaSugerencias.setVisibility(View.GONE);
+        });
+
+        /*----------------------------------------------------------------------------*/
+
+
+        /**
+        * @brief Cuando el usuario toca una sugerencia → usarla como búsqueda
+        */
+        listaSugerencias.setOnItemClickListener((parent, view, position, id) -> {
+            String seleccionado = adapterSugerencias.getItem(position);
+
+            edtBuscar.setText(seleccionado);
+            ultimaQuery = seleccionado;
+
+            listaSugerencias.setVisibility(View.GONE);
+            adapterSugerencias.clear();
+
+            buscarUbicacion(seleccionado);
+        });
+        /* -------------- FIN SECCIÓN BUSCADOR DE UBICACIONES ---------------*/
     }
 
     /**
@@ -333,36 +429,46 @@ public class MapasActivity extends FuncionesBaseActivity {
      */
     private void pedirUbicacion(MapView mapa) {
 
-        // Comprobamos si el permiso de ubicación fina está concedido.
-        // Si no lo está, se solicita al usuario.
+        // Comprobamos si el permiso de ubicación está concedido.
+        // Si no lo está, lo pedimos y salimos.
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
 
-            // Pedimos el permiso de ubicación (solo este, porque es el necesario).
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 2002);
-            return; // Salimos para esperar la respuesta del usuario.
+            return;
         }
 
-        // Obtenemos el gestor de localización del sistema.
+        // Accedemos al servicio de localización del sistema
         android.location.LocationManager lm =
                 (android.location.LocationManager) getSystemService(LOCATION_SERVICE);
 
-        // Intentamos obtener la última ubicación conocida vía GPS.
-        // Puede devolver null si el GPS nunca se ha usado o está desactivado.
+        // Intentamos obtener la última ubicación conocida vía GPS
         android.location.Location loc =
                 lm.getLastKnownLocation(android.location.LocationManager.GPS_PROVIDER);
 
         if (loc != null) {
-            // Si existe una ubicación válida, centramos el mapa suavemente (animación).
+
+            // Convertimos la ubicación a un GeoPoint de OSMDroid
             GeoPoint p = new GeoPoint(loc.getLatitude(), loc.getLongitude());
-            mapa.getController().setZoom(16.0);
+
+            // Acercamos el zoom y animamos el mapa hasta la posición del usuario
+            mapa.getController().setZoom(17.0);
             mapa.getController().animateTo(p);
 
-            // Avisamos al usuario de que la acción tuvo éxito.
+            // Creamos un marcador en la ubicación del usuario
+            Marker marker = new Marker(mapa);
+            marker.setPosition(p);
+            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+            marker.setTitle("Tu ubicación");
+
+            // Añadimos el marcador al mapa y lo refrescamos
+            mapa.getOverlays().add(marker);
+            mapa.invalidate();
+
             Toast.makeText(this, "Ubicación centrada", Toast.LENGTH_SHORT).show();
 
         } else {
-            // Si no hay ubicación disponible, mostramos un mensaje de error.
+            // Si no hay ubicación disponible → informamos al usuario
             Toast.makeText(this, "No se pudo obtener la ubicación", Toast.LENGTH_SHORT).show();
         }
     }
@@ -384,6 +490,143 @@ public class MapasActivity extends FuncionesBaseActivity {
 
         // Aquí añadiremos el BottomSheet de "Fecha" cuando esté implementado
     }
+
+    /**
+     * @brief Busca una dirección o lugar a partir de un texto y centra el mapa en ese punto.
+     *
+     * Este método utiliza el Geocoder de Android para convertir el texto introducido
+     * por el usuario (nombre de calle, ciudad, punto de interés…) en coordenadas
+     * geográficas (latitud y longitud). Si encuentra un resultado válido, mueve el
+     * mapa OSMDroid hasta esa ubicación y aplica un zoom adecuado.
+     *
+     * @param textoBuscado Texto introducido por el usuario que representa la ubicación a buscar.
+     */
+    private void buscarUbicacion(String textoBuscado) {
+
+        MapView mapa = findViewById(R.id.mapaOSM);
+
+        // Hacemos la petición de red en un hilo secundario (Nominatim no permite llamadas en el UI thread)
+        new Thread(() -> {
+            try {
+
+                // Construimos la URL de búsqueda en Nominatim (OpenStreetMap)
+                String url =
+                        "https://nominatim.openstreetmap.org/search?format=json&q=" +
+                                java.net.URLEncoder.encode(textoBuscado, "UTF-8") +
+                                "&limit=1";
+
+                // Abrimos la conexión HTTP
+                java.net.URL u = new java.net.URL(url);
+                java.net.HttpURLConnection conn = (java.net.HttpURLConnection) u.openConnection();
+                conn.setRequestProperty("User-Agent", "AtmosApp/1.0"); // Obligatorio para Nominatim
+
+                // Leemos la respuesta completa en formato JSON
+                java.io.InputStream is = conn.getInputStream();
+                String json = new java.util.Scanner(is).useDelimiter("\\A").next();
+
+                // Convertimos la respuesta a un array JSON
+                org.json.JSONArray arr = new org.json.JSONArray(json);
+
+                // Si no hay resultados → avisamos en UI
+                if (arr.length() == 0) {
+                    runOnUiThread(() ->
+                            Toast.makeText(this, "No se encontró la ubicación", Toast.LENGTH_SHORT).show()
+                    );
+                    return;
+                }
+
+                // Tomamos el primer resultado devuelto
+                org.json.JSONObject obj = arr.getJSONObject(0);
+
+                // Extraemos latitud y longitud
+                double lat = obj.getDouble("lat");
+                double lon = obj.getDouble("lon");
+
+                GeoPoint destino = new GeoPoint(lat, lon);
+
+                // Hilo principal
+                runOnUiThread(() -> {
+
+                    // Centramos el mapa y ajustamos el zoom
+                    mapa.getController().setZoom(16.0);
+                    mapa.getController().animateTo(destino);
+
+                    // Preparamos un marcador en el punto encontrado
+                    Marker marker = new Marker(mapa);
+                    marker.setPosition(destino);
+                    marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+                    marker.setTitle(textoBuscado);
+
+                    // Añadimos el marcador y refrescamos el mapa
+                    mapa.getOverlays().add(marker);
+                    mapa.invalidate();
+
+                    Toast.makeText(this, "Ubicación encontrada", Toast.LENGTH_SHORT).show();
+                });
+
+            } catch (Exception e) {
+                e.printStackTrace(); // Errores de red / JSON / formato
+            }
+        }).start();
+    }
+
+
+    /**
+     * @brief Obtiene sugerencias de ubicaciones desde Nominatim (OSM) para autocompletado.
+     *
+     * @param query Texto parcial introducido por el usuario en el buscador.
+     * @param callback Función callback que recibirá la lista de sugerencias.
+     *
+     * @details
+     * Realiza una petición HTTP a la API de Nominatim buscando coincidencias
+     * y devuelve hasta 5 resultados. Es ideal para mostrar autocompletado estilo Google Maps.
+     *
+     * @note Obligatorio enviar "User-Agent" en Nominatim o devuelve error 403.
+     */
+    private void autocompletar(String query, AutocompleteCallback callback) {
+
+        new Thread(() -> {
+            try {
+                String url =
+                        "https://nominatim.openstreetmap.org/search?format=json&q=" +
+                                java.net.URLEncoder.encode(query, "UTF-8") +
+                                "&addressdetails=1&limit=5";
+
+                java.net.URL u = new java.net.URL(url);
+                java.net.HttpURLConnection conn = (java.net.HttpURLConnection) u.openConnection();
+                conn.setRequestProperty("User-Agent", "AtmosApp/1.0");
+
+                java.io.InputStream is = conn.getInputStream();
+                String json = new java.util.Scanner(is).useDelimiter("\\A").next();
+
+                org.json.JSONArray arr = new org.json.JSONArray(json);
+
+                java.util.List<String> sugerencias = new java.util.ArrayList<>();
+
+                for (int i = 0; i < arr.length(); i++) {
+                    sugerencias.add(arr.getJSONObject(i).getString("display_name"));
+                }
+
+                runOnUiThread(() -> callback.onResult(sugerencias));
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    /**
+     * @interface AutocompleteCallback
+     * @brief Interfaz para recibir resultados de autocompletado.
+     */
+    interface AutocompleteCallback {
+        /**
+         * @param resultados Lista de sugerencias obtenidas desde Nominatim.
+         */
+        void onResult(java.util.List<String> resultados);
+    }
+
+
 
     // ---------------------------------------------------------
 }
