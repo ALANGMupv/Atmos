@@ -49,7 +49,7 @@ public class MapasActivity extends FuncionesBaseActivity {
     private android.os.Handler handler = new android.os.Handler();
     private Runnable tareaBusqueda = null;
     private android.text.TextWatcher watcher;
-
+    private Marker marcadorUsuario = null;
 
 
     /**
@@ -395,43 +395,42 @@ public class MapasActivity extends FuncionesBaseActivity {
 
         MapView mapa = findViewById(R.id.mapaOSM);
 
-        // Usa 8 hilos para descargar tiles (más rápido que el valor por defecto)
-        Configuration.getInstance().setTileDownloadThreads((short) 8);
-
-        // Permite hasta 100 descargas en cola antes de procesarse
-        Configuration.getInstance().setTileDownloadMaxQueueSize((short) 100);
-
-        // Cantidad de tiles cacheados en memoria para evitar recargar
-        Configuration.getInstance().setCacheMapTileCount((short) 12);
-
-        // Escala los tiles según la densidad de pantalla (mejor nitidez)
+        // Escala los tiles según la densidad → más nitidez
         mapa.setTilesScaledToDpi(true);
 
-        // Habilita uso de datos móviles/WiFi para descargar tiles
+        // ----- CACHE Y RENDIMIENTO -----
+        Configuration.getInstance().setCacheMapTileCount((short) 24);
+        Configuration.getInstance().setCacheMapTileOvershoot((short) 12);
+
+        // Más hilos para descargar mapas
+        Configuration.getInstance().setTileDownloadThreads((short) 8);
+
+        // Cola de descargas más grande
+        Configuration.getInstance().setTileDownloadMaxQueueSize((short) 100);
+
+        // Usa datos móviles/wifi
         mapa.setUseDataConnection(true);
 
-        // Permite zoom con dos dedos y gestos multitouch
+        // Gestos multitáctiles
         mapa.setMultiTouchControls(true);
 
-        // Activa aceleración por hardware para mover el mapa más fluido
-        mapa.setLayerType(View.LAYER_TYPE_HARDWARE, null);
-
-        // Usa la fuente de mapa MAPNIK (rápida y estándar de OpenStreetMap)
+        // Fuente de OpenStreetMap
         mapa.setTileSource(TileSourceFactory.MAPNIK);
 
-        // Zoom por defecto
+        // Configuración de inicio
         mapa.getController().setZoom(13.0);
+        mapa.getController().setCenter(new GeoPoint(38.995, -0.160));
 
-        // Vista inicial a Gandía
-        mapa.getController().setCenter(
-                new org.osmdroid.util.GeoPoint(38.995, -0.160)
-        );
+        // Botón Mi Ubicación
+        findViewById(R.id.btnMiUbicacion).setOnClickListener(v -> pedirUbicacion(mapa));
 
-        // Geolocalización (cuando se le da al botón en el mapa)
-        findViewById(R.id.btnMiUbicacion).setOnClickListener(v -> {
-            pedirUbicacion(mapa);
-        });
+        // Dibujamos el puntito de ubicación del usuario al abrir el mapa
+        pedirUbicacion(mapa);
+
+        // Escuchar ubicación en tiempo real (solución definitiva)
+        iniciarActualizacionUbicacion(mapa);
     }
+
 
     /**
      * Solicita la ubicación actual del usuario y centra el mapa en ese punto.
@@ -466,24 +465,26 @@ public class MapasActivity extends FuncionesBaseActivity {
             mapa.getController().setZoom(17.0);
             mapa.getController().animateTo(p);
 
-            // Creamos un marcador en la ubicación del usuario
-            Marker marker = new Marker(mapa);
-            marker.setPosition(p);
-            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-            marker.setTitle("Tu ubicación");
+            // Crear marcador SOLO para la ubicación del usuario
+            if (marcadorUsuario == null) {
+                marcadorUsuario = new Marker(mapa);
+                marcadorUsuario.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+                marcadorUsuario.setIcon(
+                        androidx.core.content.ContextCompat.getDrawable(
+                                this,
+                                R.drawable.marker_mi_ubicacion
+                        )
+                );
+                mapa.getOverlays().add(marcadorUsuario);
+            }
 
-            // Añadimos el marcador al mapa y lo refrescamos
-            mapa.getOverlays().add(marker);
+            marcadorUsuario.setPosition(p);
             mapa.invalidate();
 
-            Toast.makeText(this, "Ubicación centrada", Toast.LENGTH_SHORT).show();
-
         } else {
-            // Si no hay ubicación disponible → informamos al usuario
             Toast.makeText(this, "No se pudo obtener la ubicación", Toast.LENGTH_SHORT).show();
         }
     }
-
     /**
      * @brief Cierra todos los popups o paneles inferiores visibles.
      *
@@ -562,16 +563,6 @@ public class MapasActivity extends FuncionesBaseActivity {
                     mapa.getController().setZoom(16.0);
                     mapa.getController().animateTo(destino);
 
-                    // Preparamos un marcador en el punto encontrado
-                    Marker marker = new Marker(mapa);
-                    marker.setPosition(destino);
-                    marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-                    marker.setTitle(textoBuscado);
-
-                    // Añadimos el marcador y refrescamos el mapa
-                    mapa.getOverlays().add(marker);
-                    mapa.invalidate();
-
                     Toast.makeText(this, "Ubicación encontrada", Toast.LENGTH_SHORT).show();
                 });
 
@@ -637,7 +628,73 @@ public class MapasActivity extends FuncionesBaseActivity {
         void onResult(java.util.List<String> resultados);
     }
 
+    /**
+     * @brief Inicia la actualización continua de la ubicación del usuario en el mapa.
+     *
+     * Este método registra un LocationListener que:
+     *  - Obtiene la ubicación real del GPS cada pocos segundos o cada metro recorrido.
+     *  - Dibuja automáticamente el marcador de ubicación del usuario.
+     *  - Actualiza su posición si el usuario se mueve.
+     *
+     * @param mapa Mapa OSMDroid donde se dibuja el marcador de ubicación.
+     *
+     * @note Este método soluciona el problema de que getLastKnownLocation()
+     *       puede devolver null y el puntito no aparezca al abrir la app.
+     */
+    private void iniciarActualizacionUbicacion(MapView mapa) {
 
+        // Accedemos al LocationManager del sistema
+        android.location.LocationManager lm =
+                (android.location.LocationManager) getSystemService(LOCATION_SERVICE);
+
+        // Verificamos permisos antes de solicitar actualizaciones
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        /*
+         * Solicitamos actualizaciones continuas de la ubicación:
+         *   - Cada 2000 ms (2 segundos)
+         *   - Cada 1 metro recorrido
+         *
+         * Esto asegura que el marcador del usuario se actualice en tiempo real.
+         */
+        lm.requestLocationUpdates(
+                android.location.LocationManager.GPS_PROVIDER,
+                2000,   // intervalo mínimo en milisegundos
+                1,      // distancia mínima en metros
+                location -> {
+
+                    // Convertimos la ubicación a un GeoPoint compatible con OSMDroid
+                    GeoPoint p = new GeoPoint(location.getLatitude(), location.getLongitude());
+
+                    // Si el marcador no existe, lo creamos una vez
+                    if (marcadorUsuario == null) {
+                        marcadorUsuario = new Marker(mapa);
+
+                        // Centramos el icono en el punto
+                        marcadorUsuario.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+
+                        // Icono personalizado: tu circulito de ubicación
+                        marcadorUsuario.setIcon(
+                                androidx.core.content.ContextCompat.getDrawable(
+                                        this, R.drawable.marker_mi_ubicacion
+                                )
+                        );
+
+                        // Lo añadimos a los overlays del mapa
+                        mapa.getOverlays().add(marcadorUsuario);
+                    }
+
+                    // Actualizamos la posición del marcador
+                    marcadorUsuario.setPosition(p);
+
+                    // Redibujar el mapa con la nueva posición
+                    mapa.invalidate();
+                }
+        );
+    }
 
     // ---------------------------------------------------------
 }
