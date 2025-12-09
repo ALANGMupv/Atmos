@@ -1,4 +1,3 @@
-// NotificacionesManager.java
 package org.jordi.btlealumnos2021;
 
 import android.content.Context;
@@ -11,35 +10,31 @@ import com.android.volley.toolbox.Volley;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
-/**
- * Gestor centralizado de notificaciones:
- *  - Llama al backend para obtenerlas
- *  - Lleva la "última lista" en memoria para detectar si hay novedades
- *  - Expone métodos para marcar como leída y borrar en backend
- */
 public class NotificacionesManager {
 
     private static NotificacionesManager instancia;
     private final RequestQueue queue;
 
-    // Guarda la última lista conocida para detectar novedades
     private List<NotificacionAtmos> ultimaLista = new ArrayList<>();
 
-    // URLs reales del backend
     private static final String URL_NOTIFICACIONES =
             "https://nagufor.upv.edu.es/notificacionesUsuario";
     private static final String URL_MARCAR_LEIDA =
             "https://nagufor.upv.edu.es/marcarNotificacionLeida";
-    private static final String URL_BORRAR_NOTIFICACION =
+    private static final String URL_BORRAR_NOTI =
             "https://nagufor.upv.edu.es/borrarNotificacion";
+    private static final String URL_BORRAR_TODAS =
+            "https://nagufor.upv.edu.es/borrarNotificacionesUsuario";
 
-    // Listener para callbacks
     public interface Listener {
-        void onResultado(List<NotificacionAtmos> lista, boolean hayAlgoNuevo);
-        void onError(String mensaje);
+        void onResultado(List<NotificacionAtmos> lista, boolean hayNuevas);
+        void onError(String msg);
     }
 
     private NotificacionesManager(Context ctx) {
@@ -47,52 +42,49 @@ public class NotificacionesManager {
     }
 
     public static synchronized NotificacionesManager getInstance(Context ctx) {
-        if (instancia == null) {
-            instancia = new NotificacionesManager(ctx);
-        }
+        if (instancia == null) instancia = new NotificacionesManager(ctx);
         return instancia;
     }
 
-    /**
-     * Llama al backend y obtiene la lista de notificaciones reales.
-     *
-     * @param ctx                  Contexto Android
-     * @param idUsuarioForzado     ID de usuario a usar para la petición.
-     *                             Si es > 0, se usa tal cual.
-     *                             Si es <= 0, se intenta leer de SesionManager.
-     */
-    public void refrescarNotificaciones(Context ctx, int idUsuarioForzado, Listener listener) {
+    // ─────────────────────────────────────────────────────────────
+    //     Conversión de UTC → Local (HH:mm)
+    // ─────────────────────────────────────────────────────────────
 
-        // 1) Resolver qué id_usuario vamos a usar
-        int idUsuario;
-        if (idUsuarioForzado > 0) {
-            // Modo pruebas / depuración: usamos el ID que nos pasas (ej: 23)
-            idUsuario = idUsuarioForzado;
-        } else {
-            // Modo normal: lo sacamos de la sesión
-            idUsuario = SesionManager.obtenerIdUsuario(ctx);
-        }
+    private String convertirUtcALocal(String fechaUtc) {
+        try {
+            SimpleDateFormat formatoUtc =
+                    new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+            formatoUtc.setTimeZone(TimeZone.getTimeZone("UTC"));
 
-        if (idUsuario <= 0) {
-            if (listener != null) {
-                listener.onError("No se encontró el usuario en la sesión local.");
-            }
-            return;
+            Date date = formatoUtc.parse(fechaUtc);
+
+            SimpleDateFormat formatoLocal =
+                    new SimpleDateFormat("HH:mm");
+            formatoLocal.setTimeZone(TimeZone.getDefault());
+
+            return formatoLocal.format(date);
+
+        } catch (Exception e) {
+            return fechaUtc;
         }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //   Obtener notificaciones del backend
+    // ─────────────────────────────────────────────────────────────
+
+    public void refrescarNotificaciones(Context ctx, int idUsuario, Listener listener) {
 
         String url = URL_NOTIFICACIONES + "?id_usuario=" + idUsuario;
 
-        JsonObjectRequest request = new JsonObjectRequest(
+        JsonObjectRequest req = new JsonObjectRequest(
                 Request.Method.GET,
                 url,
                 null,
                 response -> {
                     try {
-                        String status = response.optString("status", "error");
-                        if (!status.equalsIgnoreCase("ok")) {
-                            if (listener != null) {
-                                listener.onError("El servidor devolvió un estado no OK.");
-                            }
+                        if (!"ok".equals(response.optString("status"))) {
+                            if (listener != null) listener.onError("Estado no OK");
                             return;
                         }
 
@@ -101,153 +93,130 @@ public class NotificacionesManager {
 
                         if (arr != null) {
                             for (int i = 0; i < arr.length(); i++) {
-                                JSONObject nJson = arr.getJSONObject(i);
 
-                                int idNotificacion = nJson.optInt("id_notificacion", -1);
-                                String tipo        = nJson.optString("tipo", "");
-                                String titulo      = nJson.optString("titulo", "");
-                                String texto       = nJson.optString("texto", "");
-                                String fechaHora   = nJson.optString("fecha_hora", "");
+                                JSONObject o = arr.getJSONObject(i);
 
-                                // Recorta fecha → HH:mm
-                                String horaCorta = fechaHora;
-                                if (fechaHora.length() >= 16) {
-                                    horaCorta = fechaHora.substring(11, 16);
-                                }
+                                int id = o.optInt("id_notificacion", -1);
+                                String tipo = o.optString("tipo", "");
+                                String titulo = o.optString("titulo", "");
+                                String texto = o.optString("texto", "");
+                                String fechaUtc = o.optString("fecha_hora", "");
+                                boolean leido = o.optBoolean("leido", false);
 
-                                boolean leido = nJson.optBoolean("leido", false);
+                                // ✔ conversión REAL UTC → hora local
+                                String horaLocal = convertirUtcALocal(fechaUtc);
 
                                 nuevaLista.add(
                                         new NotificacionAtmos(
-                                                idNotificacion,
-                                                tipo,
-                                                titulo,
-                                                texto,
-                                                horaCorta,
-                                                leido
+                                                id, tipo, titulo, texto, horaLocal, leido
                                         )
                                 );
                             }
                         }
 
                         boolean hayNuevas = hayNovedades(nuevaLista, ultimaLista);
-
-                        // Actualizar la última lista
                         ultimaLista = nuevaLista;
 
-                        if (listener != null) {
-                            listener.onResultado(nuevaLista, hayNuevas);
-                        }
+                        if (listener != null) listener.onResultado(nuevaLista, hayNuevas);
 
                     } catch (Exception e) {
-                        e.printStackTrace();
-                        if (listener != null) {
-                            listener.onError("Error al procesar la respuesta de notificaciones.");
-                        }
+                        if (listener != null) listener.onError("Error procesando JSON");
                     }
                 },
                 error -> {
-                    if (listener != null) {
-                        listener.onError("Error de red al obtener notificaciones.");
-                    }
+                    if (listener != null) listener.onError("Error de red");
                 }
         );
 
-        queue.add(request);
+        queue.add(req);
     }
 
-    /**
-     * Marca una notificación como leída en el backend.
-     *
-     * @param ctx            Contexto
-     * @param idUsuario      ID del usuario
-     * @param idNotificacion ID de la notificación a marcar como leída
-     */
-    public void marcarNotificacionComoLeida(Context ctx, int idUsuario, int idNotificacion) {
-        if (idUsuario <= 0 || idNotificacion <= 0) {
-            return;
-        }
+    // ─────────────────────────────────────────────────────────────
+    //   Marcar como leída
+    // ─────────────────────────────────────────────────────────────
 
+    public void marcarNotificacionComoLeida(Context ctx, int idUsuario, int idNoti) {
         try {
             JSONObject body = new JSONObject();
             body.put("id_usuario", idUsuario);
-            body.put("id_notificacion", idNotificacion);
+            body.put("id_notificacion", idNoti);
 
-            JsonObjectRequest request = new JsonObjectRequest(
+            JsonObjectRequest req = new JsonObjectRequest(
                     Request.Method.POST,
                     URL_MARCAR_LEIDA,
                     body,
-                    response -> {
-                        // Podrías revisar el "status" si quisieras
-                    },
-                    error -> {
-                        // Para este proyecto no mostramos error al usuario.
-                    }
+                    response -> {},
+                    error -> {}
             );
 
-            queue.add(request);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+            queue.add(req);
+
+        } catch (Exception ignored) {}
     }
 
-    /**
-     * Borra una notificación concreta en el backend.
-     *
-     * @param ctx            Contexto
-     * @param idUsuario      ID del usuario
-     * @param idNotificacion ID de la notificación a borrar
-     */
-    public void borrarNotificacionBackend(Context ctx, int idUsuario, int idNotificacion) {
-        if (idUsuario <= 0 || idNotificacion <= 0) {
-            return;
-        }
+    // ─────────────────────────────────────────────────────────────
+    //   Borrar UNA notificación (con callback)
+    // ─────────────────────────────────────────────────────────────
 
+    public void borrarNotificacionBackend(Context ctx, int idUsuario, int idNoti, Runnable onDone) {
         try {
             JSONObject body = new JSONObject();
             body.put("id_usuario", idUsuario);
-            body.put("id_notificacion", idNotificacion);
+            body.put("id_notificacion", idNoti);
 
-            JsonObjectRequest request = new JsonObjectRequest(
+            JsonObjectRequest req = new JsonObjectRequest(
                     Request.Method.POST,
-                    URL_BORRAR_NOTIFICACION,
+                    URL_BORRAR_NOTI,
                     body,
-                    response -> {
-                        // No hacemos nada especial en la respuesta.
-                    },
-                    error -> {
-                        // Ignoramos el error de red a nivel de UI.
-                    }
+                    response -> { if (onDone != null) onDone.run(); },
+                    error -> { if (onDone != null) onDone.run(); }
             );
 
-            queue.add(request);
+            queue.add(req);
+
         } catch (Exception e) {
-            e.printStackTrace();
+            if (onDone != null) onDone.run();
         }
     }
 
-    /**
-     * Detecta si una nueva lista contiene novedades respecto a la anterior.
-     */
-    private boolean hayNovedades(List<NotificacionAtmos> nueva, List<NotificacionAtmos> anterior) {
-        if (anterior == null || anterior.isEmpty()) {
-            return !nueva.isEmpty();
-        }
+    // ─────────────────────────────────────────────────────────────
+    //   Borrar TODAS las notificaciones
+    // ─────────────────────────────────────────────────────────────
 
-        if (nueva.size() != anterior.size()) {
-            return true;
+    public void borrarTodasBackend(int idUsuario, Runnable onDone) {
+        try {
+            JSONObject body = new JSONObject();
+            body.put("id_usuario", idUsuario);
+
+            JsonObjectRequest req = new JsonObjectRequest(
+                    Request.Method.POST,
+                    URL_BORRAR_TODAS,
+                    body,
+                    response -> { if (onDone != null) onDone.run(); },
+                    error -> { if (onDone != null) onDone.run(); }
+            );
+
+            queue.add(req);
+
+        } catch (Exception e) {
+            if (onDone != null) onDone.run();
         }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //   Detección de novedades
+    // ─────────────────────────────────────────────────────────────
+
+    private boolean hayNovedades(List<NotificacionAtmos> nueva, List<NotificacionAtmos> anterior) {
+
+        if (anterior == null || anterior.size() != nueva.size()) return true;
 
         for (int i = 0; i < nueva.size(); i++) {
+
             NotificacionAtmos a = nueva.get(i);
             NotificacionAtmos b = anterior.get(i);
 
-            String hashA = a.getTipo() + "|" + a.getTexto() + "|" + a.getHora();
-            String hashB = b.getTipo() + "|" + b.getTexto() + "|" + b.getHora();
-
-            if (!hashA.equals(hashB)) {
-                return true;
-            }
+            if (a.getIdNotificacion() != b.getIdNotificacion()) return true;
         }
 
         return false;
