@@ -1,18 +1,3 @@
-<?php
-/*
-session_start();
-
-// Comprobar sesión activa
-if (!isset($_SESSION['usuario'])) {
-    header("Location: login.php");
-    exit();
-}
-
-// Datos del usuario en sesión
-$usuario = $_SESSION['usuario'];
-*/
-?>
-
 <!doctype html>
 <html lang="es">
 <head>
@@ -22,6 +7,15 @@ $usuario = $_SESSION['usuario'];
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
     <title>Mapa de Calidad de Aire - Atmos</title>
+
+    <!-- Leaflet CSS -->
+    <link
+            rel="stylesheet"
+            href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+            integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+            crossorigin=""
+    />
+
 
     <!-- CSS -->
     <link rel="stylesheet" href="css/estilos.css">
@@ -33,9 +27,9 @@ $usuario = $_SESSION['usuario'];
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
 
-<?php include __DIR__ . '/partials/headerLogueado.php'; ?>
-
 <body>
+
+<?php include __DIR__ . '/partials/headerLogueado.php'; ?>
 
 <main>
 
@@ -77,25 +71,31 @@ $usuario = $_SESSION['usuario'];
 
                 <div class="contaminantes-selector">
 
-                    <div class="contaminante-option active" data-gas="NO2">
-                        <img src="img/NO2icono.svg" alt="NO2">
-                        <span>NO2</span>
+                    <div class="contaminante-option active" data-gas="ALL" data-tipo="ALL" id="TodosOpcionSelector">
+                        <img src="img/TODOSIcono.svg" alt="Todos">
+                        <span>Todos</span>
                     </div>
 
-                    <div class="contaminante-option" data-gas="CO">
+                    <div class="contaminante-option" data-tipo="11">
+                        <img src="img/NO2icono.svg" alt="NO2">
+                        <span>NO₂</span>
+                    </div>
+
+                    <div class="contaminante-option" data-tipo="12">
                         <img src="img/COicono.svg" alt="CO">
                         <span>CO</span>
                     </div>
 
-                    <div class="contaminante-option" data-gas="O3">
+                    <div class="contaminante-option" data-tipo="13">
                         <img src="img/O3icono.svg" alt="O3">
-                        <span>O3</span>
+                        <span>O₃</span>
                     </div>
 
-                    <div class="contaminante-option" data-gas="SO2">
+                    <div class="contaminante-option" data-tipo="14">
                         <img src="img/SO2icono.svg" alt="SO2">
-                        <span>SO2</span>
+                        <span>SO₂</span>
                     </div>
+
                 </div>
 
             </div>
@@ -162,6 +162,27 @@ $usuario = $_SESSION['usuario'];
     </section>
 
 </main>
+
+</main>
+
+<!-- Leaflet JS -->
+<script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""
+></script>
+
+<script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+
+<!-- Turf.js (para interpolaciones si las necesitas) -->
+<script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+
+<!-- Tu script del mapa -->
+<script src="js/mapaUser.js"></script>
+
+</body>
+</html>
+
 
 </body>
 </html>
