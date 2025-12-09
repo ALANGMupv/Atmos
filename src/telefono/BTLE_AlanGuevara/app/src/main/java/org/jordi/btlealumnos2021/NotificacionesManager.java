@@ -14,6 +14,12 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Gestor centralizado de notificaciones:
+ *  - Llama al backend para obtenerlas
+ *  - Lleva la "última lista" en memoria para detectar si hay novedades
+ *  - Expone métodos para marcar como leída y borrar en backend
+ */
 public class NotificacionesManager {
 
     private static NotificacionesManager instancia;
@@ -22,9 +28,13 @@ public class NotificacionesManager {
     // Guarda la última lista conocida para detectar novedades
     private List<NotificacionAtmos> ultimaLista = new ArrayList<>();
 
-    // URL real del endpoint de tu backend
+    // URLs reales del backend
     private static final String URL_NOTIFICACIONES =
             "https://nagufor.upv.edu.es/notificacionesUsuario";
+    private static final String URL_MARCAR_LEIDA =
+            "https://nagufor.upv.edu.es/marcarNotificacionLeida";
+    private static final String URL_BORRAR_NOTIFICACION =
+            "https://nagufor.upv.edu.es/borrarNotificacion";
 
     // Listener para callbacks
     public interface Listener {
@@ -56,7 +66,7 @@ public class NotificacionesManager {
         // 1) Resolver qué id_usuario vamos a usar
         int idUsuario;
         if (idUsuarioForzado > 0) {
-            // Modo pruebas / depuración: usamos el ID que nos pasas (ej: 34)
+            // Modo pruebas / depuración: usamos el ID que nos pasas (ej: 23)
             idUsuario = idUsuarioForzado;
         } else {
             // Modo normal: lo sacamos de la sesión
@@ -93,10 +103,11 @@ public class NotificacionesManager {
                             for (int i = 0; i < arr.length(); i++) {
                                 JSONObject nJson = arr.getJSONObject(i);
 
-                                String tipo      = nJson.optString("tipo", "");
-                                String titulo    = nJson.optString("titulo", "");
-                                String texto     = nJson.optString("texto", "");
-                                String fechaHora = nJson.optString("fecha_hora", "");
+                                int idNotificacion = nJson.optInt("id_notificacion", -1);
+                                String tipo        = nJson.optString("tipo", "");
+                                String titulo      = nJson.optString("titulo", "");
+                                String texto       = nJson.optString("texto", "");
+                                String fechaHora   = nJson.optString("fecha_hora", "");
 
                                 // Recorta fecha → HH:mm
                                 String horaCorta = fechaHora;
@@ -108,6 +119,7 @@ public class NotificacionesManager {
 
                                 nuevaLista.add(
                                         new NotificacionAtmos(
+                                                idNotificacion,
                                                 tipo,
                                                 titulo,
                                                 texto,
@@ -142,6 +154,76 @@ public class NotificacionesManager {
         );
 
         queue.add(request);
+    }
+
+    /**
+     * Marca una notificación como leída en el backend.
+     *
+     * @param ctx            Contexto
+     * @param idUsuario      ID del usuario
+     * @param idNotificacion ID de la notificación a marcar como leída
+     */
+    public void marcarNotificacionComoLeida(Context ctx, int idUsuario, int idNotificacion) {
+        if (idUsuario <= 0 || idNotificacion <= 0) {
+            return;
+        }
+
+        try {
+            JSONObject body = new JSONObject();
+            body.put("id_usuario", idUsuario);
+            body.put("id_notificacion", idNotificacion);
+
+            JsonObjectRequest request = new JsonObjectRequest(
+                    Request.Method.POST,
+                    URL_MARCAR_LEIDA,
+                    body,
+                    response -> {
+                        // Podrías revisar el "status" si quisieras
+                    },
+                    error -> {
+                        // Para este proyecto no mostramos error al usuario.
+                    }
+            );
+
+            queue.add(request);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Borra una notificación concreta en el backend.
+     *
+     * @param ctx            Contexto
+     * @param idUsuario      ID del usuario
+     * @param idNotificacion ID de la notificación a borrar
+     */
+    public void borrarNotificacionBackend(Context ctx, int idUsuario, int idNotificacion) {
+        if (idUsuario <= 0 || idNotificacion <= 0) {
+            return;
+        }
+
+        try {
+            JSONObject body = new JSONObject();
+            body.put("id_usuario", idUsuario);
+            body.put("id_notificacion", idNotificacion);
+
+            JsonObjectRequest request = new JsonObjectRequest(
+                    Request.Method.POST,
+                    URL_BORRAR_NOTIFICACION,
+                    body,
+                    response -> {
+                        // No hacemos nada especial en la respuesta.
+                    },
+                    error -> {
+                        // Ignoramos el error de red a nivel de UI.
+                    }
+            );
+
+            queue.add(request);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**

@@ -1,18 +1,3 @@
-/**
- * Nombre Fichero: NotificacionAdapter.java
- * Descripción: Adaptador del RecyclerView encargado de vincular
- *              cada objeto NotificacionAtmos con su vista dentro
- *              del archivo item_notificacion.xml.
- *
- *              Gestiona la presentación de cada notificación,
- *              incluyendo icono, título, descripción, hora y el
- *              indicador visual de “sin leer”. También permite
- *              manejar eventos de clic para actualizar el estado
- *              de lectura.
- *
- * Autor: Alejandro Vazquez Remes
- * Fecha: 20/11/2025
- */
 package org.jordi.btlealumnos2021;
 
 import android.view.LayoutInflater;
@@ -26,12 +11,16 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
+/**
+ * Adaptador oficial de notificaciones para ATMOS.
+ * Estructura 100% compatible con tus layouts actuales.
+ */
 public class NotificacionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private static final int VIEW_TYPE_HEADER_NUEVAS = 0;
-    private static final int VIEW_TYPE_ITEM_NUEVA    = 1;
+    private static final int VIEW_TYPE_ITEM_NUEVA = 1;
     private static final int VIEW_TYPE_HEADER_LEIDAS = 2;
-    private static final int VIEW_TYPE_ITEM_LEIDA    = 3;
+    private static final int VIEW_TYPE_ITEM_LEIDA = 3;
 
     private final List<NotificacionAtmos> listaNuevas;
     private final List<NotificacionAtmos> listaLeidas;
@@ -50,19 +39,21 @@ public class NotificacionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         this.listener = listener;
     }
 
-    // ------------------- Helpers para mapear posición → sección -------------------
+    // --------------------------------------------------------
+    // Resolver posición → tipo de vista + índice real
+    // --------------------------------------------------------
 
     private static class PosInfo {
         int viewType;
-        boolean esNueva; // solo tiene sentido en items
-        int index;       // índice dentro de listaNuevas / listaLeidas, -1 si header
+        boolean esNueva;
+        int index;
     }
 
     private PosInfo resolverPosicion(int position) {
         PosInfo p = new PosInfo();
         int pos = position;
 
-        // Bloque de NUEVAS
+        // ---- NUEVAS ----
         if (!listaNuevas.isEmpty()) {
             if (pos == 0) {
                 p.viewType = VIEW_TYPE_HEADER_NUEVAS;
@@ -70,7 +61,7 @@ public class NotificacionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 p.index = -1;
                 return p;
             }
-            pos--; // saltamos el header
+            pos--;
 
             if (pos < listaNuevas.size()) {
                 p.viewType = VIEW_TYPE_ITEM_NUEVA;
@@ -81,7 +72,7 @@ public class NotificacionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             pos -= listaNuevas.size();
         }
 
-        // Bloque de LEÍDAS
+        // ---- LEÍDAS ----
         if (!listaLeidas.isEmpty()) {
             if (pos == 0) {
                 p.viewType = VIEW_TYPE_HEADER_LEIDAS;
@@ -89,7 +80,7 @@ public class NotificacionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 p.index = -1;
                 return p;
             }
-            pos--; // saltamos header
+            pos--;
 
             if (pos < listaLeidas.size()) {
                 p.viewType = VIEW_TYPE_ITEM_LEIDA;
@@ -99,14 +90,16 @@ public class NotificacionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             }
         }
 
-        // Fallback por si acaso (no debería llegar aquí)
+        // fallback
         p.viewType = VIEW_TYPE_ITEM_NUEVA;
         p.esNueva = true;
         p.index = 0;
         return p;
     }
 
-    // ------------------- Métodos obligatorios del adapter -------------------
+    // --------------------------------------------------------
+    // Métodos base del RecyclerView.Adapter
+    // --------------------------------------------------------
 
     @Override
     public int getItemViewType(int position) {
@@ -118,11 +111,10 @@ public class NotificacionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         int count = 0;
 
         if (!listaNuevas.isEmpty()) {
-            count += 1 + listaNuevas.size(); // header + items nuevas
+            count += 1 + listaNuevas.size();
         }
-
         if (!listaLeidas.isEmpty()) {
-            count += 1 + listaLeidas.size(); // header + items leídas
+            count += 1 + listaLeidas.size();
         }
 
         return count;
@@ -131,8 +123,7 @@ public class NotificacionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(
-            @NonNull ViewGroup parent,
-            int viewType
+            @NonNull ViewGroup parent, int viewType
     ) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
 
@@ -150,37 +141,29 @@ public class NotificacionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             @NonNull RecyclerView.ViewHolder holder,
             int position
     ) {
-        PosInfo posInfo = resolverPosicion(position);
+        PosInfo p = resolverPosicion(position);
 
-        switch (posInfo.viewType) {
+        if (holder instanceof HeaderViewHolder) {
+            HeaderViewHolder hvh = (HeaderViewHolder) holder;
+            hvh.tvTituloSeccion.setText(
+                    p.viewType == VIEW_TYPE_HEADER_NUEVAS ?
+                            "Nuevas alertas" :
+                            "Leídas"
+            );
+            return;
+        }
 
-            case VIEW_TYPE_HEADER_NUEVAS: {
-                HeaderViewHolder hvh = (HeaderViewHolder) holder;
-                hvh.tvTituloSeccion.setText("Nuevas alertas");
-                break;
-            }
-
-            case VIEW_TYPE_HEADER_LEIDAS: {
-                HeaderViewHolder hvh = (HeaderViewHolder) holder;
-                hvh.tvTituloSeccion.setText("Leídas");
-                break;
-            }
-
-            case VIEW_TYPE_ITEM_NUEVA: {
-                NotificacionAtmos n = listaNuevas.get(posInfo.index);
-                ((NotiViewHolder) holder).bind(n, true, posInfo.index);
-                break;
-            }
-
-            case VIEW_TYPE_ITEM_LEIDA: {
-                NotificacionAtmos n = listaLeidas.get(posInfo.index);
-                ((NotiViewHolder) holder).bind(n, false, posInfo.index);
-                break;
-            }
+        if (holder instanceof NotiViewHolder) {
+            NotificacionAtmos n = p.esNueva ?
+                    listaNuevas.get(p.index) :
+                    listaLeidas.get(p.index);
+            ((NotiViewHolder) holder).bind(n, p.esNueva, p.index);
         }
     }
 
-    // ------------------- ViewHolders -------------------
+    // --------------------------------------------------------
+    // ViewHolder: HEADER
+    // --------------------------------------------------------
 
     static class HeaderViewHolder extends RecyclerView.ViewHolder {
         TextView tvTituloSeccion;
@@ -191,81 +174,78 @@ public class NotificacionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         }
     }
 
+    // --------------------------------------------------------
+    // ViewHolder: ITEM DE NOTIFICACIÓN
+    // --------------------------------------------------------
+
     class NotiViewHolder extends RecyclerView.ViewHolder {
 
         TextView tvTitulo;
         TextView tvTexto;
         TextView tvHora;
-        ImageView ivEstado;     // puntito
-        ImageView ivEliminar;   // X
-        ImageView ivIcono;      // 🔹 icono de la notificación
+        ImageView ivEstado;     // puntito azul (solo nuevas)
+        ImageView ivEliminar;   // icono X
+        ImageView ivIcono;      // icono de alerta
 
         NotiViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvTitulo  = itemView.findViewById(R.id.tituloNoti);
-            tvTexto   = itemView.findViewById(R.id.textoNoti);
-            tvHora    = itemView.findViewById(R.id.horaNoti);
-            ivEstado  = itemView.findViewById(R.id.estadoNotis);
+
+            // Respeto total a tus IDs originales
+            tvTitulo = itemView.findViewById(R.id.tituloNoti);   // EXISTE EN TU XML
+            tvTexto = itemView.findViewById(R.id.textoNoti);
+            tvHora = itemView.findViewById(R.id.horaNoti);
+            ivEstado = itemView.findViewById(R.id.estadoNotis);
             ivEliminar = itemView.findViewById(R.id.btnEliminarNoti);
-            ivIcono   = itemView.findViewById(R.id.imagenNoti);
+            ivIcono = itemView.findViewById(R.id.imagenNoti);
         }
 
         void bind(NotificacionAtmos n, boolean esNueva, int indexEnLista) {
+
+            // ✔ Mostrar título real del backend
             tvTitulo.setText(n.getTitulo());
+
+            // ✔ Mostrar texto principal
             tvTexto.setText(n.getTexto());
+
+            // ✔ Mostrar hora
             tvHora.setText(n.getHora());
 
-            // 👀 Puntito solo en nuevas
-            if (ivEstado != null) {
-                ivEstado.setVisibility(esNueva ? View.VISIBLE : View.GONE);
+            // ✔ Punto de estado solo en nuevas
+            ivEstado.setVisibility(esNueva ? View.VISIBLE : View.GONE);
+
+            // ✔ Icono según tipo
+            int resId;
+            switch (n.getTipo()) {
+                case "SENSOR_INACTIVO":
+                    resId = R.drawable.ic_sensor_off;
+                    break;
+                case "LECTURAS_ERRONEAS":
+                    resId = R.drawable.ic_warning;
+                    break;
+                case "RESUMEN_DIARIO":
+                    resId = R.drawable.ic_resumen;
+                    break;
+                case "DISTANCIA_SENSOR":
+                    resId = R.drawable.ic_distancia;
+                    break;
+                case "O3_CRITICO":
+                default:
+                    resId = R.drawable.ic_alerta_co2;
+                    break;
             }
+            ivIcono.setImageResource(resId);
 
-            // 🎨 ICONO según el tipo
-            if (ivIcono != null) {
-                int resId;
-
-                switch (n.getTipo()) {
-                    case "O3_CRITICO":
-                        resId = R.drawable.ic_alerta_co2;   // usa aquí el nombre real de tu drawable
-                        break;
-                    case "SENSOR_INACTIVO":
-                        resId = R.drawable.ic_sensor_off;
-                        break;
-                    case "LECTURAS_ERRONEAS":
-                        resId = R.drawable.ic_warning;
-                        break;
-                    case "RESUMEN_DIARIO":
-                        resId = R.drawable.ic_resumen;
-                        break;
-                    case "DISTANCIA_SENSOR":
-                        resId = R.drawable.ic_distancia;
-                        break;
-                    default:
-                        resId = R.drawable.ic_alerta_co2;
-                        break;
-                }
-
-                ivIcono.setImageResource(resId);
-            }
-
-            // Click en la tarjeta
+            // ✔ Click → marcar como leída
             itemView.setOnClickListener(v -> {
-                if (listener != null) {
+                if (listener != null)
                     listener.onNotificacionClick(esNueva, indexEnLista);
-                }
             });
 
-            // Click en la X
-            if (ivEliminar != null) {
-                ivEliminar.setOnClickListener(v -> {
-                    if (listener != null) {
-                        listener.onDeleteClick(esNueva, indexEnLista);
-                    }
-                });
-            }
+            // ✔ Click en eliminar → borrar en backend
+            ivEliminar.setOnClickListener(v -> {
+                if (listener != null)
+                    listener.onDeleteClick(esNueva, indexEnLista);
+            });
         }
     }
-
 }
-
-

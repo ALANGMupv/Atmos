@@ -41,6 +41,9 @@ public class NotificacionesActivity extends AppCompatActivity {
     private ArrayList<NotificacionAtmos> listaNuevas;
     private ArrayList<NotificacionAtmos> listaLeidas;
 
+    // ID de usuario (por ahora fijo para pruebas, luego puede venir de SesionManager)
+    private int idUsuario = 23;
+
     // 🔁 Handler para refrescar periódicamente
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable refrescoPeriodico = new Runnable() {
@@ -84,6 +87,16 @@ public class NotificacionesActivity extends AppCompatActivity {
                                 NotificacionAtmos n = listaNuevas.remove(indexEnLista);
                                 n.setLeida(true);
                                 listaLeidas.add(0, n); // la más reciente al principio
+
+                                // Avisar al backend de que esta notificación ya está leída
+                                NotificacionesManager
+                                        .getInstance(NotificacionesActivity.this)
+                                        .marcarNotificacionComoLeida(
+                                                NotificacionesActivity.this,
+                                                idUsuario,
+                                                n.getIdNotificacion()
+                                        );
+
                                 adapter.notifyDataSetChanged();
                                 guardarLeidasEnPrefs();
                             }
@@ -96,11 +109,29 @@ public class NotificacionesActivity extends AppCompatActivity {
                     public void onDeleteClick(boolean esNueva, int indexEnLista) {
                         if (esNueva) {
                             if (indexEnLista >= 0 && indexEnLista < listaNuevas.size()) {
-                                listaNuevas.remove(indexEnLista);
+                                NotificacionAtmos n = listaNuevas.remove(indexEnLista);
+
+                                // Avisar al backend de que esta notificación se ha eliminado
+                                NotificacionesManager
+                                        .getInstance(NotificacionesActivity.this)
+                                        .borrarNotificacionBackend(
+                                                NotificacionesActivity.this,
+                                                idUsuario,
+                                                n.getIdNotificacion()
+                                        );
                             }
                         } else {
                             if (indexEnLista >= 0 && indexEnLista < listaLeidas.size()) {
-                                listaLeidas.remove(indexEnLista);
+                                NotificacionAtmos n = listaLeidas.remove(indexEnLista);
+
+                                NotificacionesManager
+                                        .getInstance(NotificacionesActivity.this)
+                                        .borrarNotificacionBackend(
+                                                NotificacionesActivity.this,
+                                                idUsuario,
+                                                n.getIdNotificacion()
+                                        );
+
                                 guardarLeidasEnPrefs();
                             }
                         }
@@ -111,7 +142,7 @@ public class NotificacionesActivity extends AppCompatActivity {
 
         recyclerNotificaciones.setAdapter(adapter);
 
-        // Botón "Eliminar todas" (solo limpia nuevas en local)
+        // Botón "Eliminar todas" (ahora mismo solo limpia las nuevas en local)
         ImageView btnBorrarTodas = findViewById(R.id.btnBorrarTodas);
         if (btnBorrarTodas != null) {
             btnBorrarTodas.setOnClickListener(v -> {
@@ -148,13 +179,11 @@ public class NotificacionesActivity extends AppCompatActivity {
     // -------------------------------------------------------------------------
     private void cargarNotificacionesDesdeServidor() {
 
-        int idUsuarioParaPruebas = 23; // 👈 user fijo que dijiste
-
         NotificacionesManager
                 .getInstance(this)
                 .refrescarNotificaciones(
                         this,
-                        idUsuarioParaPruebas,
+                        idUsuario,
                         new NotificacionesManager.Listener() {
                             @Override
                             public void onResultado(List<NotificacionAtmos> nuevas, boolean hayAlgoNuevo) {
@@ -235,6 +264,7 @@ public class NotificacionesActivity extends AppCompatActivity {
 
                 listaLeidas.add(
                         new NotificacionAtmos(
+                                0, // idNotificacion no se persiste en prefs
                                 o.optString("tipo", ""),
                                 "", // título no lo usamos en la sección de leídas
                                 o.optString("texto", ""),
