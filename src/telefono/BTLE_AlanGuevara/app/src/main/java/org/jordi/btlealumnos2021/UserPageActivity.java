@@ -185,9 +185,9 @@ public class UserPageActivity extends FuncionesBaseActivity {
                     @Override
                     public void run() {
                         actualizarEstadoSensor(idUsuario);
-                        new android.os.Handler().postDelayed(this, 20000);
+                        new android.os.Handler().postDelayed(this, 2000);
                     }
-                }, 20000);
+                }, 2000);
 
                 // ======================================================
                 // REFRESCO AUTOMÁTICO DEL ESTADO DE LA SEÑAL (5s)
@@ -196,9 +196,9 @@ public class UserPageActivity extends FuncionesBaseActivity {
                     @Override
                     public void run() {
                         actualizarEstadoSenal(idUsuario);
-                        new android.os.Handler().postDelayed(this, 5000);
+                        new android.os.Handler().postDelayed(this, 1000);
                     }
-                }, 5000);
+                }, 1000);
 
             }
 
@@ -381,8 +381,8 @@ public class UserPageActivity extends FuncionesBaseActivity {
                         layoutConSensor.setVisibility(View.VISIBLE);
                         layoutSinSensor.setVisibility(View.GONE);
 
-                        txtUltima.setText(String.format(Locale.US, "%.3f", ultimaValor));
-                        txtPromedio.setText(String.format(Locale.US, "%.3f", promedio));
+                        txtUltima.setText(String.format(Locale.US, "%.2f", ultimaValor));
+                        txtPromedio.setText(String.format(Locale.US, "%.2f", promedio));
 
                         txtUltimaFecha.setText(formatearFecha(ultimaFecha));
                         txtPromedioFecha.setText("Hoy");
@@ -464,22 +464,26 @@ public class UserPageActivity extends FuncionesBaseActivity {
 
             case 12: // CO
                 if (valor <= 1.7) return "Buena";
-                if (valor <= 4.4) return "Regular";
+                if (valor <= 4.4) return "Moderada";
+                if (valor <= 8.7) return "Insalubre";
                 return "Mala";
 
             case 11: // NO2
                 if (valor <= 0.021) return "Buena";
-                if (valor <= 0.053) return "Regular";
+                if (valor <= 0.053) return "Moderada";
+                if (valor <= 0.106) return "Insalubre";
                 return "Mala";
 
             case 13: // O3
                 if (valor <= 0.031) return "Buena";
-                if (valor <= 0.061) return "Regular";
+                if (valor <= 0.061) return "Moderada";
+                if (valor <= 0.092) return "Insalubre";
                 return "Mala";
 
             case 14: // SO2
                 if (valor <= 0.0076) return "Buena";
-                if (valor <= 0.019) return "Regular";
+                if (valor <= 0.019) return "Moderada";
+                if (valor <= 0.038) return "Insalubre";
                 return "Mala";
         }
 
@@ -510,22 +514,26 @@ public class UserPageActivity extends FuncionesBaseActivity {
 
             case 12: // CO
                 if (valor <= 1.7) return R.drawable.ic_estado_bueno;
-                if (valor <= 4.4) return R.drawable.ic_estado_regular;
+                if (valor <= 4.4) return R.drawable.ic_estado_moderado;
+                if (valor <= 8.7) return R.drawable.ic_estado_insalubre;
                 return R.drawable.ic_estado_malo;
 
             case 11: // NO2
                 if (valor <= 0.021) return R.drawable.ic_estado_bueno;
-                if (valor <= 0.053) return R.drawable.ic_estado_regular;
+                if (valor <= 0.053) return R.drawable.ic_estado_moderado;
+                if (valor <= 0.106) return R.drawable.ic_estado_insalubre;
                 return R.drawable.ic_estado_malo;
 
             case 13: // O3
                 if (valor <= 0.031) return R.drawable.ic_estado_bueno;
-                if (valor <= 0.061) return R.drawable.ic_estado_regular;
+                if (valor <= 0.061) return R.drawable.ic_estado_moderado;
+                if (valor <= 0.092) return R.drawable.ic_estado_insalubre;
                 return R.drawable.ic_estado_malo;
 
             case 14: // SO2
                 if (valor <= 0.0076) return R.drawable.ic_estado_bueno;
-                if (valor <= 0.019) return R.drawable.ic_estado_regular;
+                if (valor <= 0.019) return R.drawable.ic_estado_moderado;
+                if (valor <= 0.038) return R.drawable.ic_estado_insalubre;
                 return R.drawable.ic_estado_malo;
         }
 
@@ -686,6 +694,11 @@ public class UserPageActivity extends FuncionesBaseActivity {
 
                 ImageView icono = findViewById(R.id.img_wifi);
                 TextView texto = findViewById(R.id.tv_distancia);
+                if (tvEstadoSensor.getText().toString().equals("Sensor inactivo")) {
+                    icono.setImageResource(R.drawable.ic_sin_senal);
+                    texto.setText("Sin datos");
+                    return;
+                }
 
                 switch (nivel) {
 
@@ -755,8 +768,7 @@ public class UserPageActivity extends FuncionesBaseActivity {
             case "Buena":
                 return "En promedio, la calidad del aire es buena.";
 
-            case "Regular":     // versión usada en Android
-            case "Moderada":    // versión usada en la web (compatibilidad)
+            case "Moderada":
                 return "En promedio, la calidad del aire es moderada. Las personas sensibles pueden notar molestias.";
 
             case "Insalubre":

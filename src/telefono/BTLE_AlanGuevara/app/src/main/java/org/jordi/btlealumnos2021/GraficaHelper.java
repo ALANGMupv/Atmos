@@ -107,19 +107,22 @@ public class GraficaHelper {
         left.setGridColor(Color.LTGRAY);
         left.setTextSize(10f);
 
+        left.setAxisMinimum(0f);
+        left.setAxisMaximum(4f);
+        left.setGranularity(1f);       // <-- IMPORTANTE
+        left.setGranularityEnabled(true);
+        left.setLabelCount(5, true);   // 0,1,2,3,4
+
         left.setValueFormatter(new ValueFormatter() {
             @Override
             public String getAxisLabel(float value, AxisBase axis) {
-                if (value <= 0.25f) return "Buena";
-                if (value <= 0.50f) return "Moderada";
-                if (value <= 0.75f) return "Insalubre";
-                return "Mala";
+                if (value == 1f) return "Buena";
+                if (value == 2f) return "Moderada";
+                if (value == 3f) return "Insalubre";
+                if (value == 4f) return "Mala";
+                return "";
             }
         });
-
-        left.setLabelCount(4, true);
-        left.setAxisMinimum(0f);
-        left.setAxisMaximum(1f);
 
 
         barChart.getAxisRight().setEnabled(false);
@@ -262,16 +265,41 @@ public class GraficaHelper {
         for (int i = 0; i < valores.size(); i++) {
             float v = valores.get(i);
 
-            // CONVERTIR valor real (0.01, 0.04...) a altura FIJA visible
+            // CONVERTIR valor real (0.01, 0.04...) a altura FIJA POR CATEGORÍA
+            // Usamos 1, 2, 3, 4 para que coincida con el eje Y
             float altura;
 
-            if (v <= 0.25f) altura = 0.15f;         // Buena (verde)
-            else if (v <= 0.50f) altura = 0.45f;    // Moderada (amarillo)
-            else if (v <= 0.75f) altura = 0.65f;    // Insalubre (naranja)
-            else altura = 0.90f;                    // Mala (rojo)
+            if (tipoGas == 13) {  // O3
+                if (v <= 0.031f) altura = 1f;
+                else if (v <= 0.061f) altura = 2f;
+                else if (v <= 0.092f) altura = 3f;
+                else altura = 4f;
+
+            } else if (tipoGas == 11) { // NO2
+                if (v <= 0.021f) altura = 1f;
+                else if (v <= 0.053f) altura = 2f;
+                else if (v <= 0.106f) altura = 3f;
+                else altura = 4f;
+
+            } else if (tipoGas == 12) { // CO
+                if (v <= 1.7f) altura = 1f;
+                else if (v <= 4.4f) altura = 2f;
+                else if (v <= 8.7f) altura = 3f;
+                else altura = 4f;
+
+            } else if (tipoGas == 14) { // SO2
+                if (v <= 0.0076f) altura = 1f;
+                else if (v <= 0.019f) altura = 2f;
+                else if (v <= 0.038f) altura = 3f;
+                else altura = 4f;
+
+            } else {
+                altura = 0f;
+            }
 
             entries.add(new BarEntry(i, altura));
         }
+
 
 
         BarDataSet dataSet = new BarDataSet(entries, "");
@@ -316,32 +344,85 @@ public class GraficaHelper {
     private void actualizarEstadoCalidad(double promedio, int tipoGas) {
 
         String estado = "Sin datos";
-        int icono = R.drawable.ic_estado_neutro; // gris
+        int icono = R.drawable.ic_estado_neutro;
 
-        // Sin datos o promedio inválido
         if (promedio <= 0) {
             txtEstadoCalidad.setText(estado);
             iconEstadoCalidad.setImageResource(icono);
             return;
         }
 
-        if (promedio <= 0.25) {
-            estado = "Buena";
-            icono = R.drawable.ic_cara_buena;
-        } else if (promedio <= 0.50) {
-            estado = "Moderada";
-            icono = R.drawable.ic_cara_regular;
-        } else if (promedio <= 0.75) {
-            estado = "Insalubre";
-            icono = R.drawable.ic_cara_regular;
-        } else {
-            estado = "Mala";
-            icono = R.drawable.ic_cara_mala;
+        switch (tipoGas) {
+
+            case 13: // O3
+                if (promedio <= 0.031) {
+                    estado = "Buena";
+                    icono = R.drawable.ic_cara_buena;
+                } else if (promedio <= 0.061) {
+                    estado = "Moderada";
+                    icono = R.drawable.ic_cara_moderado;
+                } else if (promedio <= 0.092) {
+                    estado = "Insalubre";
+                    icono = R.drawable.ic_cara_regular;
+                } else {
+                    estado = "Mala";
+                    icono = R.drawable.ic_cara_mala;
+                }
+                break;
+
+            case 11: // NO2
+                if (promedio <= 0.021) {
+                    estado = "Buena";
+                    icono = R.drawable.ic_cara_buena;
+                } else if (promedio <= 0.053) {
+                    estado = "Moderada";
+                    icono = R.drawable.ic_cara_moderado;
+                } else if (promedio <= 0.106) {
+                    estado = "Insalubre";
+                    icono = R.drawable.ic_cara_regular;
+                } else {
+                    estado = "Mala";
+                    icono = R.drawable.ic_cara_mala;
+                }
+                break;
+
+            case 12: // CO
+                if (promedio <= 1.7) {
+                    estado = "Buena";
+                    icono = R.drawable.ic_cara_buena;
+                } else if (promedio <= 4.4) {
+                    estado = "Moderada";
+                    icono = R.drawable.ic_cara_moderado;
+                } else if (promedio <= 8.7) {
+                    estado = "Insalubre";
+                    icono = R.drawable.ic_cara_regular;
+                } else {
+                    estado = "Mala";
+                    icono = R.drawable.ic_cara_mala;
+                }
+                break;
+
+            case 14: // SO2
+                if (promedio <= 0.0076) {
+                    estado = "Buena";
+                    icono = R.drawable.ic_cara_buena;
+                } else if (promedio <= 0.019) {
+                    estado = "Moderada";
+                    icono = R.drawable.ic_cara_moderado;
+                } else if (promedio <= 0.038) {
+                    estado = "Insalubre";
+                    icono = R.drawable.ic_cara_regular;
+                } else {
+                    estado = "Mala";
+                    icono = R.drawable.ic_cara_mala;
+                }
+                break;
         }
 
         txtEstadoCalidad.setText(estado);
         iconEstadoCalidad.setImageResource(icono);
     }
+
 
 
     /**
@@ -359,23 +440,40 @@ public class GraficaHelper {
      *   - valor: índice de calidad (0–1) para esa barra.
      *   - tipoGas: NO lo usamos aquí, pero lo dejamos por compatibilidad.
      */
-    private int colorParaValor(float valor, int tipoGas) {
+    private int colorParaValor(float v, int tipoGas) {
 
-        if (valor <= 0.25f) {
-            // Buena
-            return Color.rgb(76, 175, 80);      // verde
-        } else if (valor <= 0.50f) {
-            // Moderada
-            return Color.rgb(255, 235, 59);     // amarillo
-        } else if (valor <= 0.75f) {
-            // Insalubre
-            return Color.rgb(255, 152, 0);      // naranja
-        } else {
-            // Mala
-            return Color.rgb(244, 67, 54);      // rojo
+        // O3
+        if (tipoGas == 13) {
+            if (v <= 0.031f) return Color.rgb(76, 175, 80);      // Buena
+            else if (v <= 0.061f) return Color.rgb(255, 235, 59); // Moderada
+            else if (v <= 0.092f) return Color.rgb(255, 152, 0);  // Insalubre
+            else return Color.rgb(244, 67, 54);                   // Mala
         }
+
+        // NO2
+        if (tipoGas == 11) {
+            if (v <= 0.021f) return Color.rgb(76, 175, 80);
+            else if (v <= 0.053f) return Color.rgb(255, 235, 59);
+            else if (v <= 0.106f) return Color.rgb(255, 152, 0);
+            else return Color.rgb(244, 67, 54);
+        }
+
+        // CO
+        if (tipoGas == 12) {
+            if (v <= 1.7f) return Color.rgb(76, 175, 80);
+            else if (v <= 4.4f) return Color.rgb(255, 235, 59);
+            else if (v <= 8.7f) return Color.rgb(255, 152, 0);
+            else return Color.rgb(244, 67, 54);
+        }
+
+        // SO2
+        if (tipoGas == 14) {
+            if (v <= 0.0076f) return Color.rgb(76, 175, 80);
+            else if (v <= 0.019f) return Color.rgb(255, 235, 59);
+            else if (v <= 0.038f) return Color.rgb(255, 152, 0);
+            else return Color.rgb(244, 67, 54);
+        }
+
+        return Color.GRAY; // fallback
     }
-
-
-
 }
