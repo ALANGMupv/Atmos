@@ -30,14 +30,14 @@ import java.io.InputStream;
 import java.util.ArrayList;
 
 /**
+ * @author Alan Guevara Martinez
  * @class MapasActivity
  * @brief Activity encargada de mostrar el mapa principal y solicitar permisos BLE
- *        para iniciar el servicio de detección de beacons.
- *
+ * para iniciar el servicio de detección de beacons.
+ * <p>
  * Esta pantalla se carga después de iniciar sesión. Desde aquí se comprueba si
  * el usuario ha concedido los permisos necesarios para realizar escaneo BLE en
  * segundo plano. Si no están concedidos, se solicitan al usuario.
- * @author Alan Guevara Martinez
  * @date 05/12/2025 (fecha inicio)
  */
 public class MapasActivity extends FuncionesBaseActivity {
@@ -129,20 +129,16 @@ public class MapasActivity extends FuncionesBaseActivity {
             if (v == itemTodos) {
                 txtChip.setText("Contaminantes");
                 txtChip.setTextColor(0xFF059669); // Verde Atmos por defecto
-            }
-            else if (v == itemO3) {
+            } else if (v == itemO3) {
                 txtChip.setText("O₃");
                 txtChip.setTextColor(0xFF047857); // color cuando NO es "Todos"
-            }
-            else if (v == itemNO2) {
+            } else if (v == itemNO2) {
                 txtChip.setText("NO₂");
                 txtChip.setTextColor(0xFF047857);
-            }
-            else if (v == itemCO) {
+            } else if (v == itemCO) {
                 txtChip.setText("CO");
                 txtChip.setTextColor(0xFF047857);
-            }
-            else if (v == itemSO2) {
+            } else if (v == itemSO2) {
                 txtChip.setText("SO₂");
                 txtChip.setTextColor(0xFF047857);
             }
@@ -198,11 +194,12 @@ public class MapasActivity extends FuncionesBaseActivity {
         listaSugerencias.setAdapter(adapterSugerencias);
 
         /**
-        * @brief Listener que detecta cambios en el texto para autocompletar.
-        */
+         * @brief Listener que detecta cambios en el texto para autocompletar.
+         */
         watcher = new android.text.TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -236,8 +233,10 @@ public class MapasActivity extends FuncionesBaseActivity {
                 // Espera 300ms antes de llamar a Nominatim → MUCHÍSIMO MÁS FLUIDO
                 handler.postDelayed(tareaBusqueda, 300);
             }
+
             @Override
-            public void afterTextChanged(android.text.Editable s) {}
+            public void afterTextChanged(android.text.Editable s) {
+            }
         };
 
         edtBuscar.addTextChangedListener(watcher);
@@ -246,8 +245,8 @@ public class MapasActivity extends FuncionesBaseActivity {
 
 
         /**
-        * @brief Cuando el usuario toca una sugerencia → usarla como búsqueda
-        */
+         * @brief Cuando el usuario toca una sugerencia → usarla como búsqueda
+         */
         listaSugerencias.setOnItemClickListener((parent, view, position, id) -> {
             String seleccionado = adapterSugerencias.getItem(position);
 
@@ -271,9 +270,9 @@ public class MapasActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * @brief Cambia la selección visual de un elemento de gas.
      * @param seleccionado Vista (LinearLayout) que el usuario ha seleccionado.
-     * @param todos Lista variable de todos los LinearLayout que forman parte del grupo.
+     * @param todos        Lista variable de todos los LinearLayout que forman parte del grupo.
+     * @brief Cambia la selección visual de un elemento de gas.
      */
     private void seleccionarGas(View seleccionado, LinearLayout... todos) {
 
@@ -329,13 +328,8 @@ public class MapasActivity extends FuncionesBaseActivity {
              */
             requestPermissions(new String[]{
                     Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.ACCESS_BACKGROUND_LOCATION,
                     Manifest.permission.BLUETOOTH_SCAN,
-                    Manifest.permission.BLUETOOTH_CONNECT,
-                    Manifest.permission.FOREGROUND_SERVICE,
-                    Manifest.permission.FOREGROUND_SERVICE_LOCATION,
-                    Manifest.permission.FOREGROUND_SERVICE_DATA_SYNC
+                    Manifest.permission.BLUETOOTH_CONNECT
             }, CODIGO_PERMISOS_BLE);
 
 
@@ -495,9 +489,10 @@ public class MapasActivity extends FuncionesBaseActivity {
             Toast.makeText(this, "No se pudo obtener la ubicación", Toast.LENGTH_SHORT).show();
         }
     }
+
     /**
      * @brief Cierra todos los popups o paneles inferiores visibles.
-     *
+     * <p>
      * Este método oculta los distintos BottomSheets de la pantalla
      * (contaminantes, índice, fecha —cuando exista—) para garantizar
      * que solo un panel esté visible a la vez.
@@ -514,14 +509,13 @@ public class MapasActivity extends FuncionesBaseActivity {
     }
 
     /**
+     * @param textoBuscado Texto introducido por el usuario que representa la ubicación a buscar.
      * @brief Busca una dirección o lugar a partir de un texto y centra el mapa en ese punto.
-     *
+     * <p>
      * Este método utiliza el Geocoder de Android para convertir el texto introducido
      * por el usuario (nombre de calle, ciudad, punto de interés…) en coordenadas
      * geográficas (latitud y longitud). Si encuentra un resultado válido, mueve el
      * mapa OSMDroid hasta esa ubicación y aplica un zoom adecuado.
-     *
-     * @param textoBuscado Texto introducido por el usuario que representa la ubicación a buscar.
      */
     private void buscarUbicacion(String textoBuscado) {
 
@@ -584,15 +578,11 @@ public class MapasActivity extends FuncionesBaseActivity {
 
 
     /**
-     * @brief Obtiene sugerencias de ubicaciones desde Nominatim (OSM) para autocompletado.
-     *
-     * @param query Texto parcial introducido por el usuario en el buscador.
+     * @param query    Texto parcial introducido por el usuario en el buscador.
      * @param callback Función callback que recibirá la lista de sugerencias.
-     *
-     * @details
-     * Realiza una petición HTTP a la API de Nominatim buscando coincidencias
+     * @brief Obtiene sugerencias de ubicaciones desde Nominatim (OSM) para autocompletado.
+     * @details Realiza una petición HTTP a la API de Nominatim buscando coincidencias
      * y devuelve hasta 5 resultados. Es ideal para mostrar autocompletado estilo Google Maps.
-     *
      * @note Obligatorio enviar "User-Agent" en Nominatim o devuelve error 403.
      */
     private void autocompletar(String query, AutocompleteCallback callback) {
@@ -639,17 +629,15 @@ public class MapasActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * @brief Inicia la actualización continua de la ubicación del usuario en el mapa.
-     *
-     * Este método registra un LocationListener que:
-     *  - Obtiene la ubicación real del GPS cada pocos segundos o cada metro recorrido.
-     *  - Dibuja automáticamente el marcador de ubicación del usuario.
-     *  - Actualiza su posición si el usuario se mueve.
-     *
      * @param mapa Mapa OSMDroid donde se dibuja el marcador de ubicación.
-     *
+     * @brief Inicia la actualización continua de la ubicación del usuario en el mapa.
+     * <p>
+     * Este método registra un LocationListener que:
+     * - Obtiene la ubicación real del GPS cada pocos segundos o cada metro recorrido.
+     * - Dibuja automáticamente el marcador de ubicación del usuario.
+     * - Actualiza su posición si el usuario se mueve.
      * @note Este método soluciona el problema de que getLastKnownLocation()
-     *       puede devolver null y el puntito no aparezca al abrir la app.
+     * puede devolver null y el puntito no aparezca al abrir la app.
      */
     private void iniciarActualizacionUbicacion(MapView mapa) {
 
