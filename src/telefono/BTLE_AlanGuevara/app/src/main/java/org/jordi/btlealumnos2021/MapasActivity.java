@@ -173,15 +173,24 @@ public class MapasActivity extends FuncionesBaseActivity {
 
         /* ----------------- BUSCADOR DE UBICACIONES ------------------*/
         EditText edtBuscar = findViewById(R.id.edtBuscar);
+
+
         ListView listaSugerencias = findViewById(R.id.listaSugerencias);
 
-        edtBuscar.setOnEditorActionListener((v, actionId, event) -> {
-            String texto = edtBuscar.getText().toString().trim();
-            if (!texto.isEmpty()) {
-                buscarUbicacion(texto);
+        edtBuscar.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) {
+                edtBuscar.setCursorVisible(false);
+                listaSugerencias.setVisibility(View.GONE);
+
+                // IMPORTANTE: evita peleas de foco
+                new android.os.Handler().postDelayed(() ->
+                        findViewById(R.id.layoutBusqueda).clearFocus(), 50);
+
+            } else {
+                edtBuscar.setCursorVisible(true);
             }
-            return true;
         });
+
 
         ArrayAdapter<String> adapterSugerencias = new ArrayAdapter<>(
                 this, android.R.layout.simple_list_item_1, new ArrayList<>());
@@ -233,15 +242,6 @@ public class MapasActivity extends FuncionesBaseActivity {
 
         edtBuscar.addTextChangedListener(watcher);
 
-        // Ocultar sugerencias al perder el foco
-        edtBuscar.setOnFocusChangeListener((v, hasFocus) -> {
-            if (!hasFocus) {
-                handler.removeCallbacks(tareaBusqueda); // Cancela búsquedas pendientes
-                listaSugerencias.setVisibility(View.GONE);
-            }
-        });
-
-
         /*----------------------------------------------------------------------------*/
 
 
@@ -256,6 +256,7 @@ public class MapasActivity extends FuncionesBaseActivity {
 
             edtBuscar.setText(seleccionado);
             edtBuscar.clearFocus();
+            findViewById(R.id.mapaOSM).requestFocus(); // Dispara el foco fuera del EditText
 
             // Reactivar textWatcher
             edtBuscar.addTextChangedListener(watcher);
@@ -397,10 +398,22 @@ public class MapasActivity extends FuncionesBaseActivity {
 
         // Escala los tiles según la densidad → más nitidez
         mapa.setTilesScaledToDpi(true);
+        mapa.setTileSource(new XYTileSource(
+                "MapnikHD",
+                0, 19, 512, ".png",
+                new String[]{
+                        "https://tile.openstreetmap.org/"
+                }
+        ));
+
+        Configuration.getInstance().setUserAgentValue("AtmosApp");
+        Configuration.getInstance().setMapViewHardwareAccelerated(true);
+        Configuration.getInstance().setDebugMode(false);
+
 
         // ----- CACHE Y RENDIMIENTO -----
-        Configuration.getInstance().setCacheMapTileCount((short) 24);
-        Configuration.getInstance().setCacheMapTileOvershoot((short) 12);
+        Configuration.getInstance().setCacheMapTileCount((short) 64);
+        Configuration.getInstance().setCacheMapTileOvershoot((short) 32);
 
         // Más hilos para descargar mapas
         Configuration.getInstance().setTileDownloadThreads((short) 8);
@@ -413,9 +426,6 @@ public class MapasActivity extends FuncionesBaseActivity {
 
         // Gestos multitáctiles
         mapa.setMultiTouchControls(true);
-
-        // Fuente de OpenStreetMap
-        mapa.setTileSource(TileSourceFactory.MAPNIK);
 
         // Configuración de inicio
         mapa.getController().setZoom(13.0);
