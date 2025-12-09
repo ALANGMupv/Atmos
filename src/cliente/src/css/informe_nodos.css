@@ -1,0 +1,275 @@
+/* ==== Informe de Nodos (T019) - Diseño alineado con userPage ==== */
+
+/* Panel principal dentro de .home-container */
+.panel-informe-nodos {
+    width: 100%;
+    min-height: 555px;
+    background-color: #FFFFFF;
+    border-radius: 15px;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.11);
+    padding: 10px 15px 15px 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Cabecera: filtros + tarjetas resumen */
+.informe-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: stretch;
+    justify-content: space-between;
+}
+
+/* ===== Filtros ===== */
+.filtros-informe {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 15px;
+    align-items: flex-end;
+}
+
+.campo-filtro {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.campo-filtro label {
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(11px, 1vw, 0.8rem);
+    font-weight: 500;
+    color: #4B5563;
+}
+
+.campo-filtro select {
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(11px, 1vw, 0.85rem);
+    font-weight: 400;
+    color: #545454;
+    border-radius: 10px;
+    border: 1px solid rgba(17, 24, 39, 0.25);
+    padding: 5px 10px;
+    background-color: #FFFFFF;
+    cursor: pointer;
+}
+
+.campo-filtro select:focus {
+    outline: none;
+    border-color: #059669;
+}
+
+/* Botón actualizar (estilo green ATMOS) */
+.btn-actualizar,
+#btnActualizarInforme {
+    height: 32px;
+    padding: 0 18px;
+    border-radius: 50px;
+    border: 2px solid #059669;
+    background-color: #059669;
+    color: #FFFFFF;
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(11px, 1vw, 0.85rem);
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.btn-actualizar:hover,
+#btnActualizarInforme:hover {
+    border-color: #05815b;
+    background-color: #05815b;
+}
+
+/* ===== Tarjetas resumen ===== */
+.resumen-informe {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.tarjeta-resumen {
+    min-width: 140px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background-color: #F9FAFB;
+    border: 1px solid #E5E7EB;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.resumen-label {
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(10px, 1vw, 0.75rem);
+    font-weight: 500;
+    color: #6B7280;
+}
+
+.resumen-valor {
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(18px, 2.4vw, 1.3rem);
+    font-weight: 600;
+    color: #111827;
+}
+
+/* Colores de estado en tarjetas */
+.nodos-totales {
+    border-left: 4px solid #059669; /* verde */
+}
+
+.nodos-inactivos {
+    border-left: 4px solid #EF4444; /* rojo */
+}
+
+.nodos-erroneos {
+    border-left: 4px solid #F97316; /* naranja */
+}
+
+/* ===== Contenedor tabla ===== */
+.tabla-informe-nodos-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 2px;
+    align-items: flex-start; /* para que la tabla no se “estire” a todo lo ancho por flex */
+}
+
+.tabla-informe-nodos-container h3 {
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(13px, 1vw, 14px);
+    font-weight: 600;
+    color: #059669;
+}
+
+/* ===== Toolbar de la tabla (Mostrar X registros) ===== */
+.tabla-toolbar {
+    width: 100%;
+    max-width: 98%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.tabla-length {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(11px, 1vw, 0.8rem);
+    color: #4B5563;
+}
+
+.tabla-length label {
+    font-weight: 500;
+}
+
+.tabla-length select {
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(11px, 1vw, 0.8rem);
+    padding: 3px 8px;
+    border-radius: 8px;
+    border: 1px solid rgba(17, 24, 39, 0.25);
+    background-color: #FFFFFF;
+    cursor: pointer;
+}
+
+/* Wrapper con padding y ancho ligeramente reducido */
+.tabla-scroll-wrapper {
+    width: 100%;
+    max-width: 98%;          /* hace la tabla un pelín más estrecha dentro del panel */
+    max-height: 380px;
+    overflow-x: auto;
+    overflow-y: auto;
+    border-radius: 12px;
+    border: 1px solid #E5E7EB;
+    background-color: #FFFFFF;
+    padding: 8px 12px;       /* aire lateral */
+}
+
+/* ===== Tabla ===== */
+.tabla-informe-nodos {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(11px, 1vw, 0.8rem);
+}
+
+/* Header verde */
+.tabla-informe-nodos thead {
+    background-color: #059669;
+}
+
+.tabla-informe-nodos th {
+    color: #FFFFFF !important;
+    font-family: 'Open Sans', sans-serif !important;
+    font-weight: 600;
+}
+
+.tabla-informe-nodos th,
+.tabla-informe-nodos td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid #E5E7EB;
+    white-space: nowrap;
+}
+
+.tabla-informe-nodos tbody tr:hover {
+    background-color: #F9FAFB;
+}
+
+/* ===== Badges de estado ===== */
+.badge-estado {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: clamp(10px, 1vw, 0.75rem);
+    font-weight: 500;
+}
+
+.badge-activo {
+    background-color: #DCFCE7;
+    color: #166534;
+}
+
+.badge-inactivo {
+    background-color: #FEE2E2;
+    color: #B91C1C;
+}
+
+.badge-error {
+    background-color: #FEF3C7;
+    color: #92400E;
+}
+
+/* Nota */
+.nota-informe {
+    font-family: 'Open Sans', sans-serif;
+    font-size: clamp(10px, 1vw, 0.75rem);
+    font-weight: 400;
+    color: #6B7280;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 904px) {
+    .informe-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .resumen-informe {
+        justify-content: flex-start;
+    }
+
+    .tabla-scroll-wrapper {
+        max-height: 320px;
+        max-width: 100%; /* en móvil que use todo el ancho del panel */
+    }
+
+    .tabla-toolbar {
+        max-width: 100%;
+    }
+}
