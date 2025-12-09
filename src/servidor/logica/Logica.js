@@ -15,6 +15,7 @@
 const mysql = require("mysql2/promise"); // Cliente MySQL en modo promesa
 const bcrypt = require("bcrypt");        // Librería para cifrar contraseñas
 
+
 class Logica {
 
     // --------------------------------------------------------------------------
@@ -657,121 +658,6 @@ class Logica {
         }
     }
 
-// --------------------------------------------------------------------------
-// Autor: Alan Guevara Martínez
-// Fecha: 20/11/2025
-// Método: guardarMedidaYActualizarDistancia()
-// --------------------------------------------------------------------------
-// Descripción:
-//   Inserta una nueva medida en la tabla "medida" (como guardarMedida),
-//   y además actualiza el campo "distancia" de la tabla "placa"
-//   usando el RSSI recibido (ahora se guarda el valor crudo).
-//
-// Parámetros:
-//   - id_placa {string} : identificador de la placa.
-//   - tipo     {number} : tipo de gas.
-//   - valor    {number} : valor medido.
-//   - latitud  {number} : latitud registrada (opcional).
-//   - longitud {number} : longitud registrada (opcional).
-//   - rssi     {number} : intensidad de señal del beacon.
-//
-// Devuelve:
-//   - {Promise<Object>} : fila insertada en "medida".
-// --------------------------------------------------------------------------
-async guardarMedidaYActualizarDistancia(
-    id_placa,
-    tipo,
-    valor,
-    latitud = 0,
-    longitud = 0,
-    rssi
-) {
-    const conn = await this.pool.getConnection();
-    try {
-        // Iniciamos transacción
-        await conn.beginTransaction();
-
-        // 1) Insertar la medida
-        const sqlInsert = `
-            INSERT INTO medida (id_placa, tipo, valor, latitud, longitud, fecha_hora)
-            VALUES (?, ?, ?, ?, ?, NOW())
-        `;
-        const [resultado] = await conn.execute(sqlInsert, [
-            id_placa,
-            tipo,
-            valor,
-            latitud,
-            longitud
-        ]);
-
-        const sqlSelect = `SELECT * FROM medida WHERE id_medida = ?`;
-        const [filas] = await conn.execute(sqlSelect, [resultado.insertId]);
-        const medidaInsertada = filas[0];
-
-        // 2) Guardar directamente el RSSI en placa.distancia
-        const sqlUpdatePlaca = `
-            UPDATE placa
-            SET distancia = ?
-            WHERE id_placa = ?
-        `;
-        await conn.execute(sqlUpdatePlaca, [rssi, id_placa]);
-
-        // 3) Commit
-        await conn.commit();
-
-        return medidaInsertada;
-
-    } catch (err) {
-        // Rollback si falla
-        try {
-            await conn.rollback();
-        } catch (e) {
-            console.error("Error en rollback de guardarMedidaYActualizarDistancia:", e);
-        }
-        console.error("Error en guardarMedidaYActualizarDistancia:", err);
-        throw err;
-
-    } finally {
-        conn.release();
-    }
-}
-
-
-// --------------------------------------------------------------------------
-// Método: actualizarEstadoPlaca
-// Autor: Alan Guevara Martínez
-// Fecha: 20/11/2025
-// --------------------------------------------------------------------------
-// Descripción:
-//   Actualiza el campo "encendida" de la tabla placa según si el sensor
-//   está enviando beacons (1) o no (0).
-//
-// Parámetros:
-//   - id_placa {string}
-//   - encendida {number} → 1 o 0
-//
-// Devuelve:
-//   - {Promise<void>}
-// --------------------------------------------------------------------------
-async actualizarEstadoPlaca(id_placa, encendida) {
-    const conn = await this.pool.getConnection();
-    try {
-        const sql = `
-            UPDATE placa
-            SET encendida = ?
-            WHERE id_placa = ?
-        `;
-        await conn.execute(sql, [encendida, id_placa]);
-
-    } catch (err) {
-        console.error("Error en actualizarEstadoPlaca:", err);
-        throw err;
-
-    } finally {
-        conn.release();
-    }
-}
-
     // --------------------------------------------------------------------------
     // Método: obtenerPromedios7Dias()
     // --------------------------------------------------------------------------
@@ -784,13 +670,13 @@ async actualizarEstadoPlaca(id_placa, encendida) {
         const conn = await this.pool.getConnection();
         try {
             const sql = `
-				SELECT DATE(fecha_hora) AS fecha, AVG(valor) AS promedio
-				FROM medida
-				WHERE id_placa = ?
-				  AND tipo = ?
-				  AND fecha_hora >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
-				GROUP BY DATE(fecha_hora)
-			`;
+                SELECT DATE(fecha_hora) AS fecha, AVG(valor) AS promedio
+                FROM medida
+                WHERE id_placa = ?
+                  AND tipo = ?
+                  AND fecha_hora >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+                GROUP BY DATE(fecha_hora)
+            `;
 
             const [rows] = await conn.query(sql, [id_placa, tipo]);
 
@@ -843,17 +729,17 @@ async actualizarEstadoPlaca(id_placa, encendida) {
         const conn = await this.pool.getConnection();
         try {
             const sql = `
-				SELECT
-					fecha_hora,
-					HOUR(fecha_hora) AS hora,
-					AVG(valor) AS promedio
-				FROM medida
-				WHERE id_placa = ?
-				  AND tipo = ?
-				  AND fecha_hora >= DATE_SUB(NOW(), INTERVAL 8 HOUR)
-				GROUP BY HOUR(fecha_hora)
-				ORDER BY hora;
-			`;
+                SELECT 
+                    fecha_hora,
+                    HOUR(fecha_hora) AS hora,
+                    AVG(valor) AS promedio
+                FROM medida
+                WHERE id_placa = ?
+                  AND tipo = ?
+                  AND fecha_hora >= DATE_SUB(NOW(), INTERVAL 8 HOUR)
+                GROUP BY HOUR(fecha_hora)
+                ORDER BY hora;
+            `;
 
             const [rows] = await conn.query(sql, [id_placa, tipo]);
 
@@ -893,65 +779,27 @@ async actualizarEstadoPlaca(id_placa, encendida) {
         }
     }
 
+    // --------------------------------------------------------------------------
+// Autor: Alan Guevara Martínez
+// Fecha: 20/11/2025
+// Método: guardarMedidaYActualizarDistancia()
 // --------------------------------------------------------------------------
-    // Autor: Alan Guevara Martínez
-    // Fecha: 20/11/2025
-    // Método PRIVADO: _mapearRSSIaEstado()
-    // --------------------------------------------------------------------------
-    // Descripción:
-    //   Recibe un valor de RSSI y lo traduce a una etiqueta de distancia
-    //   legible para guardar directamente en la BD (ej: "cerca", "media", "lejos").
-    //
-    // Notas:
-    //   - Los umbrales son orientativos y se pueden ajustar más adelante.
-    // --------------------------------------------------------------------------
-    _mapearRSSIaEstado(rssi) {
-        // Si no viene nada o es NaN, devolvemos "desconocida"
-        if (rssi === null || rssi === undefined || isNaN(Number(rssi))) {
-            return "desconocida";
-        }
-
-        const valor = Number(rssi);
-
-        // Umbrales típicos para BLE (puedes modificarlos a tu gusto)
-        if (valor >= -50) {
-            return "muy_cerca";      // señal muy fuerte
-        } else if (valor >= -70) {
-            return "cerca";          // bastante cerca
-        } else if (valor >= -85) {
-            return "media";          // distancia media
-        } else {
-            return "lejos";          // lejos / muy débil
-        }
-    }
-
-    // --------------------------------------------------------------------------
-    // Autor: Alan Guevara Martínez
-    // Fecha: 20/11/2025
-    // Método: guardarMedidaYActualizarDistancia()
-    // --------------------------------------------------------------------------
-    // Descripción:
-    //   Inserta una nueva medida en la tabla "medida" (como guardarMedida),
-    //   y además actualiza el campo "distancia" de la tabla "placa"
-    //   usando el RSSI recibido.
-    //
-    // Parámetros:
-    //   - id_placa {string} : identificador de la placa.
-    //   - tipo     {number} : tipo de gas.
-    //   - valor    {number} : valor medido.
-    //   - latitud  {number} : latitud registrada (opcional).
-    //   - longitud {number} : longitud registrada (opcional).
-    //   - rssi     {number} : intensidad de señal del beacon.
-    //
-    // Devuelve:
-    //   - {Promise<Object>} : fila insertada en "medida".
-    //
-    // Notas importantes:
-    //   - Se usa transacción para que inserción y actualización vayan juntas.
-    //   - El campo "placa.distancia" debe ser de tipo VARCHAR para guardar texto
-    //     como "cerca" / "media" / "lejos". Ahora mismo está como DOUBLE en el
-    //     SQL que has pasado, habría que cambiarlo a VARCHAR(20) por ejemplo.
-    // --------------------------------------------------------------------------
+// Descripción:
+//   Inserta una nueva medida en la tabla "medida" (como guardarMedida),
+//   y además actualiza el campo "distancia" de la tabla "placa"
+//   usando el RSSI recibido (ahora se guarda el valor crudo).
+//
+// Parámetros:
+//   - id_placa {string} : identificador de la placa.
+//   - tipo     {number} : tipo de gas.
+//   - valor    {number} : valor medido.
+//   - latitud  {number} : latitud registrada (opcional).
+//   - longitud {number} : longitud registrada (opcional).
+//   - rssi     {number} : intensidad de señal del beacon.
+//
+// Devuelve:
+//   - {Promise<Object>} : fila insertada en "medida".
+// --------------------------------------------------------------------------
     async guardarMedidaYActualizarDistancia(
         id_placa,
         tipo,
@@ -962,14 +810,14 @@ async actualizarEstadoPlaca(id_placa, encendida) {
     ) {
         const conn = await this.pool.getConnection();
         try {
-            // Iniciamos transacción para hacerlo todo de forma atómica
+            // Iniciamos transacción
             await conn.beginTransaction();
 
-            // 1) Insertar la medida igual que en guardarMedida()
+            // 1) Insertar la medida
             const sqlInsert = `
-                INSERT INTO medida (id_placa, tipo, valor, latitud, longitud, fecha_hora)
-                VALUES (?, ?, ?, ?, ?, NOW())
-            `;
+            INSERT INTO medida (id_placa, tipo, valor, latitud, longitud, fecha_hora)
+            VALUES (?, ?, ?, ?, ?, NOW())
+        `;
             const [resultado] = await conn.execute(sqlInsert, [
                 id_placa,
                 tipo,
@@ -982,24 +830,21 @@ async actualizarEstadoPlaca(id_placa, encendida) {
             const [filas] = await conn.execute(sqlSelect, [resultado.insertId]);
             const medidaInsertada = filas[0];
 
-            // 2) Calcular el estado de distancia a partir del RSSI
-            const estadoDistancia = this._mapearRSSIaEstado(rssi);
-
-            // 3) Actualizar la tabla placa con el estado calculado
+            // 2) Guardar directamente el RSSI en placa.distancia
             const sqlUpdatePlaca = `
-                UPDATE placa
-                SET distancia = ?
-                WHERE id_placa = ?
-            `;
-            await conn.execute(sqlUpdatePlaca, [estadoDistancia, id_placa]);
+            UPDATE placa
+            SET distancia = ?
+            WHERE id_placa = ?
+        `;
+            await conn.execute(sqlUpdatePlaca, [rssi, id_placa]);
 
-            // 4) Confirmamos la transacción
+            // 3) Commit
             await conn.commit();
 
             return medidaInsertada;
 
         } catch (err) {
-            // Si algo falla, revertimos la transacción
+            // Rollback si falla
             try {
                 await conn.rollback();
             } catch (e) {
@@ -1009,7 +854,6 @@ async actualizarEstadoPlaca(id_placa, encendida) {
             throw err;
 
         } finally {
-            // Liberamos la conexión al pool
             conn.release();
         }
     }
@@ -1034,10 +878,10 @@ async actualizarEstadoPlaca(id_placa, encendida) {
         const conn = await this.pool.getConnection();
         try {
             const sql = `
-				UPDATE placa
-				SET encendida = ?
-				WHERE id_placa = ?
-			`;
+                UPDATE placa
+                SET encendida = ?
+                WHERE id_placa = ?
+            `;
             await conn.execute(sql, [encendida, id_placa]);
 
         } catch (err) {
@@ -1076,11 +920,11 @@ async actualizarEstadoPlaca(id_placa, encendida) {
 
         try {
             const sql = `
-				SELECT encendida
-				FROM placa
-				WHERE id_placa = ?
-				LIMIT 1
-			`;
+                SELECT encendida 
+                FROM placa
+                WHERE id_placa = ?
+                LIMIT 1
+            `;
 
             const [rows] = await conn.query(sql, [id_placa]);
 
@@ -1123,12 +967,12 @@ async actualizarEstadoPlaca(id_placa, encendida) {
         try {
             // 1) Buscar qué placa tiene este usuario
             const sqlPlaca = `
-				SELECT p.distancia
-				FROM usuarioplaca up
-				JOIN placa p ON p.id_placa = up.id_placa
-				WHERE up.id_usuario = ?
-				LIMIT 1
-			`;
+                SELECT p.distancia
+                FROM usuarioplaca up
+                JOIN placa p ON p.id_placa = up.id_placa
+                WHERE up.id_usuario = ?
+                LIMIT 1
+            `;
 
             const [rows] = await conn.query(sqlPlaca, [idUsuario]);
 
@@ -1158,8 +1002,632 @@ async actualizarEstadoPlaca(id_placa, encendida) {
         }
     }
 
-}
+    //A partir de aqui agrego notificaciones --alex
 
+    /* --------------------------------------------------------------------------
+     * Método: obtenerUltimaMedidaPlaca()
+     * --------------------------------------------------------------------------
+     * Descripción:
+     *   Devuelve la última medida registrada (de cualquier tipo) asociada a una
+     *   placa. Útil para evaluar actividad reciente e inactividad del sensor.
+     *
+     * Parámetros:
+     *   - id_placa {number} : identificador de la placa
+     *
+     * Devuelve:
+     *   - {Promise<Object|null>} : la fila completa de la tabla medida o null
+     * -------------------------------------------------------------------------- */
+    async obtenerUltimaMedidaPlaca(id_placa) {
+        const conn = await this.pool.getConnection();
+        try {
+            const sql = `
+                SELECT *
+                FROM medida
+                WHERE id_placa = ?
+                ORDER BY fecha_hora DESC, id_medida DESC
+                LIMIT 1
+            `;
+            const [rows] = await conn.query(sql, [id_placa]);
+            return rows.length ? rows[0] : null;
+        } finally {
+            conn.release();
+        }
+    }
+
+    /* --------------------------------------------------------------------------
+ * Método: obtenerUltimaMedidaO3()
+ * --------------------------------------------------------------------------
+ * Descripción:
+ *   Devuelve la última medida de tipo O₃ (tipo = 13) para una placa.
+ * -------------------------------------------------------------------------- */
+    async obtenerUltimaMedidaO3(id_placa) {
+        const TIPO_O3 = 13;
+        return this.obtenerUltimaMedidaPorGas(id_placa, TIPO_O3);
+    }
+
+    /* --------------------------------------------------------------------------
+     * Método: obtenerMinutosDesdeUltimaMedida()
+     * --------------------------------------------------------------------------
+     * Descripción:
+     *   Calcula cuántos minutos han pasado desde la última medida registrada de
+     *   una placa. Sirve para detectar sensores inactivos.
+     *
+     * Parámetros:
+     *   - id_placa {number}
+     *
+     * Devuelve:
+     *   - {Promise<number|null>} : minutos transcurridos o null si no hay datos
+     * -------------------------------------------------------------------------- */
+    async obtenerMinutosDesdeUltimaMedida(id_placa) {
+        const conn = await this.pool.getConnection();
+        try {
+            const sql = `
+                SELECT TIMESTAMPDIFF(MINUTE, MAX(fecha_hora), NOW()) AS minutos
+                FROM medida
+                WHERE id_placa = ?
+            `;
+            const [rows] = await conn.query(sql, [id_placa]);
+            return rows[0].minutos !== null ? Number(rows[0].minutos) : null;
+        } finally {
+            conn.release();
+        }
+    }
+
+    /* --------------------------------------------------------------------------
+     * Método: contarLecturasFueraDeRango()
+     * --------------------------------------------------------------------------
+     * Descripción:
+     *   Cuenta cuántas lecturas de un gas están fuera de un rango esperado dentro
+     *   de una ventana de tiempo determinada.
+     *
+     * Parámetros:
+     *   - id_placa     {number}
+     *   - tipo         {number} : tipo de gas
+     *   - minValor     {number}
+     *   - maxValor     {number}
+     *   - horasVentana {number} : horas hacia atrás a evaluar
+     *
+     * Devuelve:
+     *   - {Promise<number>} : número de lecturas fuera de rango
+     * -------------------------------------------------------------------------- */
+    async contarLecturasFueraDeRango(id_placa, tipo, minValor, maxValor, horasVentana) {
+        const conn = await this.pool.getConnection();
+        try {
+            const sql = `
+                SELECT COUNT(*) AS num
+                FROM medida
+                WHERE id_placa = ?
+                  AND tipo = ?
+                  AND (valor < ? OR valor > ?)
+                  AND fecha_hora >= DATE_SUB(NOW(), INTERVAL ? HOUR)
+            `;
+            const [rows] = await conn.query(sql, [
+                id_placa,
+                tipo,
+                minValor,
+                maxValor,
+                horasVentana
+            ]);
+            return Number(rows[0].num);
+        } finally {
+            conn.release();
+        }
+    }
+
+    /* --------------------------------------------------------------------------
+     * Método: contarPicosAltosHoy()
+     * --------------------------------------------------------------------------
+     * Descripción:
+     *   Cuenta cuántas veces un gas supera cierto umbral dentro del día actual.
+     *
+     * Parámetros:
+     *   - id_placa     {number}
+     *   - tipo         {number}
+     *   - umbralAlto   {number}
+     *
+     * Devuelve:
+     *   - {Promise<number>}
+     * -------------------------------------------------------------------------- */
+    async contarPicosAltosHoy(id_placa, tipo, umbralAlto) {
+        const conn = await this.pool.getConnection();
+        try {
+            const sql = `
+                SELECT COUNT(*) AS num
+                FROM medida
+                WHERE id_placa = ?
+                  AND tipo = ?
+                  AND valor > ?
+                  AND DATE(fecha_hora) = CURDATE()
+            `;
+            const [rows] = await conn.query(sql, [id_placa, tipo, umbralAlto]);
+            return Number(rows[0].num);
+        } finally {
+            conn.release();
+        }
+    }
+
+    /* --------------------------------------------------------------------------
+     * Método: obtenerDistanciaPlaca()
+     * --------------------------------------------------------------------------
+     * Descripción:
+     *   Devuelve la última distancia registrada para una placa (si existe), usada
+     *   para generar notificaciones de proximidad entre sensor y teléfono.
+     *
+     * Parámetros:
+     *   - id_placa {number}
+     *
+     * Devuelve:
+     *   - {Promise<string|null>}
+     * -------------------------------------------------------------------------- */
+    async obtenerDistanciaPlaca(id_placa) {
+        const conn = await this.pool.getConnection();
+        try {
+            const sql = `SELECT distancia FROM placa WHERE id_placa = ? LIMIT 1`;
+            const [rows] = await conn.query(sql, [id_placa]);
+            return rows.length ? rows[0].distancia : null;
+        } finally {
+            conn.release();
+        }
+    }
+
+
+    // --------------------------------------------------------------------------
+    // Método: obtenerUltimasMedidasGlobalPorGas()
+    // --------------------------------------------------------------------------
+    // Descripción:
+    //   Devuelve, para un TIPO DE GAS concreto, la ÚLTIMA medición registrada
+    //   por cada placa en la tabla "medida".
+    //
+    //   Es decir, si hay 50 placas repartidas por varias ciudades, este método
+    //   devuelve como máximo 50 filas: la medida más reciente de ese gas para
+    //   cada id_placa, con sus coordenadas (latitud / longitud).
+    //
+    //   Este método está pensado para alimentar el MAPA GLOBAL de calidad de
+    //   aire, donde se pintan todos los puntos de medición disponibles,
+    //   independientemente del usuario que los haya generado.
+    //
+    // Parámetros:
+    //   - tipo {number} : código del gas (11 = NO2, 12 = CO, 13 = O3, 14 = SO2).
+    //
+    // Devuelve:
+    //   - {Promise<Array>} : lista de filas con el formato:
+    //         [
+    //           {
+    //             id_medida,
+    //             id_placa,
+    //             tipo,
+    //             valor,
+    //             latitud,
+    //             longitud,
+    //             fecha_hora
+    //           },
+    //           ...
+    //         ]
+    //
+    // Detalles de implementación:
+    //   - Se usa una subconsulta para obtener, por cada placa, el MAX(id_medida)
+    //     del tipo de gas indicado.
+    //   - Después, se hace un JOIN con la tabla medida para recuperar los datos
+    //     completos de esas filas "últimas".
+    //   - Se ordena por fecha_hora DESC para tener primero las más recientes.
+    // --------------------------------------------------------------------------
+    async obtenerUltimasMedidasGlobalPorGas(tipo) {
+        // Obtenemos una conexión desde el pool
+        const conn = await this.pool.getConnection();
+        try {
+            const sql = `
+                SELECT 
+                    m.id_medida,
+                    m.id_placa,
+                    m.tipo,
+                    m.valor,
+                    m.latitud,
+                    m.longitud,
+                    m.fecha_hora
+                FROM medida m
+                INNER JOIN (
+                    SELECT 
+                        id_placa,
+                        MAX(id_medida) AS max_id
+                    FROM medida
+                    WHERE tipo = ?
+                    GROUP BY id_placa
+                ) ult
+                ON m.id_medida = ult.max_id
+                ORDER BY m.fecha_hora DESC, m.id_medida DESC
+            `;
+
+            // Ejecutamos la consulta pasando el tipo de gas como parámetro
+            const [rows] = await conn.query(sql, [tipo]);
+
+            // Devolvemos directamente el array de filas
+            return rows;
+
+        } finally {
+            // Liberamos siempre la conexión al pool
+            conn.release();
+        }
+    }
+
+    // --------------------------------------------------------------------------
+// Método: obtenerUltimasMedidasGlobalTodasLasPlacas()
+// Autor: Santiago Fuenmayor Ruiz
+// Fecha: 05/12/2025 (revisado)
+// --------------------------------------------------------------------------
+// Descripción:
+//   Devuelve, para CADA placa que tenga mediciones en la tabla "medida",
+//   las últimas coordenadas y el último valor de cada gas (11,12,13,14)
+//   en UNA única fila por placa.
+//
+//   Solo salen placas que tengan al menos una medida y lat/long no nulas.
+// --------------------------------------------------------------------------
+    async obtenerUltimasMedidasGlobalTodasLasPlacas() {
+        const conn = await this.pool.getConnection();
+        try {
+
+            const sql = `
+            SELECT *
+            FROM (
+                SELECT 
+                    p.id_placa,
+
+                    -- Última posición registrada (cualquier tipo)
+                    (
+                        SELECT latitud
+                        FROM medida
+                        WHERE id_placa = p.id_placa
+                        ORDER BY fecha_hora DESC, id_medida DESC
+                        LIMIT 1
+                    ) AS latitud,
+
+                    (
+                        SELECT longitud
+                        FROM medida
+                        WHERE id_placa = p.id_placa
+                        ORDER BY fecha_hora DESC, id_medida DESC
+                        LIMIT 1
+                    ) AS longitud,
+
+                    -- Último NO2 (tipo 11)
+                    (
+                        SELECT valor
+                        FROM medida
+                        WHERE id_placa = p.id_placa AND tipo = 11
+                        ORDER BY fecha_hora DESC, id_medida DESC
+                        LIMIT 1
+                    ) AS NO2,
+
+                    -- Último CO (tipo 12)
+                    (
+                        SELECT valor
+                        FROM medida
+                        WHERE id_placa = p.id_placa AND tipo = 12
+                        ORDER BY fecha_hora DESC, id_medida DESC
+                        LIMIT 1
+                    ) AS CO,
+
+                    -- Último O3 (tipo 13)
+                    (
+                        SELECT valor
+                        FROM medida
+                        WHERE id_placa = p.id_placa AND tipo = 13
+                        ORDER BY fecha_hora DESC, id_medida DESC
+                        LIMIT 1
+                    ) AS O3,
+
+                    -- Último SO2 (tipo 14)
+                    (
+                        SELECT valor
+                        FROM medida
+                        WHERE id_placa = p.id_placa AND tipo = 14
+                        ORDER BY fecha_hora DESC, id_medida DESC
+                        LIMIT 1
+                    ) AS SO2
+
+                -- ATENCIÓN: ahora partimos de MEDIDA, no de placa
+                FROM (
+                    SELECT DISTINCT id_placa
+                    FROM medida
+                ) p
+            ) t
+            -- Eliminamos placas sin coordenadas válidas
+            WHERE t.latitud IS NOT NULL
+              AND t.longitud IS NOT NULL;
+        `;
+
+            const [rows] = await conn.query(sql);
+            return rows;
+
+        } finally {
+            conn.release();
+        }
+    }
+
+
+
+    // --------------------------------------------------------------------------
+    // Método: obtenerEstadoNodos()
+    // --------------------------------------------------------------------------
+    // Devuelve el estado de TODOS los nodos (placas) para el informe T019.
+    // Agregado por: Alejandro V.
+    // --------------------------------------------------------------------------
+    async obtenerEstadoNodos(umbralInactivoMin = 5, horasError = 4, limit = 100) {
+        const conn = await this.pool.getConnection();
+        try {
+            const lim = Math.max(1, Math.min(parseInt(limit || 100, 10), 500));
+
+            const sqlPlacas = `
+                SELECT 
+                    p.id_placa,
+                    p.encendida,
+                    MAX(m.fecha_hora) AS ultima_medida,
+                    TIMESTAMPDIFF(
+                        MINUTE,
+                        MAX(m.fecha_hora),
+                        NOW()
+                    ) AS minutos_desde_ultima
+                FROM placa p
+                LEFT JOIN medida m
+                    ON p.id_placa = m.id_placa
+                GROUP BY p.id_placa, p.encendida
+                ORDER BY ultima_medida DESC
+                LIMIT ?
+            `;
+
+            const [rows] = await conn.query(sqlPlacas, [lim]);
+            if (!rows.length) return [];
+
+            const sqlErrores = `
+                SELECT 
+                    id_placa,
+                    COUNT(*) AS num_fuera_rango
+                FROM medida
+                WHERE fecha_hora >= DATE_SUB(NOW(), INTERVAL ? HOUR)
+                  AND valor > 2300
+                GROUP BY id_placa
+            `;
+            const [rowsErrores] = await conn.query(sqlErrores, [horasError]);
+
+            const mapaErrores = {};
+            rowsErrores.forEach(r => mapaErrores[r.id_placa] = r.num_fuera_rango);
+
+            return rows.map(r => {
+                const minutosDesdeUltima = r.ultima_medida ? Number(r.minutos_desde_ultima) : null;
+                const tieneErrores = mapaErrores[r.id_placa] > 0;
+
+                let estado = "activo";
+                let tiempoProblemaMin = null;
+
+                if (!r.ultima_medida || minutosDesdeUltima > umbralInactivoMin || r.encendida === 0) {
+                    estado = "inactivo";
+                    tiempoProblemaMin = minutosDesdeUltima;
+                }
+
+                if (tieneErrores) {
+                    estado = "error";
+                    tiempoProblemaMin = horasError * 60;
+                }
+
+                return {
+                    id_placa: r.id_placa,
+                    ultima_medida: r.ultima_medida,
+                    minutos_desde_ultima: minutosDesdeUltima,
+                    estado,
+                    tiempo_problema_min: tiempoProblemaMin
+                };
+            });
+
+        } finally {
+            conn.release();
+        }
+    }
+//* --------------------------------------------------------------------------
+//* NOTIFICACIONES
+//* --------------------------------------------------------------------------
+    /* --------------------------------------------------------------------------
+     * Método: obtenerNotificacionesUsuarioDesdeBD()
+     * Lee las notificaciones reales desde la tabla `notificacion`
+     * -------------------------------------------------------------------------- */
+    async obtenerNotificacionesUsuarioDesdeBD(id_usuario) {
+        const conn = await this.pool.getConnection();
+        try {
+            const sql = `
+            SELECT
+                id_notificacion,
+                tipo,
+                titulo,
+                mensaje,
+                icono,
+                fecha_creacion,
+                estado
+            FROM notificacion
+            WHERE id_usuario = ?
+            ORDER BY fecha_creacion DESC
+            LIMIT 100
+        `;
+            const [rows] = await conn.query(sql, [id_usuario]);
+
+            // Adaptamos al formato que Android ya maneja
+            return rows.map(row => ({
+                id_notificacion: row.id_notificacion,
+                tipo: row.tipo,
+                titulo: row.titulo,
+                texto: row.mensaje,
+                icono: row.icono,
+                fecha_hora: row.fecha_creacion,
+                leido: row.estado === 1
+            }));
+
+        } finally {
+            conn.release();
+        }
+    }
+    /* --------------------------------------------------------------------------
+     * Método: obtenerNotificacionesUsuario()
+     * --------------------------------------------------------------------------
+     *
+     * Simplemente devuelve las notificaciones persistidas en la tabla `notificacion`
+     * para ese usuario.
+     * -------------------------------------------------------------------------- */
+    async obtenerNotificacionesUsuario(id_usuario) {
+        // Delegamos en el método que lee directamente de la BBDD
+        return await this.obtenerNotificacionesUsuarioDesdeBD(id_usuario);
+    }
+    /* --------------------------------------------------------------------------
+     * Método: insertarNotificacion()
+     * --------------------------------------------------------------------------
+     * Inserta una notificación en la tabla `notificacion`.
+     *
+     * Params (obj):
+     *  - id_usuario {number}      (requerido)
+     *  - id_placa   {string|null} (opcional)
+     *  - tipo       {string}      (p.ej. 'O3_CRITICO', 'SENSOR_INACTIVO')
+     *  - titulo     {string}
+     *  - mensaje    {string}
+     *  - nivel      {string}      ('info', 'warning', 'critico')
+     *  - icono      {string|null} (p.ej. 'alerta', 'desconexion')
+     * -------------------------------------------------------------------------- */
+    async insertarNotificacion({
+                                   id_usuario,
+                                   id_placa = null,
+                                   tipo,
+                                   titulo,
+                                   mensaje,
+                                   nivel = "info",
+                                   icono = null,
+                                   estado = 0
+                               }) {
+        const conn = await this.pool.getConnection();
+        try {
+            const sql = `
+                INSERT INTO notificacion
+                (id_usuario, id_placa, tipo, titulo, mensaje, nivel, icono, estado, fecha_creacion)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+            `;
+            const [result] = await conn.execute(sql, [
+                id_usuario,
+                id_placa,
+                tipo,
+                titulo,
+                mensaje,
+                nivel,
+                icono,
+                estado
+            ]);
+
+            return result.insertId; // por si lo quieres usar
+        } finally {
+            conn.release();
+        }
+    }
+    /* --------------------------------------------------------------------------
+     * Método: obtenerNotificacionesUsuarioDesdeBD()
+     * --------------------------------------------------------------------------
+     * Lee las notificaciones persistidas en `notificacion` para un usuario.
+     * Devuelve en el formato que espera Android.
+     * -------------------------------------------------------------------------- */
+    async obtenerNotificacionesUsuarioDesdeBD(id_usuario) {
+        const conn = await this.pool.getConnection();
+        try {
+            const sql = `
+                SELECT
+                    id_notificacion,
+                    tipo,
+                    titulo,
+                    mensaje,
+                    icono,
+                    fecha_creacion,
+                    estado
+                FROM notificacion
+                WHERE id_usuario = ?
+                ORDER BY fecha_creacion DESC, id_notificacion DESC
+                LIMIT 100
+            `;
+            const [rows] = await conn.query(sql, [id_usuario]);
+
+            return rows.map(row => ({
+                id_notificacion: row.id_notificacion,
+                tipo: row.tipo,
+                titulo: row.titulo,
+                texto: row.mensaje,
+                icono: row.icono,
+                fecha_hora: row.fecha_creacion,
+                leido: row.estado === 1
+            }));
+        } finally {
+            conn.release();
+        }
+    }
+    /* --------------------------------------------------------------------------
+     * Método: marcarNotificacionLeida()
+     * --------------------------------------------------------------------------
+     * Marca una notificación concreta como leída para un usuario.
+     * -------------------------------------------------------------------------- */
+    async marcarNotificacionLeida(id_notificacion, id_usuario) {
+        const conn = await this.pool.getConnection();
+        try {
+            const sql = `
+                UPDATE notificacion
+                SET estado = 1,
+                    fecha_leida = NOW()
+                WHERE id_notificacion = ? AND id_usuario = ?
+            `;
+            const [result] = await conn.execute(sql, [id_notificacion, id_usuario]);
+            return result.affectedRows > 0;
+        } finally {
+            conn.release();
+        }
+    }
+    /* --------------------------------------------------------------------------
+     * Método: marcarTodasNotificacionesLeidas()
+     * --------------------------------------------------------------------------
+     * Marca como leídas todas las notificaciones de un usuario que estén sin leer.
+     * -------------------------------------------------------------------------- */
+    async marcarTodasNotificacionesLeidas(id_usuario) {
+        const conn = await this.pool.getConnection();
+        try {
+            const sql = `
+                UPDATE notificacion
+                SET estado = 1,
+                    fecha_leida = IF(fecha_leida IS NULL, NOW(), fecha_leida)
+                WHERE id_usuario = ? AND estado = 0
+            `;
+            const [result] = await conn.execute(sql, [id_usuario]);
+            return result.affectedRows;
+        } finally {
+            conn.release();
+        }
+    }
+    async borrarNotificacion(id_notificacion, id_usuario) {
+        const conn = await this.pool.getConnection();
+        try {
+            const sql = `
+                DELETE FROM notificacion
+                WHERE id_notificacion = ? AND id_usuario = ?
+            `;
+            const [result] = await conn.execute(sql, [id_notificacion, id_usuario]);
+            return result.affectedRows > 0;
+        } finally {
+            conn.release();
+        }
+    }
+
+    async borrarNotificacionesUsuario(id_usuario) {
+        const conn = await this.pool.getConnection();
+        try {
+            const sql = `DELETE FROM notificacion WHERE id_usuario = ?`;
+            const [result] = await conn.execute(sql, [id_usuario]);
+            return result.affectedRows;
+        } finally {
+            conn.release();
+        }
+    }
+
+
+//* --------------------------------------------------------------------------
+//* NOTIFICACIONES
+//* --------------------------------------------------------------------------
+}
 // --------------------------------------------------------------------------
 // Exportación de la clase
 // --------------------------------------------------------------------------

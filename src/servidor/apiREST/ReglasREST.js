@@ -9,18 +9,19 @@
  *   - Validar los datos de entrada.
  *   - Llamar a la capa de lógica (Logica.js), que gestiona MySQL.
  *
+ * Autores: Alan Guevara Martínez y Santiago Fuenmayor Ruiz
  */
 
 const express = require("express");
 const admin = require("../firebase/firebaseAdmin"); // SDK Admin de Firebase para validar tokens
 const bcrypt = require("bcrypt");                   // Para futuras validaciones locales
 
+
 // NUEVO: servicio de email Atmos
 const servicioEmail = require("../servicios/ServicioEmailAtmos.js");
 
 // NUEVO: servicio de restablecimiento de contraseña
 const servicioEmailReset = require("../servicios/ServicioEmailResetAtmos.js");
-
 
 
 /**
@@ -60,9 +61,9 @@ function reglasREST(logica) {
     }
 
     // --------------------------------------------------------------------------
-    //  Endpoint: POST /medida
-    //  Autor: Alan Guevara Martínez
-    // --------------------------------------------------------------------------
+//  Endpoint: POST /medida
+//  Autor: Alan Guevara Martínez
+// --------------------------------------------------------------------------
     /**
      * Inserta una nueva medida en la base de datos.
      *
@@ -160,8 +161,8 @@ function reglasREST(logica) {
     });
 
     // --------------------------------------------------------------------------
-    //  Endpoint: POST /usuario
-    // --------------------------------------------------------------------------
+//  Endpoint: POST /usuario
+// --------------------------------------------------------------------------
     /**
      * Registra un nuevo usuario autenticado por Firebase en la base de datos
      * y envía un correo de verificación de Atmos usando un enlace oficial
@@ -234,11 +235,15 @@ function reglasREST(logica) {
             if (!emailVerificado) {
                 try {
                     // Generamos enlace seguro de verificación con Firebase Admin
+                    console.log("Generando enlace de verificación...");
                     const enlace = await admin.auth().generateEmailVerificationLink(email, {
                         // URL de redirección tras verificar (ajusta a tu app / web)
                         url: "https://nagufor.upv.edu.es/cliente/login.php",
                         handleCodeInApp: false
                     });
+
+                    console.log("Enlace generado:", enlace);
+                    console.log("Enviando correo Atmos...");
 
                     // Enviamos correo HTML bonito de Atmos
                     await servicioEmail.enviarCorreoVerificacionAtmos(
@@ -424,26 +429,26 @@ function reglasREST(logica) {
         }
     });
 
-    // -----------------------------------------------------------------------------
-    // Endpoint: POST /desvincular
-    // Autor: Alan Guevara Martínez
-    // Fecha: 19/11/2025
-    // -----------------------------------------------------------------------------
-    // Descripción:
-    //   - Desvincula la placa asociada al usuario indicado.
-    //   - Internamente llama a logica.desvincularPlacaDeUsuario(id_usuario).
-    //
-    // Body esperado (JSON):
-    //   {
-    //     "id_usuario": 6
-    //   }
-    //
-    // Respuestas posibles:
-    //   200: { status: "ok", mensaje: "Placa desvinculada correctamente" }
-    //   200: { status: "sin_placa", mensaje: "El usuario no tiene placas vinculadas" }
-    //   400: { error: "Faltan datos: id_usuario" }
-    //   500: { error: "..." }
-    // -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// Endpoint: POST /desvincular
+// Autor: Alan Guevara Martínez
+// Fecha: 19/11/2025
+// -----------------------------------------------------------------------------
+// Descripción:
+//   - Desvincula la placa asociada al usuario indicado.
+//   - Internamente llama a logica.desvincularPlacaDeUsuario(id_usuario).
+//
+// Body esperado (JSON):
+//   {
+//     "id_usuario": 6
+//   }
+//
+// Respuestas posibles:
+//   200: { status: "ok", mensaje: "Placa desvinculada correctamente" }
+//   200: { status: "sin_placa", mensaje: "El usuario no tiene placas vinculadas" }
+//   400: { error: "Faltan datos: id_usuario" }
+//   500: { error: "..." }
+// -----------------------------------------------------------------------------
     router.post("/desvincular", async (req, res) => {
         try {
             const { id_usuario } = req.body;
@@ -509,7 +514,7 @@ function reglasREST(logica) {
             const placa = await logica.obtenerPlacaDeUsuario(id_usuario);
 
             if (!placa) {
-                return res.json({ status: "sin_placa" });
+                return res.json({status: "sin_placa"});
             }
 
             // 2. Obtener última medición del tipo solicitado
@@ -529,7 +534,7 @@ function reglasREST(logica) {
 
         } catch (err) {
             console.error("Error en GET /resumenUsuarioPorGas:", err);
-            res.status(500).json({ error: "Error interno del servidor" });
+            res.status(500).json({error: "Error interno del servidor"});
         }
     });
 
@@ -566,7 +571,7 @@ function reglasREST(logica) {
             };
 
             // Generar labels de días (últimos 7)
-            const dias = ["Dom", "Lun", "Mar", "Mie", "Jue", "Vie", "Sab"];
+            const dias = ["Dom","Lun","Mar","Mie","Jue","Vie","Sab"];
             const hoy = new Date();
             const labels = [];
 
@@ -577,7 +582,7 @@ function reglasREST(logica) {
             }
 
             // Calcular promedio general
-            const promedio = valores.reduce((a, b) => a + b, 0) / 7;
+            const promedio = valores.reduce((a,b) => a+b, 0) / 7;
 
             res.json({
                 status: "con_placa",
@@ -757,6 +762,10 @@ function reglasREST(logica) {
             res.json({ status: "error", mensaje: e.toString() });
         }
     });
+
+    // -----------------------------------------------------------------------------
+    // NOTIFICACIONES
+    // -----------------------------------------------------------------------------
     // -----------------------------------------------------------------------------
     // GET /notificacionesUsuario
     // -----------------------------------------------------------------------------
@@ -802,55 +811,149 @@ function reglasREST(logica) {
             return res.status(500).json({ error: "Error interno al obtener notificaciones" });
         }
     });
-    // -----------------------------------------------------------------------------
-    // GET /notificacionesUsuario
-    // -----------------------------------------------------------------------------
-    // Descripción:
-    //   Devuelve las notificaciones calculadas "al vuelo" para un usuario.
-    //
-    // Parámetros (query):
-    //   - id_usuario
-    //
-    // Respuesta:
-    //   {
-    //     status: "ok",
-    //     notificaciones: [
-    //       {
-    //         tipo: "CO2_CRITICO",
-    //         titulo: "...",
-    //         texto: "...",
-    //         icono: "alerta",
-    //         fecha_hora: "...",
-    //         leido: false
-    //       },
-    //       ...
-    //     ]
-    //   }
-    // -----------------------------------------------------------------------------
-    router.get("/notificacionesUsuario", async (req, res) => {
+// --------------------------------------------------------------------------
+//  POST /notificacionCrear
+//  Crea una notificación para un usuario
+// --------------------------------------------------------------------------
+    router.post("/notificacionCrear", async (req, res) => {
         try {
-            const id_usuario = req.query.id_usuario;
+            const {
+                id_usuario,
+                id_placa,
+                tipo,
+                titulo,
+                mensaje,
+                nivel,
+                icono
+            } = req.body;
 
-            if (!id_usuario) {
-                return res.status(400).json({ error: "Falta id_usuario" });
+            if (!id_usuario || !tipo || !titulo || !mensaje) {
+                return res.status(400).json({ status: "error", mensaje: "Faltan campos obligatorios" });
             }
 
-            const notis = await logica.obtenerNotificacionesUsuario(Number(id_usuario));
+            const id = await logica.insertarNotificacion({
+                id_usuario: Number(id_usuario),
+                id_placa: id_placa || null,
+                tipo,
+                titulo,
+                mensaje,
+                nivel: nivel || "info",
+                icono: icono || null
+            });
 
             return res.json({
                 status: "ok",
-                notificaciones: notis
+                id_notificacion: id
             });
 
         } catch (err) {
-            console.error("Error en GET /notificacionesUsuario:", err);
-            return res.status(500).json({ error: "Error interno al obtener notificaciones" });
+            console.error("ERROR en /notificacionCrear:", err);
+            return res.status(500).json({
+                status: "error",
+                mensaje: "Error interno al crear la notificación"
+            });
+        }
+    });
+// --------------------------------------------------------------------------
+//  POST /marcarNotificacionLeida
+// --------------------------------------------------------------------------
+    router.post("/marcarNotificacionLeida", async (req, res) => {
+        try {
+            const { id_notificacion, id_usuario } = req.body;
+
+            if (!id_notificacion || !id_usuario) {
+                return res.status(400).json({ status: "error", mensaje: "Faltan parámetros" });
+            }
+
+            const ok = await logica.marcarNotificacionLeida(
+                Number(id_notificacion),
+                Number(id_usuario)
+            );
+
+            return res.json({
+                status: "ok",
+                marcada: ok
+            });
+
+        } catch (err) {
+            console.error("ERROR en /marcarNotificacionLeida:", err);
+            return res.status(500).json({
+                status: "error",
+                mensaje: "Error interno al marcar notificación como leída"
+            });
+        }
+    });
+// --------------------------------------------------------------------------
+//  POST /marcarTodasNotificacionesLeidas
+// --------------------------------------------------------------------------
+    router.post("/marcarTodasNotificacionesLeidas", async (req, res) => {
+        try {
+            const { id_usuario } = req.body;
+
+            if (!id_usuario) {
+                return res.status(400).json({ status: "error", mensaje: "Falta id_usuario" });
+            }
+
+            const num = await logica.marcarTodasNotificacionesLeidas(Number(id_usuario));
+
+            return res.json({
+                status: "ok",
+                total_actualizadas: num
+            });
+
+        } catch (err) {
+            console.error("ERROR en /marcarTodasNotificacionesLeidas:", err);
+            return res.status(500).json({
+                status: "error",
+                mensaje: "Error interno al marcar todas como leídas"
+            });
+        }
+    });
+// DELETE una notificación
+    router.post("/borrarNotificacion", async (req, res) => {
+        try {
+            const { id_notificacion, id_usuario } = req.body;
+            if (!id_notificacion || !id_usuario) {
+                return res.status(400).json({ status: "error", mensaje: "Faltan parámetros" });
+            }
+
+            const ok = await logica.borrarNotificacion(
+                Number(id_notificacion),
+                Number(id_usuario)
+            );
+
+            return res.json({ status: "ok", borrada: ok });
+        } catch (err) {
+            console.error("ERROR en /borrarNotificacion:", err);
+            return res.status(500).json({ status: "error", mensaje: "Error interno al borrar notificación" });
         }
     });
 
-    // -----------------------------------------------------------------------------
-    // POST /resetPasswordAtmos
-    // -----------------------------------------------------------------------------
+// DELETE todas las notificaciones de un usuario
+    router.post("/borrarNotificacionesUsuario", async (req, res) => {
+        try {
+            const { id_usuario } = req.body;
+            if (!id_usuario) {
+                return res.status(400).json({ status: "error", mensaje: "Falta id_usuario" });
+            }
+
+            const num = await logica.borrarNotificacionesUsuario(Number(id_usuario));
+
+            return res.json({ status: "ok", total_borradas: num });
+        } catch (err) {
+            console.error("ERROR en /borrarNotificacionesUsuario:", err);
+            return res.status(500).json({ status: "error", mensaje: "Error interno al borrar notificaciones" });
+        }
+    });
+
+
+// -----------------------------------------------------------------------------
+// NOTIFICACIONES
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+// POST /resetPasswordAtmos
+// -----------------------------------------------------------------------------
     /**
      * @brief Endpoint que genera un enlace de restablecimiento de contraseña
      *        y envía un correo personalizado al usuario.
@@ -875,7 +978,7 @@ function reglasREST(logica) {
      *  3. Genera un enlace de restablecimiento usando Firebase Admin.
      *  4. Envía un correo HTML bonito usando ServicioEmailResetAtmos.
      *  5. Devuelve status "ok" si todo fue correcto.
-     * 
+     *
      * @author Alan Guevara Martínez
      * @date 01/12/2025
      */
@@ -924,25 +1027,25 @@ function reglasREST(logica) {
     });
 
     /**
- * @route POST /verificarEmailAtmos
- * @brief Endpoint encargado de procesar el código de verificación de correo (oobCode)
- *        enviado por Firebase y actualizar el estado del usuario en la base de datos.
- *
- * El cliente envía un JSON con:
- * @param {string} oobCode - Código de verificación generado por Firebase.
- *
- * Proceso:
- *  - Valida que llegue el oobCode.
- *  - Firebase verifica dicho código mediante applyActionCode().
- *  - Obtiene el email asociado al código.
- *  - Busca el usuario correspondiente en Firebase Authentication.
- *  - Llama a la lógica de negocio para marcar al usuario como verificado en la BD.
- *
- * @return {JSON} Respuesta con estado "ok" o "error".
- * 
- * @author Alan Guevara Martínez
- * @date 02/12/2025
- */
+     * @route POST /verificarEmailAtmos
+     * @brief Endpoint encargado de procesar el código de verificación de correo (oobCode)
+     *        enviado por Firebase y actualizar el estado del usuario en la base de datos.
+     *
+     * El cliente envía un JSON con:
+     * @param {string} oobCode - Código de verificación generado por Firebase.
+     *
+     * Proceso:
+     *  - Valida que llegue el oobCode.
+     *  - Firebase verifica dicho código mediante applyActionCode().
+     *  - Obtiene el email asociado al código.
+     *  - Busca el usuario correspondiente en Firebase Authentication.
+     *  - Llama a la lógica de negocio para marcar al usuario como verificado en la BD.
+     *
+     * @return {JSON} Respuesta con estado "ok" o "error".
+     *
+     * @author Alan Guevara Martínez
+     * @date 02/12/2025
+     */
     router.post("/verificarEmailAtmos", async (req, res) => {
         try {
             const { oobCode } = req.body;
@@ -981,6 +1084,150 @@ function reglasREST(logica) {
         }
     });
 
+    // -----------------------------------------------------------
+    // GET /mapa/medidas/gas?tipo=XX
+    // Devuelve las últimas medidas del gas seleccionado
+    // -----------------------------------------------------------
+    router.get("/mapa/medidas/gas", async (req, res) => {
+        try {
+            const tipo = parseInt(req.query.tipo, 10);
+
+            if (!tipo) {
+                return res.status(400).json({ error: "Falta tipo" });
+            }
+
+            // ✔️ Usamos tu método correcto de Logica.js
+            const filas = await logica.obtenerUltimasMedidasGlobalPorGas(tipo);
+
+            return res.json({
+                status: "ok",
+                medidas: filas
+            });
+
+        } catch (err) {
+            console.error("Error en /mapa/medidas/gas:", err);
+            return res.status(500).json({
+                status: "error",
+                mensaje: err.message
+            });
+        }
+    });
+
+
+
+
+    // -----------------------------------------------------------------------------
+    // Endpoint: GET /mapa/medidas/todos
+    // Autor: Santiago Fuenmayor Ruiz
+    // Fecha: 05/12/2025
+    // -----------------------------------------------------------------------------
+    // Descripción:
+    //   Devuelve, para CADA placa registrada, las últimas mediciones de TODOS
+    //   los gases (NO2, CO, O3, SO2) en **una única fila por placa**.
+    //
+    //   Este endpoint NO depende del usuario. Incluye todas las placas del sistema.
+    //
+    //   Formato devuelto:
+    //     {
+    //       status: "ok",
+    //       placas: [
+    //         {
+    //           id_placa,
+    //           latitud,
+    //           longitud,
+    //           NO2,
+    //           CO,
+    //           O3,
+    //           SO2
+    //         },
+    //         ...
+    //       ]
+    //     }
+    //
+    // Uso previsto:
+    //   ✔ Pintar el modo "TODOS" del mapa
+    //   ✔ Futuro sistema de interpolación por celdas
+    //   ✔ Calcular índices globales de contaminación
+    //   ✔ Timeline combinado de todos los gases
+    //
+    // Ejemplo:
+    //   GET /mapa/medidas/todos
+    //
+    // -----------------------------------------------------------------------------
+
+    router.get("/mapa/medidas/todos", async (req, res) => {
+        try {
+            // Llamamos a la capa de lógica para obtener los datos agregados
+            const filas = await logica.obtenerUltimasMedidasGlobalTodasLasPlacas();
+
+            return res.json({
+                status: "ok",
+                placas: filas
+            });
+
+        } catch (err) {
+            console.error("Error en GET /mapa/medidas/todos:", err);
+
+            return res.status(500).json({
+                status: "error",
+                mensaje: "Error interno del servidor"
+            });
+        }
+    });
+
+    // --------------------------------------------------------------------------
+    //  Endpoint: GET /estadoNodos
+    // --------------------------------------------------------------------------
+    /**
+     * Devuelve el estado de todos los nodos (placas) para el informe T019.
+     *
+     * Parámetros opcionales (query):
+     *   - umbralInactivoMin : minutos para considerar inactivo (default 5)
+     *   - horasError        : horas para considerar lecturas erróneas (default 4)
+     *   - limit             : máximo de nodos a devolver (default 100)
+     *
+     * Ejemplo:
+     *   GET /estadoNodos?umbralInactivoMin=5&horasError=4&limit=50
+     *
+     * Respuesta:
+     *   {
+     *     status: "ok",
+     *     nodos: [
+     *       {
+     *         id_placa: "TEST_PLACA_VALENCIA",
+     *         ultima_medida: "2025-12-08T12:34:56.000Z",
+     *         minutos_desde_ultima: 7,
+     *         estado: "inactivo",
+     *         tiempo_problema_min: 7
+     *       },
+     *       ...
+     *     ]
+     *   }
+     * Agregado por: Alejandro Vazquez
+     */
+    router.get("/estadoNodos", async (req, res) => {
+        try {
+            const { umbralInactivoMin, horasError, limit } = req.query;
+
+            const nodos = await logica.obtenerEstadoNodos(
+                umbralInactivoMin ? Number(umbralInactivoMin) : undefined,
+                horasError ? Number(horasError) : undefined,
+                limit ? Number(limit) : undefined
+            );
+
+            return res.json({
+                status: "ok",
+                nodos
+            });
+
+        } catch (err) {
+            console.error("Error en GET /estadoNodos:", err);
+            return res.status(500).json({
+                status: "error",
+                mensaje: "Error interno al obtener estado de nodos"
+            });
+        }
+    });
 
     // --------------------------------------------------------------------------
     //  Devolvemos el router con todas las rutas activas
