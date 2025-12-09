@@ -4,10 +4,30 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+
+import org.osmdroid.config.Configuration;
+import org.osmdroid.tileprovider.modules.MBTilesFileArchive;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.tileprovider.tilesource.XYTileSource;
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.Marker;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.util.ArrayList;
 
 /**
  * @class MapasActivity
@@ -18,26 +38,39 @@ import androidx.annotation.NonNull;
  * el usuario ha concedido los permisos necesarios para realizar escaneo BLE en
  * segundo plano. Si no están concedidos, se solicitan al usuario.
  * @author Alan Guevara Martinez
- * @date 05/12/2025
+ * @date 05/12/2025 (fecha inicio)
  */
 public class MapasActivity extends FuncionesBaseActivity {
-
-    /** @brief Código interno para identificar la solicitud de permisos BLE. */
+    /**
+     * @brief Variables privadas
+     */
     private static final int CODIGO_PERMISOS_BLE = 1001;
+    private String ultimaQuery = "";
+    private android.os.Handler handler = new android.os.Handler();
+    private Runnable tareaBusqueda = null;
+    private android.text.TextWatcher watcher;
+    private Marker marcadorUsuario = null;
+
 
     /**
+     * @param savedInstanceState Estado previo en caso de recreación.
      * @brief Método llamado al crear la Activity.
-     *
+     * <p>
      * - Configura el layout.
      * - Ajusta el header y el menú inferior.
      * - Lanza la verificación de permisos BLE.
      * - Configura el botón de información sobre contaminantes.
-     *
-     * @param savedInstanceState Estado previo en caso de recreación.
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // MUY IMPORTANTE: inicializar configuración de OSMDroid
+        Configuration.getInstance().load(
+                getApplicationContext(),
+                PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
+        );
+
         setContentView(R.layout.activity_mapas);
 
         /// Título del encabezado.
@@ -52,18 +85,217 @@ public class MapasActivity extends FuncionesBaseActivity {
          */
         runOnUiThread(() -> verificarPermisosYArrancarServicio());
 
-        /// Botón para abrir el panel de información de contaminantes.
-        ImageView infoBtn = findViewById(R.id.infoContaminantes);
-        infoBtn.setOnClickListener(v -> {
-            Intent intent = new Intent(this, InfoContaminantesActivity.class);
-            startActivity(intent);
+        /* Llamada al método que carga el mapa de leaflet */
+        inicializarMapa();
+
+        /* ------------------- CONTAMINANTES -------------------*/
+        LinearLayout bottomSheet = findViewById(R.id.bottomSheetContaminantes);
+
+        // abrir
+        findViewById(R.id.chipContaminantes).setOnClickListener(v -> {
+            cerrarTodosLosPopups();
+            bottomSheet.setVisibility(View.VISIBLE);
         });
+
+        // cerrar
+        findViewById(R.id.btnCerrarContaminantes).setOnClickListener(v ->
+                bottomSheet.setVisibility(View.GONE)
+        );
+
+        // abrir info contaminantes
+        findViewById(R.id.btnInfoContaminantes).setOnClickListener(v ->
+                startActivity(new Intent(this, InfoContaminantesActivity.class))
+        );
+
+        /* ======== Seleccionar contaminantes (gases) ======== */
+
+        LinearLayout itemTodos = findViewById(R.id.itemTodos);
+        LinearLayout itemO3 = findViewById(R.id.itemO3);
+        LinearLayout itemNO2 = findViewById(R.id.itemNO2);
+        LinearLayout itemCO = findViewById(R.id.itemCO);
+        LinearLayout itemSO2 = findViewById(R.id.itemSO2);
+
+        // ENLACE AL TEXTO DEL CHIP SUPERIOR
+        TextView txtChip = findViewById(R.id.txtChipContaminantes);
+
+        // Listener común
+        // Listener común
+        View.OnClickListener listener = v -> {
+
+            // Cambia visualmente qué gas está seleccionado
+            seleccionarGas(v, itemTodos, itemO3, itemNO2, itemCO, itemSO2);
+
+            // CAMBIA EL TEXTO Y COLOR DEL CHIP SUPERIOR
+            if (v == itemTodos) {
+                txtChip.setText("Contaminantes");
+                txtChip.setTextColor(0xFF059669); // Verde Atmos por defecto
+            }
+            else if (v == itemO3) {
+                txtChip.setText("O₃");
+                txtChip.setTextColor(0xFF047857); // color cuando NO es "Todos"
+            }
+            else if (v == itemNO2) {
+                txtChip.setText("NO₂");
+                txtChip.setTextColor(0xFF047857);
+            }
+            else if (v == itemCO) {
+                txtChip.setText("CO");
+                txtChip.setTextColor(0xFF047857);
+            }
+            else if (v == itemSO2) {
+                txtChip.setText("SO₂");
+                txtChip.setTextColor(0xFF047857);
+            }
+        };
+
+        // Asignar listeners
+        itemTodos.setOnClickListener(listener);
+        itemO3.setOnClickListener(listener);
+        itemNO2.setOnClickListener(listener);
+        itemCO.setOnClickListener(listener);
+        itemSO2.setOnClickListener(listener);
+        /* ---------------- FIN SECCIÓN CONTAMINANTES -----------------*/
+
+        /* ----------------- ÍNDICE CALIDAD DEL AIRE ------------------*/
+
+        //Abrir "popup"
+        findViewById(R.id.chipIndice).setOnClickListener(v -> {
+            cerrarTodosLosPopups();
+            findViewById(R.id.bottomSheetIndice).setVisibility(View.VISIBLE);
+        });
+
+        // Cerrar "popup"
+        findViewById(R.id.btnCerrarIndice).setOnClickListener(v ->
+                findViewById(R.id.bottomSheetIndice).setVisibility(View.GONE)
+        );
+
+        /* -------------- FIN SECCIÓN CALIDAD DEL AIRE ---------------*/
+
+        /* ----------------- BUSCADOR DE UBICACIONES ------------------*/
+        EditText edtBuscar = findViewById(R.id.edtBuscar);
+
+
+        ListView listaSugerencias = findViewById(R.id.listaSugerencias);
+
+        edtBuscar.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) {
+                edtBuscar.setCursorVisible(false);
+                listaSugerencias.setVisibility(View.GONE);
+
+                // IMPORTANTE: evita peleas de foco
+                new android.os.Handler().postDelayed(() ->
+                        findViewById(R.id.layoutBusqueda).clearFocus(), 50);
+
+            } else {
+                edtBuscar.setCursorVisible(true);
+            }
+        });
+
+
+        ArrayAdapter<String> adapterSugerencias = new ArrayAdapter<>(
+                this, android.R.layout.simple_list_item_1, new ArrayList<>());
+
+        listaSugerencias.setAdapter(adapterSugerencias);
+
+        /**
+        * @brief Listener que detecta cambios en el texto para autocompletar.
+        */
+        watcher = new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                String texto = s.toString().trim();
+                ultimaQuery = texto;
+
+                // Si no hay texto → ocultar sugerencias
+                if (texto.length() < 3) {
+                    listaSugerencias.setVisibility(View.GONE);
+                    return;
+                }
+
+                // Cancelamos la última búsqueda programada
+                if (tareaBusqueda != null) handler.removeCallbacks(tareaBusqueda);
+
+                // Programamos una nueva búsqueda con retraso (debounce)
+                tareaBusqueda = () -> {
+                    autocompletar(texto, resultados -> {
+
+                        // Ignorar resultados que no coincidan con la última query
+                        if (!texto.equals(ultimaQuery)) return;
+
+                        adapterSugerencias.clear();
+                        adapterSugerencias.addAll(resultados);
+                        adapterSugerencias.notifyDataSetChanged();
+                        listaSugerencias.setVisibility(View.VISIBLE);
+                    });
+                };
+
+                // Espera 300ms antes de llamar a Nominatim → MUCHÍSIMO MÁS FLUIDO
+                handler.postDelayed(tareaBusqueda, 300);
+            }
+            @Override
+            public void afterTextChanged(android.text.Editable s) {}
+        };
+
+        edtBuscar.addTextChangedListener(watcher);
+
+        /*----------------------------------------------------------------------------*/
+
+
+        /**
+        * @brief Cuando el usuario toca una sugerencia → usarla como búsqueda
+        */
+        listaSugerencias.setOnItemClickListener((parent, view, position, id) -> {
+            String seleccionado = adapterSugerencias.getItem(position);
+
+            // Desactivar textWatcher para evitar que vuelva a aparecer
+            edtBuscar.removeTextChangedListener(watcher);
+
+            edtBuscar.setText(seleccionado);
+            edtBuscar.clearFocus();
+            findViewById(R.id.mapaOSM).requestFocus(); // Dispara el foco fuera del EditText
+
+            // Reactivar textWatcher
+            edtBuscar.addTextChangedListener(watcher);
+
+            listaSugerencias.setVisibility(View.GONE);
+            adapterSugerencias.clear();
+
+            buscarUbicacion(seleccionado);
+        });
+
+        /* -------------- FIN SECCIÓN BUSCADOR DE UBICACIONES ---------------*/
     }
 
     /**
-     * @brief Comprueba si todos los permisos necesarios para BLE están concedidos.
-     *
+     * @brief Cambia la selección visual de un elemento de gas.
+     * @param seleccionado Vista (LinearLayout) que el usuario ha seleccionado.
+     * @param todos Lista variable de todos los LinearLayout que forman parte del grupo.
+     */
+    private void seleccionarGas(View seleccionado, LinearLayout... todos) {
+
+        // Recorremos todos los elementos de la lista
+        for (LinearLayout item : todos) {
+
+            // Si este item es el que fue pulsado → lo marcamos como seleccionado
+            if (item == seleccionado) {
+                item.setBackgroundResource(R.drawable.bg_gasitem_selected);
+
+                // En caso contrario → lo dejamos con el estilo normal
+            } else {
+                item.setBackgroundResource(R.drawable.bg_gasitem);
+            }
+        }
+    }
+
+    // ------------------ PERMISOS BLE Y ARRANQUE SERVICIO ------------------
+
+    /**
      * @return true si todos los permisos están aprobados; false en caso contrario.
+     * @brief Comprueba si todos los permisos necesarios para BLE están concedidos.
      */
     private boolean permisosBLEOK() {
 
@@ -83,8 +315,8 @@ public class MapasActivity extends FuncionesBaseActivity {
 
     /**
      * @brief Verifica si los permisos BLE están concedidos y, si es así,
-     *        inicia el servicio de detección de beacons.
-     *
+     * inicia el servicio de detección de beacons.
+     * <p>
      * Si los permisos no están concedidos, se solicitan al usuario.
      */
     private void verificarPermisosYArrancarServicio() {
@@ -113,11 +345,10 @@ public class MapasActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * @brief Callback que recibe el resultado del diálogo de permisos.
-     *
      * @param requestCode Código identificador de la solicitud.
-     * @param permisos Lista de permisos solicitados.
-     * @param resultados Resultado de cada permiso (concedido o denegado).
+     * @param permisos    Lista de permisos solicitados.
+     * @param resultados  Resultado de cada permiso (concedido o denegado).
+     * @brief Callback que recibe el resultado del diálogo de permisos.
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permisos, @NonNull int[] resultados) {
@@ -145,12 +376,335 @@ public class MapasActivity extends FuncionesBaseActivity {
 
     /**
      * @brief Inicia el ServicioDeteccionBeacons como servicio en primer plano.
-     *
      * @note Este servicio requiere permisos BLE y location para funcionar.
-     *       En Android 12+ es obligatorio iniciarlo mediante startForegroundService().
+     * En Android 12+ es obligatorio iniciarlo mediante startForegroundService().
      */
     private void iniciarServicioBeacons() {
         Intent s = new Intent(MapasActivity.this, ServicioDeteccionBeacons.class);
         startForegroundService(s); ///< Obligatorio para servicios BLE en Android 12+
     }
+    // ---------------------------------------------------------
+
+
+    // ------------------ MAPA CONTAMINACIÓN ------------------
+
+    /**
+     * @brief Inicializa el mapa OSM en su estado básico
+     * @date 07-12-2025
+     */
+    private void inicializarMapa() {
+
+        MapView mapa = findViewById(R.id.mapaOSM);
+
+        // Escala los tiles según la densidad → más nitidez
+        mapa.setTilesScaledToDpi(true);
+        mapa.setTileSource(new XYTileSource(
+                "MapnikHD",
+                0, 19, 512, ".png",
+                new String[]{
+                        "https://tile.openstreetmap.org/"
+                }
+        ));
+
+        Configuration.getInstance().setUserAgentValue("AtmosApp");
+        Configuration.getInstance().setMapViewHardwareAccelerated(true);
+        Configuration.getInstance().setDebugMode(false);
+
+
+        // ----- CACHE Y RENDIMIENTO -----
+        Configuration.getInstance().setCacheMapTileCount((short) 64);
+        Configuration.getInstance().setCacheMapTileOvershoot((short) 32);
+
+        // Más hilos para descargar mapas
+        Configuration.getInstance().setTileDownloadThreads((short) 8);
+
+        // Cola de descargas más grande
+        Configuration.getInstance().setTileDownloadMaxQueueSize((short) 100);
+
+        // Usa datos móviles/wifi
+        mapa.setUseDataConnection(true);
+
+        // Gestos multitáctiles
+        mapa.setMultiTouchControls(true);
+
+        // Configuración de inicio
+        mapa.getController().setZoom(13.0);
+        mapa.getController().setCenter(new GeoPoint(38.995, -0.160));
+
+        // Botón Mi Ubicación
+        findViewById(R.id.btnMiUbicacion).setOnClickListener(v -> pedirUbicacion(mapa));
+
+        // Dibujamos el puntito de ubicación del usuario al abrir el mapa
+        pedirUbicacion(mapa);
+
+        // Escuchar ubicación en tiempo real (solución definitiva)
+        iniciarActualizacionUbicacion(mapa);
+    }
+
+
+    /**
+     * Solicita la ubicación actual del usuario y centra el mapa en ese punto.
+     *
+     * @param mapa Vista del mapa OSM donde se hará el centrado.
+     */
+    private void pedirUbicacion(MapView mapa) {
+
+        // Comprobamos si el permiso de ubicación está concedido.
+        // Si no lo está, lo pedimos y salimos.
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 2002);
+            return;
+        }
+
+        // Accedemos al servicio de localización del sistema
+        android.location.LocationManager lm =
+                (android.location.LocationManager) getSystemService(LOCATION_SERVICE);
+
+        // Intentamos obtener la última ubicación conocida vía GPS
+        android.location.Location loc =
+                lm.getLastKnownLocation(android.location.LocationManager.GPS_PROVIDER);
+
+        if (loc != null) {
+
+            // Convertimos la ubicación a un GeoPoint de OSMDroid
+            GeoPoint p = new GeoPoint(loc.getLatitude(), loc.getLongitude());
+
+            // Acercamos el zoom y animamos el mapa hasta la posición del usuario
+            mapa.getController().setZoom(17.0);
+            mapa.getController().animateTo(p);
+
+            // Crear marcador SOLO para la ubicación del usuario
+            if (marcadorUsuario == null) {
+                marcadorUsuario = new Marker(mapa);
+                marcadorUsuario.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+                marcadorUsuario.setIcon(
+                        androidx.core.content.ContextCompat.getDrawable(
+                                this,
+                                R.drawable.marker_mi_ubicacion
+                        )
+                );
+                mapa.getOverlays().add(marcadorUsuario);
+            }
+
+            marcadorUsuario.setPosition(p);
+            mapa.invalidate();
+
+        } else {
+            Toast.makeText(this, "No se pudo obtener la ubicación", Toast.LENGTH_SHORT).show();
+        }
+    }
+    /**
+     * @brief Cierra todos los popups o paneles inferiores visibles.
+     *
+     * Este método oculta los distintos BottomSheets de la pantalla
+     * (contaminantes, índice, fecha —cuando exista—) para garantizar
+     * que solo un panel esté visible a la vez.
+     */
+    private void cerrarTodosLosPopups() {
+
+        // Oculta el panel de información de contaminantes
+        findViewById(R.id.bottomSheetContaminantes).setVisibility(View.GONE);
+
+        // Oculta el panel del índice de calidad del aire
+        findViewById(R.id.bottomSheetIndice).setVisibility(View.GONE);
+
+        // Aquí añadiremos el BottomSheet de "Fecha" cuando esté implementado
+    }
+
+    /**
+     * @brief Busca una dirección o lugar a partir de un texto y centra el mapa en ese punto.
+     *
+     * Este método utiliza el Geocoder de Android para convertir el texto introducido
+     * por el usuario (nombre de calle, ciudad, punto de interés…) en coordenadas
+     * geográficas (latitud y longitud). Si encuentra un resultado válido, mueve el
+     * mapa OSMDroid hasta esa ubicación y aplica un zoom adecuado.
+     *
+     * @param textoBuscado Texto introducido por el usuario que representa la ubicación a buscar.
+     */
+    private void buscarUbicacion(String textoBuscado) {
+
+        MapView mapa = findViewById(R.id.mapaOSM);
+
+        // Hacemos la petición de red en un hilo secundario (Nominatim no permite llamadas en el UI thread)
+        new Thread(() -> {
+            try {
+
+                // Construimos la URL de búsqueda en Nominatim (OpenStreetMap)
+                String url =
+                        "https://nominatim.openstreetmap.org/search?format=json&q=" +
+                                java.net.URLEncoder.encode(textoBuscado, "UTF-8") +
+                                "&limit=1";
+
+                // Abrimos la conexión HTTP
+                java.net.URL u = new java.net.URL(url);
+                java.net.HttpURLConnection conn = (java.net.HttpURLConnection) u.openConnection();
+                conn.setRequestProperty("User-Agent", "AtmosApp/1.0"); // Obligatorio para Nominatim
+
+                // Leemos la respuesta completa en formato JSON
+                java.io.InputStream is = conn.getInputStream();
+                String json = new java.util.Scanner(is).useDelimiter("\\A").next();
+
+                // Convertimos la respuesta a un array JSON
+                org.json.JSONArray arr = new org.json.JSONArray(json);
+
+                // Si no hay resultados → avisamos en UI
+                if (arr.length() == 0) {
+                    runOnUiThread(() ->
+                            Toast.makeText(this, "No se encontró la ubicación", Toast.LENGTH_SHORT).show()
+                    );
+                    return;
+                }
+
+                // Tomamos el primer resultado devuelto
+                org.json.JSONObject obj = arr.getJSONObject(0);
+
+                // Extraemos latitud y longitud
+                double lat = obj.getDouble("lat");
+                double lon = obj.getDouble("lon");
+
+                GeoPoint destino = new GeoPoint(lat, lon);
+
+                // Hilo principal
+                runOnUiThread(() -> {
+
+                    // Centramos el mapa y ajustamos el zoom
+                    mapa.getController().setZoom(16.0);
+                    mapa.getController().animateTo(destino);
+
+                    Toast.makeText(this, "Ubicación encontrada", Toast.LENGTH_SHORT).show();
+                });
+
+            } catch (Exception e) {
+                e.printStackTrace(); // Errores de red / JSON / formato
+            }
+        }).start();
+    }
+
+
+    /**
+     * @brief Obtiene sugerencias de ubicaciones desde Nominatim (OSM) para autocompletado.
+     *
+     * @param query Texto parcial introducido por el usuario en el buscador.
+     * @param callback Función callback que recibirá la lista de sugerencias.
+     *
+     * @details
+     * Realiza una petición HTTP a la API de Nominatim buscando coincidencias
+     * y devuelve hasta 5 resultados. Es ideal para mostrar autocompletado estilo Google Maps.
+     *
+     * @note Obligatorio enviar "User-Agent" en Nominatim o devuelve error 403.
+     */
+    private void autocompletar(String query, AutocompleteCallback callback) {
+
+        new Thread(() -> {
+            try {
+                String url =
+                        "https://nominatim.openstreetmap.org/search?format=json&q=" +
+                                java.net.URLEncoder.encode(query, "UTF-8") +
+                                "&addressdetails=1&limit=5";
+
+                java.net.URL u = new java.net.URL(url);
+                java.net.HttpURLConnection conn = (java.net.HttpURLConnection) u.openConnection();
+                conn.setRequestProperty("User-Agent", "AtmosApp/1.0");
+
+                java.io.InputStream is = conn.getInputStream();
+                String json = new java.util.Scanner(is).useDelimiter("\\A").next();
+
+                org.json.JSONArray arr = new org.json.JSONArray(json);
+
+                java.util.List<String> sugerencias = new java.util.ArrayList<>();
+
+                for (int i = 0; i < arr.length(); i++) {
+                    sugerencias.add(arr.getJSONObject(i).getString("display_name"));
+                }
+
+                runOnUiThread(() -> callback.onResult(sugerencias));
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    /**
+     * @interface AutocompleteCallback
+     * @brief Interfaz para recibir resultados de autocompletado.
+     */
+    interface AutocompleteCallback {
+        /**
+         * @param resultados Lista de sugerencias obtenidas desde Nominatim.
+         */
+        void onResult(java.util.List<String> resultados);
+    }
+
+    /**
+     * @brief Inicia la actualización continua de la ubicación del usuario en el mapa.
+     *
+     * Este método registra un LocationListener que:
+     *  - Obtiene la ubicación real del GPS cada pocos segundos o cada metro recorrido.
+     *  - Dibuja automáticamente el marcador de ubicación del usuario.
+     *  - Actualiza su posición si el usuario se mueve.
+     *
+     * @param mapa Mapa OSMDroid donde se dibuja el marcador de ubicación.
+     *
+     * @note Este método soluciona el problema de que getLastKnownLocation()
+     *       puede devolver null y el puntito no aparezca al abrir la app.
+     */
+    private void iniciarActualizacionUbicacion(MapView mapa) {
+
+        // Accedemos al LocationManager del sistema
+        android.location.LocationManager lm =
+                (android.location.LocationManager) getSystemService(LOCATION_SERVICE);
+
+        // Verificamos permisos antes de solicitar actualizaciones
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        /*
+         * Solicitamos actualizaciones continuas de la ubicación:
+         *   - Cada 2000 ms (2 segundos)
+         *   - Cada 1 metro recorrido
+         *
+         * Esto asegura que el marcador del usuario se actualice en tiempo real.
+         */
+        lm.requestLocationUpdates(
+                android.location.LocationManager.GPS_PROVIDER,
+                2000,   // intervalo mínimo en milisegundos
+                1,      // distancia mínima en metros
+                location -> {
+
+                    // Convertimos la ubicación a un GeoPoint compatible con OSMDroid
+                    GeoPoint p = new GeoPoint(location.getLatitude(), location.getLongitude());
+
+                    // Si el marcador no existe, lo creamos una vez
+                    if (marcadorUsuario == null) {
+                        marcadorUsuario = new Marker(mapa);
+
+                        // Centramos el icono en el punto
+                        marcadorUsuario.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+
+                        // Icono personalizado: tu circulito de ubicación
+                        marcadorUsuario.setIcon(
+                                androidx.core.content.ContextCompat.getDrawable(
+                                        this, R.drawable.marker_mi_ubicacion
+                                )
+                        );
+
+                        // Lo añadimos a los overlays del mapa
+                        mapa.getOverlays().add(marcadorUsuario);
+                    }
+
+                    // Actualizamos la posición del marcador
+                    marcadorUsuario.setPosition(p);
+
+                    // Redibujar el mapa con la nueva posición
+                    mapa.invalidate();
+                }
+        );
+    }
+
+    // ---------------------------------------------------------
 }

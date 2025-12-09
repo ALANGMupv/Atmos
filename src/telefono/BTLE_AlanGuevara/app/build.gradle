@@ -54,4 +54,9 @@ dependencies {
 
     // GPS
     implementation 'com.google.android.gms:play-services-location:21.0.1'
+
+    /*  MAPA: En la web se utiliza Leaflet (JS).
+    En Android el equivalente oficial y compatible con OpenStreetMap es osmdroid, NO Google Maps.
+    Osmdroid permite poner tiles de OpenStreetMap igual que Leaflet. */
+    implementation 'org.osmdroid:osmdroid-android:6.1.16'
 }

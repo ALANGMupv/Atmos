@@ -143,8 +143,8 @@ public class ServicioDeteccionBeacons extends Service {
      */
     private void iniciarComoServicioEnPrimerPlano() {
         Notification notif = new NotificationCompat.Builder(this, CANAL_ID)
-                .setContentTitle("Atmos – Sensor activo")
-                .setContentText("Detectando beacons y enviando mediciones...")
+                .setContentTitle("Atmos - Servicio en primer plano")
+                .setContentText("Monitorizando el entorno...")
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .build();
 

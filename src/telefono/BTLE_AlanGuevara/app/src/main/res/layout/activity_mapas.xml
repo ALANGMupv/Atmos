@@ -2,222 +2,578 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#FFFFFF">
+    android:layout_height="match_parent">
 
-    <!-- HEADER -->
-    <include
-        android:id="@+id/header"
-        layout="@layout/toolbar_header"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <!-- ===========================================================
-         CONTENEDOR DE CONTAMINANTES (chips)
-         =========================================================== -->
-    <LinearLayout
-        android:id="@+id/layoutContaminantes"
+    <!-- ==========================================================
+         MAPA OSM
+         ========================================================== -->
+    <org.osmdroid.views.MapView
+        android:id="@+id/mapaOSM"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:layout_height="0dp"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/bottom_nav_container"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+
+
+    <!-- ==========================================================
+         BARRA DE BÚSQUEDA
+         ========================================================== -->
+    <LinearLayout
+        android:id="@+id/layoutBusqueda"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:background="@drawable/bg_busqueda"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:paddingTop="12dp"
-        android:paddingBottom="8dp"
-        app:layout_constraintTop_toBottomOf="@id/header"
+        android:gravity="center_vertical"
+        android:layout_margin="16dp"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintEnd_toEndOf="parent"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        >
 
-        <!-- TÍTULO + ICONO INFO -->
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_search" />
+
+        <EditText
+            android:id="@+id/edtBuscar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Buscar ubicación..."
+            android:textSize="16sp"
+            android:paddingStart="12dp"
+            android:background="@android:color/transparent"
+            android:imeOptions="actionSearch"
+            android:cursorVisible="true"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:singleLine="true"/>
+
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/listaSugerencias"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_busqueda"
+        android:padding="12dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:translationY="2dp"
+        android:elevation="14dp"
+        android:visibility="gone"
+        android:divider="#DDDDDD"
+        android:dividerHeight="1dp"
+        app:layout_constraintTop_toBottomOf="@id/layoutBusqueda"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+
+    <!-- ==========================================================
+         CHIPS SUPERIORES (Contaminantes - Índice - Fecha)
+         ========================================================== -->
+    <LinearLayout
+        android:id="@+id/layoutChips"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="80dp"
+        android:gravity="center_vertical"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <!-- CHIP CONTAMINANTES -->
         <LinearLayout
+            android:id="@+id/chipContaminantes"
             android:layout_width="wrap_content"
+            android:layout_height="45dp"
+            android:background="@drawable/bg_chip"
+            android:gravity="center"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:orientation="horizontal"
+            android:layout_marginEnd="10dp">
+
+            <TextView
+                android:id="@+id/txtChipContaminantes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto"
+                android:text="Contaminantes"
+                android:textColor="#059669"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- CHIP INDICE -->
+        <LinearLayout
+            android:id="@+id/chipIndice"
+            android:layout_width="wrap_content"
+            android:layout_height="45dp"
+            android:background="@drawable/bg_chip"
+            android:gravity="center"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:orientation="horizontal"
+            android:layout_marginEnd="10dp">
+
+            <TextView
+                android:id="@+id/txtChipIndice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/roboto"
+                android:text="Índice calidad del aire"
+                android:textColor="#059669"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- CHIP FECHA -->
+
+    </LinearLayout>
+
+
+    <!-- ==========================================================
+         BOTÓN GEOLOCALIZACIÓN
+         ========================================================== -->
+    <ImageButton
+        android:id="@+id/btnMiUbicacion"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:background="@drawable/bg_boton_mapa"
+        android:src="@drawable/ic_target"
+        android:padding="12dp"
+        android:layout_margin="16dp"
+        app:layout_constraintBottom_toTopOf="@id/bottom_nav_container"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+
+    <!-- ==========================================================
+         PANEL INFERIOR (BOTTOM SHEET) – CONTAMINANTES
+         ========================================================== -->
+    <LinearLayout
+        android:id="@+id/bottomSheetContaminantes"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        android:background="@drawable/bg_bottomsheet"
+        android:padding="20dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHeight_default="percent"
+        app:layout_constraintHeight_percent="0.55">
+
+        <!-- TÍTULO + X cerrar -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:layout_marginBottom="10dp">
+
+            <TextView
+                android:id="@+id/txtTituloContaminantes"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Contaminantes"
+                android:textSize="20sp"
+                android:textColor="#1F2B38"
+                android:fontFamily="@font/roboto_bold"/>
+
+            <ImageView
+                android:id="@+id/btnCerrarContaminantes"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:padding="6dp"
+                android:src="@drawable/ic_close"/>
+        </LinearLayout>
+
+        <!-- BOTÓN INFO -->
+        <LinearLayout
+            android:id="@+id/btnInfoContaminantes"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="8dp"
+            android:layout_marginBottom="10dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_info"
+                android:layout_marginEnd="10dp"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Contaminantes"
+                android:text="Información sobre contaminantes"
+                android:textSize="15sp"
                 android:textColor="#1F2B38"
-                android:textSize="18sp"
-                android:fontFamily="@font/roboto_bold"/>
-
-            <ImageView
-                android:id="@+id/infoContaminantes"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_marginStart="8dp"
-                android:src="@drawable/ic_info"
-                android:contentDescription="Info"/>
+                android:fontFamily="@font/roboto"/>
         </LinearLayout>
 
-        <!-- FILA DE CHIPS -->
+        <!-- LISTA SCROLLEABLE -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:fillViewport="true"
+            android:paddingBottom="40dp"
+            android:clipToPadding="false">
+
+
         <LinearLayout
-            android:id="@+id/filaChips"
-            android:layout_width="wrap_content"
+                android:id="@+id/listaGases"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- TODOS (seleccionado por defecto) -->
+                <LinearLayout
+                    android:id="@+id/itemTodos"
+                    android:layout_width="match_parent"
+                    android:layout_height="55dp"
+                    android:background="@drawable/bg_gasitem_selected"
+                    android:gravity="center_vertical"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:layout_marginBottom="10dp">
+
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@drawable/cloud"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Todos"
+                        android:textSize="17sp"
+                        android:textColor="#059669"
+                        android:fontFamily="@font/roboto"
+                        android:layout_marginStart="12dp"/>
+                </LinearLayout>
+
+                <!-- O3 -->
+                <LinearLayout
+                    android:id="@+id/itemO3"
+                    android:layout_width="match_parent"
+                    android:layout_height="55dp"
+                    android:background="@drawable/bg_gasitem"
+                    android:gravity="center_vertical"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:layout_marginBottom="10dp">
+
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@drawable/wind"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="O₃"
+                        android:textSize="17sp"
+                        android:textColor="#1F2B38"
+                        android:fontFamily="@font/roboto"
+                        android:layout_marginStart="12dp"/>
+                </LinearLayout>
+
+                <!-- NO2 -->
+                <LinearLayout
+                    android:id="@+id/itemNO2"
+                    android:layout_width="match_parent"
+                    android:layout_height="55dp"
+                    android:background="@drawable/bg_gasitem"
+                    android:gravity="center_vertical"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:layout_marginBottom="10dp">
+
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@drawable/cloud"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="NO₂"
+                        android:textSize="17sp"
+                        android:textColor="#1F2B38"
+                        android:fontFamily="@font/roboto"
+                        android:layout_marginStart="12dp"/>
+                </LinearLayout>
+
+                <!-- CO -->
+                <LinearLayout
+                    android:id="@+id/itemCO"
+                    android:layout_width="match_parent"
+                    android:layout_height="55dp"
+                    android:background="@drawable/bg_gasitem"
+                    android:gravity="center_vertical"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:layout_marginBottom="10dp">
+
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@drawable/cloudsnow"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="CO"
+                        android:textSize="17sp"
+                        android:textColor="#1F2B38"
+                        android:fontFamily="@font/roboto"
+                        android:layout_marginStart="12dp"/>
+                </LinearLayout>
+
+                <!-- SO2 -->
+                <LinearLayout
+                    android:id="@+id/itemSO2"
+                    android:layout_width="match_parent"
+                    android:layout_height="55dp"
+                    android:background="@drawable/bg_gasitem"
+                    android:gravity="center_vertical"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:layout_marginBottom="10dp">
+
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@drawable/clouddrizzle"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="SO₂"
+                        android:textSize="17sp"
+                        android:textColor="#1F2B38"
+                        android:fontFamily="@font/roboto"
+                        android:layout_marginStart="12dp"/>
+                </LinearLayout>
+
+            </LinearLayout>
+        </ScrollView>
+
+    </LinearLayout>
+    <!-- =========================================================
+     AQUÍ ACABA PANEL INFERIOR (BOTTOM SHEET) – CONTAMINANTES
+    ========================================================== -->
+
+    <!-- ==========================================================
+     PANEL INFERIOR (BOTTOM SHEET) – ÍNDICE DE CALIDAD
+    ========================================================== -->
+    <LinearLayout
+        android:id="@+id/bottomSheetIndice"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        android:background="@drawable/bg_bottomsheet"
+        android:padding="22dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHeight_default="percent"
+        app:layout_constraintHeight_percent="0.55">
+
+        <!-- TÍTULO + CERRAR -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginTop="10dp">
+            android:layout_marginBottom="18dp">
 
-            <!-- CHIP ACTIVO: CO -->
-            <LinearLayout
-                android:id="@+id/chipCO"
-                android:layout_width="wrap_content"
-                android:layout_height="48dp"
-                android:paddingStart="14dp"
-                android:paddingEnd="14dp"
-                android:gravity="center_vertical"
-                android:background="@drawable/bg_chip_selected"
-                android:layout_marginEnd="8dp"
-                android:orientation="horizontal">
+            <TextView
+                android:id="@+id/txtTituloIndice"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Índice de Calidad"
+                android:textSize="20sp"
+                android:textColor="#1F2B38"
+                android:fontFamily="@font/roboto_bold" />
 
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/cloudsnow"/>
+            <ImageView
+                android:id="@+id/btnCerrarIndice"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:padding="6dp"
+                android:src="@drawable/ic_close" />
+        </LinearLayout>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="CO"
-                    android:textColor="#059669"
-                    android:textSize="16sp"
-                    android:fontFamily="@font/roboto_bold"
-                    android:layout_marginStart="6dp"/>
+        <!-- TEXTO DE CALIDAD -->
+        <TextView
+            android:id="@+id/txtCalidadIndice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Calidad Buena"
+            android:textSize="20sp"
+            android:gravity="center"
+            android:textColor="#059669"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="16dp"
+            android:fontFamily="@font/roboto_bold" />
+
+
+        <!-- LISTA SCROLLEABLE -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="8dp">
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- ITEM CALIDAD -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="32dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
+
+                    <View
+                        android:layout_width="10dp"
+                        android:layout_height="10dp"
+                        android:background="#10B981"
+                        android:layout_marginEnd="10dp"
+                        android:layout_marginStart="4dp"
+                        android:backgroundTint="#10B981"
+                        android:backgroundTintMode="src_in"/>
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Buena"
+                        android:textColor="#1F2B38"
+                        android:textSize="15sp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="70%"
+                        android:textSize="15sp"
+                        android:textColor="#64748B"/>
+                </LinearLayout>
+
+                <!-- MODERADA -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="32dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
+
+                    <View
+                        android:layout_width="10dp"
+                        android:layout_height="10dp"
+                        android:background="#FACC15"
+                        android:layout_marginEnd="10dp"
+                        android:layout_marginStart="4dp"/>
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Moderada"
+                        android:textColor="#1F2B38"
+                        android:textSize="15sp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="20%"
+                        android:textSize="15sp"
+                        android:textColor="#64748B"/>
+                </LinearLayout>
+
+                <!-- MALA -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="32dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <View
+                        android:layout_width="10dp"
+                        android:layout_height="10dp"
+                        android:background="#EF4444"
+                        android:layout_marginEnd="10dp"
+                        android:layout_marginStart="4dp"/>
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Mala"
+                        android:textColor="#1F2B38"
+                        android:textSize="15sp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="10%"
+                        android:textSize="15sp"
+                        android:textColor="#64748B"/>
+                </LinearLayout>
+
             </LinearLayout>
+        </ScrollView>
 
-            <!-- CHIP O3 -->
-            <LinearLayout
-                android:id="@+id/chipO3"
+        <!-- RECOMENDACIÓN -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="12dp"
+            android:background="#ECFDF5"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="40dp"
+            android:backgroundTint="#D1FAE5">
+
+            <TextView
                 android:layout_width="wrap_content"
-                android:layout_height="48dp"
-                android:paddingStart="14dp"
-                android:paddingEnd="14dp"
-                android:gravity="center_vertical"
-                android:background="@drawable/bg_chip_unselected"
-                android:layout_marginEnd="8dp"
-                android:orientation="horizontal">
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/clouddrizzle"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="O3"
-                    android:textColor="#1F2B38"
-                    android:textSize="16sp"
-                    android:fontFamily="@font/roboto_light"
-                    android:layout_marginStart="6dp"/>
-            </LinearLayout>
-
-            <!-- CHIP SO3 -->
-            <LinearLayout
-                android:id="@+id/chipSO3"
-                android:layout_width="wrap_content"
-                android:layout_height="48dp"
-                android:paddingStart="14dp"
-                android:paddingEnd="14dp"
-                android:gravity="center_vertical"
-                android:background="@drawable/bg_chip_unselected"
-                android:layout_marginEnd="8dp"
-                android:orientation="horizontal">
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/wind"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="SO3"
-                    android:textColor="#1F2B38"
-                    android:textSize="16sp"
-                    android:fontFamily="@font/roboto_light"
-                    android:layout_marginStart="6dp"/>
-            </LinearLayout>
-
-            <!-- CHIP NO2 -->
-            <LinearLayout
-                android:id="@+id/chipNO2"
-                android:layout_width="wrap_content"
-                android:layout_height="48dp"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/bg_chip_unselected"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingStart="14dp"
-                android:paddingEnd="14dp">
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/cloud" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="6dp"
-                    android:fontFamily="@font/roboto_light"
-                    android:text="NO2"
-                    android:textColor="#1F2B38"
-                    android:textSize="16sp" />
-            </LinearLayout>
-
+                android:layout_height="wrap_content"
+                android:text="Recomendación: La calidad del aire es excelente. Ideal para actividades al aire libre."
+                android:textColor="#065F46"
+                android:textSize="14sp" />
         </LinearLayout>
 
     </LinearLayout>
+    <!-- ==========================================================
+         AQUÍ ACABA PANEL INFERIOR (BOTTOM SHEET) – ÍNDICE DE CALIDAD
+         ========================================================== -->
 
-    <!-- ===========================================================
-         CONTENEDOR CENTRADO (queda DEBAJO de los chips)
-         =========================================================== -->
-    <LinearLayout
-        android:id="@+id/centerContainer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="vertical"
-        app:layout_constraintTop_toBottomOf="@id/layoutContaminantes"
-        app:layout_constraintBottom_toTopOf="@id/bottom_nav_container"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <!-- LOGO -->
-        <ImageView
-            android:id="@+id/imgAtmos"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:contentDescription="Logo Atmos"
-            android:src="@drawable/logo_atmos_verde" />
-
-        <TextView
-            android:id="@+id/txtMantenimiento"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:fontFamily="@font/roboto"
-            android:text="Página en mantenimiento\nPróximamente"
-            android:textColor="#059669"
-            android:textSize="20sp"
-            android:gravity="center"/>
-    </LinearLayout>
-
-    <!-- MENU INFERIOR -->
+    <!-- ==========================================================
+         BOTTOM NAV
+         ========================================================== -->
     <include
         android:id="@+id/bottom_nav_container"
         layout="@layout/bottom_nav"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        android:layout_height="60dp"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
