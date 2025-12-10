@@ -193,6 +193,19 @@ public class MapasActivity extends FuncionesBaseActivity {
         /* ----------------- BUSCADOR DE UBICACIONES ------------------*/
         EditText edtBuscar = findViewById(R.id.edtBuscar);
 
+        LinearLayout layoutBusqueda = findViewById(R.id.layoutBusqueda);
+
+        //  El cuadro completo funciona como un solo input
+        layoutBusqueda.setOnClickListener(v -> {
+            edtBuscar.requestFocus();
+            edtBuscar.setCursorVisible(true);
+
+            // Mostrar teclado
+            android.view.inputmethod.InputMethodManager imm =
+                    (android.view.inputmethod.InputMethodManager)
+                            getSystemService(INPUT_METHOD_SERVICE);
+            imm.showSoftInput(edtBuscar, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+        });
 
         ListView listaSugerencias = findViewById(R.id.listaSugerencias);
 
