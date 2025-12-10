@@ -414,14 +414,13 @@ public class MapasActivity extends FuncionesBaseActivity {
         mapa = findViewById(R.id.mapaOSM);
 
         // Escala los tiles según la densidad → más nitidez
-        mapa.setTilesScaledToDpi(true);
-        mapa.setTileSource(new XYTileSource(
-                "MapnikHD",
+        new XYTileSource(
+                "StadiaBright",
                 0, 19, 512, ".png",
                 new String[]{
-                        "https://tile.openstreetmap.org/"
+                        "https://tiles.stadiamaps.com/tiles/osm_bright/?api_key=24c196c7-e10b-44a0-b046-fc160c2f51fe"
                 }
-        ));
+        );
 
         Configuration.getInstance().setUserAgentValue("AtmosApp");
         Configuration.getInstance().setMapViewHardwareAccelerated(true);

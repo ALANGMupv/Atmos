@@ -38,7 +38,7 @@ public class LogicaFake {
     private static final String TAG = ">>>>";
 
     // Endpoints
-    private static final String API_URL = "https://nagufor.upv.edu.es/medida";
+    private static final String API_URL = "https://nagufor.upv.edu.es/medida"; // Parece que no se usa
     private static final String URL_REGISTRO = "https://nagufor.upv.edu.es/usuario";
     private static final String URL_LOGIN    = "https://nagufor.upv.edu.es/login";
     private static final String URL_VINCULAR = "https://nagufor.upv.edu.es/vincular";

@@ -255,7 +255,7 @@
                     <ImageView
                         android:layout_width="28dp"
                         android:layout_height="28dp"
-                        android:src="@drawable/todos_contaminantes"/>
+                        android:src="@drawable/todosicono"/>
 
                     <TextView
                         android:layout_width="wrap_content"
