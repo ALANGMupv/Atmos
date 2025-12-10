@@ -29,7 +29,9 @@
 
 <body>
 
-<?php include __DIR__ . '/partials/headerLogueado.php'; ?>
+<?php
+$active = 'mapas';
+include __DIR__ . '/partials/headerLogueado.php'; ?>
 
 <main>
 
