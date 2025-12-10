@@ -255,14 +255,14 @@
                     <ImageView
                         android:layout_width="28dp"
                         android:layout_height="28dp"
-                        android:src="@drawable/cloud"/>
+                        android:src="@drawable/todos_contaminantes"/>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Todos"
                         android:textSize="17sp"
-                        android:textColor="#059669"
+                        android:textColor="#1F2B38"
                         android:fontFamily="@font/roboto"
                         android:layout_marginStart="12dp"/>
                 </LinearLayout>
