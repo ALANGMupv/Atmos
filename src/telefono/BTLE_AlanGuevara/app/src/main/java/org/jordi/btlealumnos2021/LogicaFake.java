@@ -9,6 +9,8 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -22,9 +24,13 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * Nombre Fichero: LogicaFake.java
- * Descripción: Clase encargada de llamar a los métodos de la lógica de negocio
- * Autores: Alan Guevara Martínez
+ * @file LogicaFake.java
+ * @brief Clase encargada de llamar a los métodos de la lógica de negocio.
+ *
+ * @details Esta clase actúa como intermediaria y gestiona las invocaciones
+ * a la lógica de negocio.
+ *
+ * @authors Grupo 1.4 - Atmos
  */
 
 
@@ -32,7 +38,7 @@ public class LogicaFake {
     private static final String TAG = ">>>>";
 
     // Endpoints
-    private static final String API_URL = "https://nagufor.upv.edu.es/medida";
+    private static final String API_URL = "https://nagufor.upv.edu.es/medida"; // Parece que no se usa
     private static final String URL_REGISTRO = "https://nagufor.upv.edu.es/usuario";
     private static final String URL_LOGIN    = "https://nagufor.upv.edu.es/login";
     private static final String URL_VINCULAR = "https://nagufor.upv.edu.es/vincular";
@@ -1025,7 +1031,125 @@ public class LogicaFake {
         queue.add(req);
     }
 
+    /**
+     * @brief Obtiene del backend todas las placas con sus últimas mediciones.
+     *
+     * @details Llama al endpoint /mapa/medidas/todos y devuelve una lista de objetos
+     * JSON con latitud, longitud y mediciones de NO2, CO, O3 y SO2.
+     *
+     * @param callback Callback que recibe el JSONArray de placas o null en error.
+     *
+     * @date 10/12/2025
+     * @author Alan Guevara Martínez
+     */
+    public void obtenerMedidasTodos(CallbackJSONArray callback) {
 
+        // Crear un nuevo hilo para evitar bloquear el hilo principal
+        new Thread(() -> {
+            try {
+                // URL del endpoint que devuelve todas las medidas
+                URL url = new URL("https://nagufor.upv.edu.es/mapa/medidas/todos");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+                // Configurar método GET y cabeceras
+                conn.setRequestMethod("GET");
+                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+
+                // Obtener respuesta del servidor
+                InputStream is = conn.getInputStream();
+
+                // Leer el JSON completo de la respuesta
+                String json = new java.util.Scanner(is).useDelimiter("\\A").next();
+
+                // Parsear a un objeto JSON
+                JSONObject obj = new JSONObject(json);
+
+                // Verificar que el estado sea "ok"
+                if (!obj.getString("status").equals("ok")) {
+                    callback.onResult(null);
+                    return;
+                }
+
+                // Extraer el array de placas de la respuesta
+                JSONArray placas = obj.getJSONArray("placas");
+
+                // Enviar el resultado a través del callback
+                callback.onResult(placas);
+
+            } catch (Exception e) {
+                // Log del error para diagnóstico
+                e.printStackTrace();
+
+                // Notificar error al callback
+                callback.onResult(null);
+            }
+        }).start();
+    }
+
+    /**
+     * @brief Obtiene del backend la última medición de un gas específico por cada placa.
+     *
+     * @details Llama al endpoint /mapa/medidas/gas?tipo=X obteniendo latitud, longitud
+     * y valor medido.
+     *
+     * @param tipoGas Código del gas (11,12,13,14).
+     * @param callback Callback que recibe el JSONArray de medidas o null en caso de error.
+     *
+     * @date 10/12/2025
+     * @author Alan Guevara Martínez
+     */
+    public void obtenerMedidasPorGas(int tipoGas, CallbackJSONArray callback) {
+
+        // Crear un nuevo hilo para mantener libre el hilo principal
+        new Thread(() -> {
+            try {
+                // Construcción de la URL incluyendo el parámetro del tipo de gas
+                URL url = new URL("https://nagufor.upv.edu.es/mapa/medidas/gas?tipo=" + tipoGas);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+                // Configuración de la petición GET
+                conn.setRequestMethod("GET");
+
+                // Obtener flujo de respuesta del servidor
+                InputStream is = conn.getInputStream();
+
+                // Convertir toda la respuesta a un String (JSON bruto)
+                String json = new java.util.Scanner(is).useDelimiter("\\A").next();
+
+                // Parseo del JSON recibido
+                JSONObject obj = new JSONObject(json);
+
+                // Verificación del estado devuelto por el servidor
+                if (!obj.getString("status").equals("ok")) {
+                    callback.onResult(null);
+                    return;
+                }
+
+                // Extraer el array de medidas del JSON
+                JSONArray medidas = obj.getJSONArray("medidas");
+
+                // Enviar el resultado al callback
+                callback.onResult(medidas);
+
+            } catch (Exception e) {
+                // Mostrar trazas del error en consola
+                e.printStackTrace();
+
+                // Notificar el error al callback
+                callback.onResult(null);
+            }
+        }).start();
+    }
+
+    /**
+     * @interface CallbackJSONArray
+     * @brief Callback genérico para devolver un JSONArray.
+     * @date 10/12/2025
+     * @author Alan Guevara Martínez
+     */
+    public interface CallbackJSONArray {
+        void onResult(JSONArray arr);
+    }
 
 }
 

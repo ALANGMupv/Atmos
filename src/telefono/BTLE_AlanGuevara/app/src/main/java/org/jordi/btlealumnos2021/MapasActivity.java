@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
+import org.json.JSONObject;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.modules.MBTilesFileArchive;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
@@ -28,6 +29,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Alan Guevara Martinez
@@ -38,7 +40,6 @@ import java.util.ArrayList;
  * Esta pantalla se carga después de iniciar sesión. Desde aquí se comprueba si
  * el usuario ha concedido los permisos necesarios para realizar escaneo BLE en
  * segundo plano. Si no están concedidos, se solicitan al usuario.
- * @date 05/12/2025 (fecha inicio)
  */
 public class MapasActivity extends FuncionesBaseActivity {
     /**
@@ -50,6 +51,13 @@ public class MapasActivity extends FuncionesBaseActivity {
     private Runnable tareaBusqueda = null;
     private android.text.TextWatcher watcher;
     private Marker marcadorUsuario = null;
+    // Overlay encargado de pintar el mapa interpolado de contaminación
+    private ContaminacionOverlay overlayContaminacion;
+    // Acceso a la lógica fake que realiza peticiones a la API y devuelve JSON
+    private LogicaFake logica = new LogicaFake();
+    // Variable global mapa
+    private MapView mapa;
+
 
 
     /**
@@ -119,30 +127,45 @@ public class MapasActivity extends FuncionesBaseActivity {
         TextView txtChip = findViewById(R.id.txtChipContaminantes);
 
         // Listener común
-        // Listener común
         View.OnClickListener listener = v -> {
 
             // Cambia visualmente qué gas está seleccionado
             seleccionarGas(v, itemTodos, itemO3, itemNO2, itemCO, itemSO2);
 
-            // CAMBIA EL TEXTO Y COLOR DEL CHIP SUPERIOR
+            // Texto del chip
             if (v == itemTodos) {
                 txtChip.setText("Contaminantes");
-                txtChip.setTextColor(0xFF059669); // Verde Atmos por defecto
+                txtChip.setTextColor(0xFF059669);
+
+                // CARGAR TODOS LOS GASES
+                cargarContaminacion("TODOS");
+
             } else if (v == itemO3) {
                 txtChip.setText("O₃");
-                txtChip.setTextColor(0xFF047857); // color cuando NO es "Todos"
+                txtChip.setTextColor(0xFF047857);
+
+                cargarContaminacion("13"); // O3
+
             } else if (v == itemNO2) {
                 txtChip.setText("NO₂");
                 txtChip.setTextColor(0xFF047857);
+
+                cargarContaminacion("11"); // NO2
+
             } else if (v == itemCO) {
                 txtChip.setText("CO");
                 txtChip.setTextColor(0xFF047857);
+
+                cargarContaminacion("12"); // CO
+
             } else if (v == itemSO2) {
                 txtChip.setText("SO₂");
                 txtChip.setTextColor(0xFF047857);
+
+                cargarContaminacion("14"); // SO2
             }
         };
+
 
         // Asignar listeners
         itemTodos.setOnClickListener(listener);
@@ -170,6 +193,19 @@ public class MapasActivity extends FuncionesBaseActivity {
         /* ----------------- BUSCADOR DE UBICACIONES ------------------*/
         EditText edtBuscar = findViewById(R.id.edtBuscar);
 
+        LinearLayout layoutBusqueda = findViewById(R.id.layoutBusqueda);
+
+        //  El cuadro completo funciona como un solo input
+        layoutBusqueda.setOnClickListener(v -> {
+            edtBuscar.requestFocus();
+            edtBuscar.setCursorVisible(true);
+
+            // Mostrar teclado
+            android.view.inputmethod.InputMethodManager imm =
+                    (android.view.inputmethod.InputMethodManager)
+                            getSystemService(INPUT_METHOD_SERVICE);
+            imm.showSoftInput(edtBuscar, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+        });
 
         ListView listaSugerencias = findViewById(R.id.listaSugerencias);
 
@@ -388,17 +424,16 @@ public class MapasActivity extends FuncionesBaseActivity {
      */
     private void inicializarMapa() {
 
-        MapView mapa = findViewById(R.id.mapaOSM);
+        mapa = findViewById(R.id.mapaOSM);
 
         // Escala los tiles según la densidad → más nitidez
-        mapa.setTilesScaledToDpi(true);
-        mapa.setTileSource(new XYTileSource(
-                "MapnikHD",
+        new XYTileSource(
+                "StadiaBright",
                 0, 19, 512, ".png",
                 new String[]{
-                        "https://tile.openstreetmap.org/"
+                        "https://tiles.stadiamaps.com/tiles/osm_bright/?api_key=24c196c7-e10b-44a0-b046-fc160c2f51fe"
                 }
-        ));
+        );
 
         Configuration.getInstance().setUserAgentValue("AtmosApp");
         Configuration.getInstance().setMapViewHardwareAccelerated(true);
@@ -422,7 +457,7 @@ public class MapasActivity extends FuncionesBaseActivity {
         mapa.setMultiTouchControls(true);
 
         // Configuración de inicio
-        mapa.getController().setZoom(13.0);
+        mapa.getController().setZoom(14.0);
         mapa.getController().setCenter(new GeoPoint(38.995, -0.160));
 
         // Botón Mi Ubicación
@@ -433,8 +468,16 @@ public class MapasActivity extends FuncionesBaseActivity {
 
         // Escuchar ubicación en tiempo real (solución definitiva)
         iniciarActualizacionUbicacion(mapa);
-    }
 
+        /* --- PINTAR MAPA --- */
+        overlayContaminacion = new ContaminacionOverlay();
+        mapa.getOverlays().add(overlayContaminacion);
+        /* --------------------------- */
+
+        // Dibujar mapa desde el principio al incializarlo
+        cargarContaminacion("TODOS");
+
+    }
 
     /**
      * Solicita la ubicación actual del usuario y centra el mapa en ese punto.
@@ -466,7 +509,7 @@ public class MapasActivity extends FuncionesBaseActivity {
             GeoPoint p = new GeoPoint(loc.getLatitude(), loc.getLongitude());
 
             // Acercamos el zoom y animamos el mapa hasta la posición del usuario
-            mapa.getController().setZoom(17.0);
+            mapa.getController().setZoom(18.0);
             mapa.getController().animateTo(p);
 
             // Crear marcador SOLO para la ubicación del usuario
@@ -564,7 +607,7 @@ public class MapasActivity extends FuncionesBaseActivity {
                 runOnUiThread(() -> {
 
                     // Centramos el mapa y ajustamos el zoom
-                    mapa.getController().setZoom(16.0);
+                    mapa.getController().setZoom(17.0);
                     mapa.getController().animateTo(destino);
 
                     Toast.makeText(this, "Ubicación encontrada", Toast.LENGTH_SHORT).show();
@@ -694,5 +737,178 @@ public class MapasActivity extends FuncionesBaseActivity {
         );
     }
 
+    /* ----- SECCIÓN PINTAR MAPA ----- */
+    /**
+     * @brief Carga puntos de contaminación desde la API y los envía al overlay.
+     *
+     * @details
+     * Este método solicita datos al servidor según el tipo de gas indicado.
+     *
+     * Flujo:
+     *  - Si tipoGas = "TODOS": obtiene medidas de varios gases y escoge la peor.
+     *  - Si tipoGas = código numérico: solo dibuja ese gas.
+     *
+     * Luego:
+     *  - Normaliza el valor según tablas EPA.
+     *  - Convierte el nivel normalizado a un color RGB.
+     *  - Crea objetos PuntoContaminacion que luego el overlay interpolará.
+     *
+     * Finalmente se actualiza el mapa en el hilo principal.
+     *
+     * @param tipoGas Cadena "TODOS" o código numérico del gas ("11", "12", "13", "14").
+     */
+    private void cargarContaminacion(String tipoGas) {
+
+        // Caso A: se piden todos los gases y se elige el peor índice para cada placa
+        if (tipoGas.equals("TODOS")) {
+
+            logica.obtenerMedidasTodos(arr -> {
+
+                if (arr == null) return;
+
+                // Lista donde almacenaremos los puntos preparados para el overlay
+                List<ContaminacionOverlay.PuntoContaminacion> lista = new ArrayList<>();
+
+                for (int i = 0; i < arr.length(); i++) {
+                    try {
+                        JSONObject o = arr.getJSONObject(i);
+
+                        // Coordenadas geográficas del punto
+                        double lat = o.getDouble("latitud");
+                        double lon = o.getDouble("longitud");
+
+                        // Valores de cada gas (pueden no existir)
+                        double no2 = o.optDouble("NO2", -1);
+                        double co  = o.optDouble("CO", -1);
+                        double o3  = o.optDouble("O3", -1);
+                        double so2 = o.optDouble("SO2", -1);
+
+                        // Normalizamos cada gas individualmente y nos quedamos con el peor nivel
+                        double peor = Math.max(
+                                Math.max(normal(no2, 11), normal(co, 12)),
+                                Math.max(normal(o3, 13), normal(so2, 14))
+                        );
+
+                        // Elegimos color según el nivel normalizado
+                        int[] rgb = colorPorNivel(peor);
+
+                        // Creamos punto para el overlay
+                        lista.add(new ContaminacionOverlay.PuntoContaminacion(lat, lon, rgb[0], rgb[1], rgb[2]));
+
+                    } catch (Exception ignored) {}
+                }
+
+                // Los overlays deben actualizarse desde el hilo principal (UI Thread)
+                runOnUiThread(() -> {
+                    overlayContaminacion.setPuntos(lista);
+                    mapa.invalidate(); // fuerza repintado
+                });
+            });
+
+        } else {
+
+            // Caso B: se pide solo un gas específico
+            int gas = Integer.parseInt(tipoGas);
+
+            logica.obtenerMedidasPorGas(gas, arr -> {
+
+                if (arr == null) return;
+
+                List<ContaminacionOverlay.PuntoContaminacion> lista = new ArrayList<>();
+
+                for (int i = 0; i < arr.length(); i++) {
+                    try {
+                        JSONObject o = arr.getJSONObject(i);
+
+                        double lat = o.getDouble("latitud");
+                        double lon = o.getDouble("longitud");
+
+                        // Valor del gas seleccionado
+                        double v = o.getDouble("valor");
+
+                        // Normalizar el valor según la tabla del gas correspondiente
+                        double n = normal(v, gas);
+
+                        // Convertir nivel a color
+                        int[] rgb = colorPorNivel(n);
+
+                        lista.add(new ContaminacionOverlay.PuntoContaminacion(lat, lon, rgb[0], rgb[1], rgb[2]));
+
+                    } catch (Exception ignored) {}
+                }
+
+                // Actualizamos en UI Thread
+                runOnUiThread(() -> {
+                    overlayContaminacion.setPuntos(lista);
+                    mapa.invalidate();
+                });
+            });
+        }
+    }
+
+    /**
+     * @brief Normaliza un valor de un gas a un nivel entre 0 y 1.
+     *
+     * @details
+     * Cada gas tiene sus propios umbrales (tomados de estándares EPA).
+     * De esta forma, valores pequeños se convierten en niveles bajos (verde),
+     * y valores altos se convierten en niveles altos (rojo).
+     *
+     * @param valor Valor absoluto medido del gas.
+     * @param tipo Código del gas (11=NO2, 12=CO, 13=O3, 14=SO2).
+     * @return Nivel normalizado: 0.1, 0.45, 0.75 o 1.0 según rangos.
+     */
+    private double normal(double valor, int tipo) {
+        if (valor < 0) return 0;
+
+        switch (tipo) {
+            case 12: // CO
+                if (valor <= 1.7) return 0.1;
+                if (valor <= 4.4) return 0.45;
+                if (valor <= 8.7) return 0.75;
+                return 1.0;
+
+            case 11: // NO2
+                if (valor <= 0.021) return 0.1;
+                if (valor <= 0.053) return 0.45;
+                if (valor <= 0.106) return 0.75;
+                return 1.0;
+
+            case 13: // O3
+                if (valor <= 0.031) return 0.1;
+                if (valor <= 0.061) return 0.45;
+                if (valor <= 0.092) return 0.75;
+                return 1.0;
+
+            case 14: // SO2
+                if (valor <= 0.0076) return 0.1;
+                if (valor <= 0.019) return 0.45;
+                if (valor <= 0.038) return 0.75;
+                return 1.0;
+        }
+
+        return 0;
+    }
+
+    /**
+     * @brief Devuelve un color RGB según el nivel de contaminación.
+     *
+     * @details
+     * 0.10 -> verde (bueno)
+     * 0.45 -> amarillo (moderado)
+     * 0.75 -> naranja (malo)
+     * >0.75 -> rojo (muy malo)
+     *
+     * @param n Nivel normalizado entre 0.1 y 1.
+     * @return Array {r, g, b}
+     */
+    private int[] colorPorNivel(double n) {
+        if (n <= 0.10) return new int[]{36, 255, 84};    // verde
+        if (n <= 0.45) return new int[]{255, 240, 0};    // amarillo
+        if (n <= 0.75) return new int[]{255, 144, 0};    // naranja
+        return new int[]{255, 48, 48};                  // rojo
+    }
+
+    /* ----- FIN SECCIÓN PINTAR MAPA -----*/
     // ---------------------------------------------------------
 }
