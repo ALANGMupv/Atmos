@@ -118,7 +118,7 @@ public class ContaminacionOverlay extends Overlay {
         // Radio de influencia geográfico para IDW.
         final double RADIO = 0.012;  // ≈1–1.2 km dependiendo latitud
         final double EXP = 2;        // exponente IDW, 2 = estándar
-        final float ALPHA = 0.08f; // opacidad del heatmap
+        final float ALPHA = 0.10f; // opacidad del heatmap
 
         // Reutilizado para obtener proyecciones de píxeles
         Point pixel = new Point();

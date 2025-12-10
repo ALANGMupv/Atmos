@@ -57,7 +57,8 @@ public class MapasActivity extends FuncionesBaseActivity {
     private LogicaFake logica = new LogicaFake();
     // Variable global mapa
     private MapView mapa;
-
+    // Para que el marcador de ubi no se mueva
+    private android.location.Location ultimaLoc = null;
 
 
     /**
@@ -278,6 +279,34 @@ public class MapasActivity extends FuncionesBaseActivity {
         edtBuscar.addTextChangedListener(watcher);
 
         /*----------------------------------------------------------------------------*/
+        /* -------------- SECCIÓN BUSCADOR DE UBICACIONES ---------------*/
+
+        edtBuscar.setOnEditorActionListener((v, actionId, event) -> {
+
+            // Cuando el usuario pulsa "Buscar" en el teclado
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH ||
+                    (event != null && event.getKeyCode() == android.view.KeyEvent.KEYCODE_ENTER
+                            && event.getAction() == android.view.KeyEvent.ACTION_DOWN)) {
+
+                String texto = edtBuscar.getText().toString().trim();
+
+                if (!texto.isEmpty()) {
+                    listaSugerencias.setVisibility(View.GONE);
+                    buscarUbicacion(texto);
+
+                    // Cerrar teclado
+                    android.view.inputmethod.InputMethodManager imm =
+                            (android.view.inputmethod.InputMethodManager)
+                                    getSystemService(INPUT_METHOD_SERVICE);
+
+                    imm.hideSoftInputFromWindow(edtBuscar.getWindowToken(), 0);
+                }
+
+                return true; // Consumimos el evento
+            }
+
+            return false;
+        });
 
 
         /**
@@ -487,7 +516,6 @@ public class MapasActivity extends FuncionesBaseActivity {
     private void pedirUbicacion(MapView mapa) {
 
         // Comprobamos si el permiso de ubicación está concedido.
-        // Si no lo está, lo pedimos y salimos.
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
 
@@ -499,10 +527,11 @@ public class MapasActivity extends FuncionesBaseActivity {
         android.location.LocationManager lm =
                 (android.location.LocationManager) getSystemService(LOCATION_SERVICE);
 
-        // Intentamos obtener la última ubicación conocida vía GPS
+        // Obtenemos la última ubicación conocida vía GPS
         android.location.Location loc =
                 lm.getLastKnownLocation(android.location.LocationManager.GPS_PROVIDER);
 
+        // Si tenemos una ubicación anterior, comprobamos si el cambio es significativo
         if (loc != null) {
 
             // Convertimos la ubicación a un GeoPoint de OSMDroid
@@ -698,14 +727,26 @@ public class MapasActivity extends FuncionesBaseActivity {
          * Solicitamos actualizaciones continuas de la ubicación:
          *   - Cada 2000 ms (2 segundos)
          *   - Cada 1 metro recorrido
-         *
-         * Esto asegura que el marcador del usuario se actualice en tiempo real.
          */
         lm.requestLocationUpdates(
                 android.location.LocationManager.GPS_PROVIDER,
-                2000,   // intervalo mínimo en milisegundos
+                2000,   // intervalo mínimo en ms
                 1,      // distancia mínima en metros
                 location -> {
+
+                    // Si tenemos una ubicación previa, verificamos si el movimiento es significativo
+                    if (ultimaLoc != null) {
+
+                        float distancia = location.distanceTo(ultimaLoc);
+
+                        // Si el movimiento es menor de 2 metros → ignorar para evitar jitter
+                        if (distancia < 2) {
+                            return;
+                        }
+                    }
+
+                    // Guardamos esta ubicación como última válida
+                    ultimaLoc = location;
 
                     // Convertimos la ubicación a un GeoPoint compatible con OSMDroid
                     GeoPoint p = new GeoPoint(location.getLatitude(), location.getLongitude());
@@ -720,18 +761,19 @@ public class MapasActivity extends FuncionesBaseActivity {
                         // Icono personalizado: tu circulito de ubicación
                         marcadorUsuario.setIcon(
                                 androidx.core.content.ContextCompat.getDrawable(
-                                        this, R.drawable.marker_mi_ubicacion
+                                        this,
+                                        R.drawable.marker_mi_ubicacion
                                 )
                         );
 
-                        // Lo añadimos a los overlays del mapa
+                        // Lo añadimos al mapa
                         mapa.getOverlays().add(marcadorUsuario);
                     }
 
                     // Actualizamos la posición del marcador
                     marcadorUsuario.setPosition(p);
 
-                    // Redibujar el mapa con la nueva posición
+                    // Redibujamos
                     mapa.invalidate();
                 }
         );
