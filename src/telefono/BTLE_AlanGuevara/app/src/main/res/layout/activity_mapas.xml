@@ -472,9 +472,10 @@
                         android:textSize="15sp"/>
 
                     <TextView
+                        android:id="@+id/txtPctBuena"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="70%"
+                        android:text="0%"
                         android:textSize="15sp"
                         android:textColor="#64748B"/>
                 </LinearLayout>
@@ -503,9 +504,10 @@
                         android:textSize="15sp"/>
 
                     <TextView
+                        android:id="@+id/txtPctModerada"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="10%"
+                        android:text="0%"
                         android:textSize="15sp"
                         android:textColor="#64748B"/>
                 </LinearLayout>
@@ -534,9 +536,10 @@
                     android:textSize="15sp"/>
 
                 <TextView
+                    android:id="@+id/txtPctInsalubre"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="10%"
+                    android:text="0%"
                     android:textSize="15sp"
                     android:textColor="#64748B"/>
             </LinearLayout>
@@ -564,9 +567,10 @@
                         android:textSize="15sp"/>
 
                     <TextView
+                        android:id="@+id/txtPctMala"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="10%"
+                        android:text="0%"
                         android:textSize="15sp"
                         android:textColor="#64748B"/>
                 </LinearLayout>
@@ -576,16 +580,17 @@
 
         <!-- RECOMENDACIÓN -->
         <LinearLayout
+            android:id="@+id/boxRecomendacion"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="12dp"
-            android:background="#ECFDF5"
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:layout_marginTop="20dp"
-            android:backgroundTint="#D1FAE5">
+            android:background="#00000000">
 
-            <TextView
+        <TextView
+                android:id="@+id/txtRecomendacion"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Recomendación: La calidad del aire es excelente. Ideal para actividades al aire libre."
