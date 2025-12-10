@@ -53,7 +53,9 @@ body{
 .hero-content {
   width: 100%;
   max-width: 1000px;
-  margin: -200px auto 0;
+  margin: 0 auto;               /* elimina desplazamiento raro */
+  position: relative;
+  top: -40px;                   /* ajuste suave opcional */
 }
 
 /* Título */
@@ -101,9 +103,9 @@ body{
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 18px 60px;
-  font-size: 20px;
-  border-radius: 30px;
+  padding: 16px 52px;
+  font-size: 18px;
+  border-radius: 28px;
   font-family: 'Open Sans', sans-serif;
   font-weight: 600;
   border: 2px solid transparent;
@@ -125,15 +127,20 @@ body{
 }
 
 /* Verde contorno */
+/* Botón secundario suave (Ver mapa público) */
 .btn-outline {
   background: transparent !important;
   color: var(--green) !important;
   border-color: var(--green) !important;
 }
+/* Hover suave: solo oscurece un poco el fondo */
 .btn-outline:hover {
-  background: var(--green) !important;
-  color: #fff !important;
+  background: rgba(5, 150, 105, 0.12) !important; /* verde muy suave */
+  color: var(--green) !important;                 /* mantiene texto verde */
+  border-color: var(--green) !important;
 }
+
+
 
 /* ====== INFO ====== */
 .section-info { background:#fff; }
@@ -233,7 +240,7 @@ body{
 .funciona-title {
   font-family: 'Roboto', sans-serif;
   font-weight: 600;
-  font-size: 48px;
+  font-size: 32px;
   color: #000;
   margin-bottom: 16px;
 }
@@ -242,7 +249,7 @@ body{
 .funciona-sub {
   font-family: 'Open Sans', sans-serif;
   font-weight: 300;
-  font-size: 30px;
+  font-size: 18px;
   color: #000;
   margin: 0 auto 40px;
   max-width: 1000px;
@@ -286,6 +293,11 @@ body{
   .funciona-icon { width: 320px; }
 }
 
+.section-divider {
+  height: 80px;
+  background: transparent;
+}
+
 /* ====== SECCIÓN "Funcionalidades para cada usuario" ====== */
 .section-funcionalidades {
   background: #fff;
@@ -304,7 +316,7 @@ body{
 .funcionalidades-title {
   font-family: 'Roboto', sans-serif;
   font-weight: 600;
-  font-size: 48px;
+  font-size: 32px;
   color: #000;
   margin-bottom: 16px;
 }
@@ -313,7 +325,7 @@ body{
 .funcionalidades-sub {
   font-family: 'Open Sans', sans-serif;
   font-weight: 300;
-  font-size: 30px;
+  font-size: 18px;
   color: #000;
   margin: 0 auto 40px;
   max-width: 1000px;
@@ -371,7 +383,7 @@ body{
 .cta-title{
   font-family: 'Roboto', sans-serif;
   font-weight: 600;                 /* semibold */
-  font-size: clamp(24px, 3.5vw, 36px);
+  font-size: clamp(20px, 3vw, 30px);
   color: #fff;
   margin: 0 0 12px;
   line-height: 1.2;
@@ -380,7 +392,7 @@ body{
 .cta-sub{
   font-family: 'Open Sans', sans-serif;
   font-weight: 300;                 /* light */
-  font-size: clamp(16px, 2.5vw, 20px);
+  font-size: clamp(14px, 2vw, 18px);
   color: rgba(255,255,255,.92);
   margin: 0 0 28px;
   line-height: 1.5;
@@ -390,5 +402,12 @@ body{
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+/* ====== Botón CTA (Compra tu sensor) más pequeño ====== */
+.section-cta .btn-secondary {
+  padding: 16px 52px;       /* antes mucho más grande */
+  font-size: 18px;          /* antes ~20px */
+  border-radius: 28px;      /* uniforme con los del hero */
 }
 

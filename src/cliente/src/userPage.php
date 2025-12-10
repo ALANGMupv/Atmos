@@ -36,7 +36,10 @@ $usuario = $_SESSION['usuario'];
 <!-- data-id-usuario permite al JS saber quién está logueado -->
 <body data-id-usuario="<?= htmlspecialchars($usuario['id_usuario']); ?>">
 
-<?php include __DIR__ . '/partials/headerLogueado.php'; ?>
+<?php
+$active = 'portal';
+include __DIR__ . '/partials/headerLogueado.php';
+?>
 
 <main>
 
