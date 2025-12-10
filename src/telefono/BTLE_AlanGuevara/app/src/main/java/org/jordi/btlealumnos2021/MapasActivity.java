@@ -444,7 +444,7 @@ public class MapasActivity extends FuncionesBaseActivity {
         mapa.setMultiTouchControls(true);
 
         // Configuración de inicio
-        mapa.getController().setZoom(13.0);
+        mapa.getController().setZoom(14.0);
         mapa.getController().setCenter(new GeoPoint(38.995, -0.160));
 
         // Botón Mi Ubicación
@@ -496,7 +496,7 @@ public class MapasActivity extends FuncionesBaseActivity {
             GeoPoint p = new GeoPoint(loc.getLatitude(), loc.getLongitude());
 
             // Acercamos el zoom y animamos el mapa hasta la posición del usuario
-            mapa.getController().setZoom(17.0);
+            mapa.getController().setZoom(18.0);
             mapa.getController().animateTo(p);
 
             // Crear marcador SOLO para la ubicación del usuario
@@ -594,7 +594,7 @@ public class MapasActivity extends FuncionesBaseActivity {
                 runOnUiThread(() -> {
 
                     // Centramos el mapa y ajustamos el zoom
-                    mapa.getController().setZoom(16.0);
+                    mapa.getController().setZoom(17.0);
                     mapa.getController().animateTo(destino);
 
                     Toast.makeText(this, "Ubicación encontrada", Toast.LENGTH_SHORT).show();
