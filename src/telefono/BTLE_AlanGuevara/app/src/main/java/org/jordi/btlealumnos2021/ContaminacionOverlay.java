@@ -99,12 +99,14 @@ public class ContaminacionOverlay extends Overlay {
         if (shadow || puntos.isEmpty()) return;
 
         // Número de divisiones por eje del lienzo.
-        final int GRID = 60;
+        final int GRID = 45;
 
         // Objeto Paint reutilizado para dibujar los círculos interpolados.
         final Paint paint = new Paint();
         paint.setStyle(Paint.Style.FILL);
-        paint.setAntiAlias(true);
+        paint.setAntiAlias(true);       // suaviza bordes
+        paint.setDither(true);          // mejora mezcla de colores en gradientes
+        paint.setFilterBitmap(true);    // suaviza al escalar
 
         int width = canvas.getWidth();
         int height = canvas.getHeight();
@@ -116,7 +118,7 @@ public class ContaminacionOverlay extends Overlay {
         // Radio de influencia geográfico para IDW.
         final double RADIO = 0.012;  // ≈1–1.2 km dependiendo latitud
         final double EXP = 2;        // exponente IDW, 2 = estándar
-        final float ALPHA = 0.18f;   // opacidad del heatmap
+        final float ALPHA = 0.20f; // opacidad del heatmap
 
         // Reutilizado para obtener proyecciones de píxeles
         Point pixel = new Point();
@@ -171,7 +173,7 @@ public class ContaminacionOverlay extends Overlay {
                 paint.setColor(Color.argb((int) (ALPHA * 255), rr, gg, bb));
 
                 // Se dibuja un círculo ligeramente menor que la celda
-                canvas.drawCircle(cx, cy, stepX * 0.9f, paint);
+                canvas.drawCircle(cx, cy, stepX * 1.1f, paint);
             }
         }
     }
