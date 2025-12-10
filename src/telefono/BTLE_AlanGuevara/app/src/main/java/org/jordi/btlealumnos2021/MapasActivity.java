@@ -3,6 +3,7 @@ package org.jordi.btlealumnos2021;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
@@ -59,6 +60,15 @@ public class MapasActivity extends FuncionesBaseActivity {
     private MapView mapa;
     // Para que el marcador de ubi no se mueva
     private android.location.Location ultimaLoc = null;
+    // Variables para evitar recalcular el índice mientras el usuario arrastra el mapa (VA/IBA LENTO TRAS PONER LOS INDICES EN FUNCIONAMIENTO).
+    private boolean mapaEnMovimiento = false;
+    private final android.os.Handler handlerIndice = new android.os.Handler();
+    private Runnable tareaDelayedIndice;
+    // -----------------------------------------------------------------------
+    // handler para detectar FIN DE MOVIMIENTO
+    private final android.os.Handler handlerMovimiento = new android.os.Handler();
+    private Runnable tareaFinMovimiento = null;
+    // -----------------------------------------------------------------------
 
 
     /**
@@ -455,6 +465,37 @@ public class MapasActivity extends FuncionesBaseActivity {
 
         mapa = findViewById(R.id.mapaOSM);
 
+        // Evitar recalcular el índice mientras el usuario arrastra el mapa
+        mapa.addMapListener(new org.osmdroid.events.MapListener() {
+
+            @Override
+            public boolean onScroll(org.osmdroid.events.ScrollEvent event) {
+
+                // Cada vez que hay un scroll → marcar como en movimiento
+                mapaEnMovimiento = true;
+
+                // Cancelar detección anterior
+                if (tareaFinMovimiento != null)
+                    handlerMovimiento.removeCallbacks(tareaFinMovimiento);
+
+                // Programar detección de “movimiento detenido”
+                tareaFinMovimiento = () -> mapaEnMovimiento = false;
+
+                // Si pasan 120 ms sin nuevos scrolls → movimiento parado
+                handlerMovimiento.postDelayed(tareaFinMovimiento, 120);
+
+                return false;
+            }
+
+            @Override
+            public boolean onZoom(org.osmdroid.events.ZoomEvent event) {
+                // Zoom no cuenta como movimiento del dedo
+                mapaEnMovimiento = false;
+                return false;
+            }
+        });
+        // ----------------------------------------------------------------------
+
         // Escala los tiles según la densidad → más nitidez
         new XYTileSource(
                 "StadiaBright",
@@ -501,6 +542,24 @@ public class MapasActivity extends FuncionesBaseActivity {
         /* --- PINTAR MAPA --- */
         overlayContaminacion = new ContaminacionOverlay();
         mapa.getOverlays().add(overlayContaminacion);
+        /* --------------------------- */
+
+        /* --- RECIBIR ÍNDICE CALCULADO POR EL OVERLAY --- */
+        overlayContaminacion.setOnIndiceUpdateListener((b, m, i, ma, dominante) -> {
+
+            // Cancelamos cualquier actualización pendiente
+            if (tareaDelayedIndice != null)
+                handlerIndice.removeCallbacks(tareaDelayedIndice);
+
+            // Si el mapa se está moviendo → posponer
+            tareaDelayedIndice = () -> {
+                if (!mapaEnMovimiento) {
+                    runOnUiThread(() -> actualizarPanelIndice(b, m, i, ma, dominante));
+                }
+            };
+
+            handlerIndice.postDelayed(tareaDelayedIndice, 150);
+        });
         /* --------------------------- */
 
         // Dibujar mapa desde el principio al incializarlo
@@ -950,7 +1009,75 @@ public class MapasActivity extends FuncionesBaseActivity {
         if (n <= 0.75) return new int[]{255, 144, 0};    // naranja
         return new int[]{255, 48, 48};                  // rojo
     }
-
     /* ----- FIN SECCIÓN PINTAR MAPA -----*/
+
+    /* ----- SECCIÓN ACTUALIZAR PANEL ÍNDICES MAPA -----*/
+    /**
+     * @brief Actualiza el panel de índice según los valores interpolados visibles.
+     * @details Colores, textos y recomendaciones se ajustan automáticamente
+     *          igual que en la versión Web.
+     *
+     * @param buena Porcentaje de celdas buenas.
+     * @param moderada Porcentaje moderadas.
+     * @param insalubre Porcentaje insalubres.
+     * @param mala Porcentaje malas.
+     * @param dominante Categoría predominante → define el color principal.
+     */
+    private void actualizarPanelIndice(int buena, int moderada, int insalubre, int mala, String dominante) {
+
+        // === Obtener referencias a los TextView ===
+        TextView tBuena = findViewById(R.id.txtPctBuena);
+        TextView tModerada = findViewById(R.id.txtPctModerada);
+        TextView tInsalubre = findViewById(R.id.txtPctInsalubre);
+        TextView tMala = findViewById(R.id.txtPctMala);
+
+        TextView txtCalidad = findViewById(R.id.txtCalidadIndice);
+
+        LinearLayout recBox = findViewById(R.id.boxRecomendacion);
+        TextView recText = findViewById(R.id.txtRecomendacion);
+
+        // === Mostrar porcentajes ===
+        tBuena.setText(buena + "%");
+        tModerada.setText(moderada + "%");
+        tInsalubre.setText(insalubre + "%");
+        tMala.setText(mala + "%");
+
+        // === Cambiar color, texto y recomendación ===
+        switch (dominante) {
+
+            case "buena":
+                txtCalidad.setText("Calidad Buena");
+                txtCalidad.setTextColor(Color.parseColor("#059669"));
+                recBox.setBackgroundColor(Color.parseColor("#D1FAE5"));
+                recText.setText("La calidad del aire es excelente. Actividades al aire libre recomendadas.");
+                recText.setTextColor(Color.parseColor("#065F46"));
+                break;
+
+            case "moderada":
+                txtCalidad.setText("Calidad Moderada");
+                txtCalidad.setTextColor(Color.parseColor("#CA8A04"));
+                recBox.setBackgroundColor(Color.parseColor("#FEF9C3"));
+                recText.setText("Personas sensibles deben limitar esfuerzos prolongados.");
+                recText.setTextColor(Color.parseColor("#854D0E"));
+                break;
+
+            case "insalubre":
+                txtCalidad.setText("Calidad Insalubre");
+                txtCalidad.setTextColor(Color.parseColor("#EA580C"));
+                recBox.setBackgroundColor(Color.parseColor("#FFEDD5"));
+                recText.setText("Personas sensibles deben reducir actividad al aire libre.");
+                recText.setTextColor(Color.parseColor("#9A3412"));
+                break;
+
+            case "mala":
+                txtCalidad.setText("Calidad Mala");
+                txtCalidad.setTextColor(Color.parseColor("#DC2626"));
+                recBox.setBackgroundColor(Color.parseColor("#FECACA"));
+                recText.setText("Evitar actividades al aire libre. Se recomienda permanecer en interiores.");
+                recText.setTextColor(Color.parseColor("#7F1D1D"));
+                break;
+        }
+    }
+    /* ----- FIN SECCIÓN ACTUALIZAR PANEL ÍNDICES MAPA -----*/
     // ---------------------------------------------------------
 }
