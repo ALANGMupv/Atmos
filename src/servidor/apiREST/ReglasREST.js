@@ -61,9 +61,9 @@ function reglasREST(logica) {
     }
 
     // --------------------------------------------------------------------------
-//  Endpoint: POST /medida
-//  Autor: Alan Guevara Martínez
-// --------------------------------------------------------------------------
+    //  Endpoint: POST /medida
+    //  Autor: Alan Guevara Martínez
+    // --------------------------------------------------------------------------
     /**
      * Inserta una nueva medida en la base de datos.
      *
@@ -161,8 +161,8 @@ function reglasREST(logica) {
     });
 
     // --------------------------------------------------------------------------
-//  Endpoint: POST /usuario
-// --------------------------------------------------------------------------
+    //  Endpoint: POST /usuario
+    // --------------------------------------------------------------------------
     /**
      * Registra un nuevo usuario autenticado por Firebase en la base de datos
      * y envía un correo de verificación de Atmos usando un enlace oficial
@@ -419,7 +419,8 @@ function reglasREST(logica) {
                     nombre: usuario.nombre,
                     apellidos: usuario.apellidos,
                     email: usuario.email,
-                    estado: usuario.estado   // <-- AHORA DEVUELVE EL ESTADO ACTUALIZADO
+                    estado: usuario.estado,   // <-- AHORA DEVUELVE EL ESTADO ACTUALIZADO
+                    id_rol: usuario.id_rol
                 }
             });
 
@@ -429,26 +430,26 @@ function reglasREST(logica) {
         }
     });
 
-// -----------------------------------------------------------------------------
-// Endpoint: POST /desvincular
-// Autor: Alan Guevara Martínez
-// Fecha: 19/11/2025
-// -----------------------------------------------------------------------------
-// Descripción:
-//   - Desvincula la placa asociada al usuario indicado.
-//   - Internamente llama a logica.desvincularPlacaDeUsuario(id_usuario).
-//
-// Body esperado (JSON):
-//   {
-//     "id_usuario": 6
-//   }
-//
-// Respuestas posibles:
-//   200: { status: "ok", mensaje: "Placa desvinculada correctamente" }
-//   200: { status: "sin_placa", mensaje: "El usuario no tiene placas vinculadas" }
-//   400: { error: "Faltan datos: id_usuario" }
-//   500: { error: "..." }
-// -----------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------
+    // Endpoint: POST /desvincular
+    // Autor: Alan Guevara Martínez
+    // Fecha: 19/11/2025
+    // -----------------------------------------------------------------------------
+    // Descripción:
+    //   - Desvincula la placa asociada al usuario indicado.
+    //   - Internamente llama a logica.desvincularPlacaDeUsuario(id_usuario).
+    //
+    // Body esperado (JSON):
+    //   {
+    //     "id_usuario": 6
+    //   }
+    //
+    // Respuestas posibles:
+    //   200: { status: "ok", mensaje: "Placa desvinculada correctamente" }
+    //   200: { status: "sin_placa", mensaje: "El usuario no tiene placas vinculadas" }
+    //   400: { error: "Faltan datos: id_usuario" }
+    //   500: { error: "..." }
+    // -----------------------------------------------------------------------------
     router.post("/desvincular", async (req, res) => {
         try {
             const { id_usuario } = req.body;
@@ -514,7 +515,7 @@ function reglasREST(logica) {
             const placa = await logica.obtenerPlacaDeUsuario(id_usuario);
 
             if (!placa) {
-                return res.json({status: "sin_placa"});
+                return res.json({ status: "sin_placa" });
             }
 
             // 2. Obtener última medición del tipo solicitado
@@ -534,7 +535,7 @@ function reglasREST(logica) {
 
         } catch (err) {
             console.error("Error en GET /resumenUsuarioPorGas:", err);
-            res.status(500).json({error: "Error interno del servidor"});
+            res.status(500).json({ error: "Error interno del servidor" });
         }
     });
 
@@ -571,7 +572,7 @@ function reglasREST(logica) {
             };
 
             // Generar labels de días (últimos 7)
-            const dias = ["Dom","Lun","Mar","Mie","Jue","Vie","Sab"];
+            const dias = ["Dom", "Lun", "Mar", "Mie", "Jue", "Vie", "Sab"];
             const hoy = new Date();
             const labels = [];
 
@@ -582,7 +583,7 @@ function reglasREST(logica) {
             }
 
             // Calcular promedio general
-            const promedio = valores.reduce((a,b) => a+b, 0) / 7;
+            const promedio = valores.reduce((a, b) => a + b, 0) / 7;
 
             res.json({
                 status: "con_placa",
@@ -811,10 +812,10 @@ function reglasREST(logica) {
             return res.status(500).json({ error: "Error interno al obtener notificaciones" });
         }
     });
-// --------------------------------------------------------------------------
-//  POST /notificacionCrear
-//  Crea una notificación para un usuario
-// --------------------------------------------------------------------------
+    // --------------------------------------------------------------------------
+    //  POST /notificacionCrear
+    //  Crea una notificación para un usuario
+    // --------------------------------------------------------------------------
     router.post("/notificacionCrear", async (req, res) => {
         try {
             const {
@@ -854,9 +855,9 @@ function reglasREST(logica) {
             });
         }
     });
-// --------------------------------------------------------------------------
-//  POST /marcarNotificacionLeida
-// --------------------------------------------------------------------------
+    // --------------------------------------------------------------------------
+    //  POST /marcarNotificacionLeida
+    // --------------------------------------------------------------------------
     router.post("/marcarNotificacionLeida", async (req, res) => {
         try {
             const { id_notificacion, id_usuario } = req.body;
@@ -883,9 +884,9 @@ function reglasREST(logica) {
             });
         }
     });
-// --------------------------------------------------------------------------
-//  POST /marcarTodasNotificacionesLeidas
-// --------------------------------------------------------------------------
+    // --------------------------------------------------------------------------
+    //  POST /marcarTodasNotificacionesLeidas
+    // --------------------------------------------------------------------------
     router.post("/marcarTodasNotificacionesLeidas", async (req, res) => {
         try {
             const { id_usuario } = req.body;
@@ -909,7 +910,7 @@ function reglasREST(logica) {
             });
         }
     });
-// DELETE una notificación
+    // DELETE una notificación
     router.post("/borrarNotificacion", async (req, res) => {
         try {
             const { id_notificacion, id_usuario } = req.body;
@@ -929,7 +930,7 @@ function reglasREST(logica) {
         }
     });
 
-// DELETE todas las notificaciones de un usuario
+    // DELETE todas las notificaciones de un usuario
     router.post("/borrarNotificacionesUsuario", async (req, res) => {
         try {
             const { id_usuario } = req.body;
@@ -947,13 +948,13 @@ function reglasREST(logica) {
     });
 
 
-// -----------------------------------------------------------------------------
-// NOTIFICACIONES
-// -----------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------
+    // NOTIFICACIONES
+    // -----------------------------------------------------------------------------
 
-// -----------------------------------------------------------------------------
-// POST /resetPasswordAtmos
-// -----------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------
+    // POST /resetPasswordAtmos
+    // -----------------------------------------------------------------------------
     /**
      * @brief Endpoint que genera un enlace de restablecimiento de contraseña
      *        y envía un correo personalizado al usuario.

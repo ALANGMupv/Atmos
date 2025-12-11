@@ -111,10 +111,11 @@ document.addEventListener("DOMContentLoaded", () => {
         //  6.1) Crear sesión PHP local con los datos del usuario
         // ------------------------------------------------------------------
         console.log("JSON QUE VOY A ENVIAR A guardarSesion.php:", {
-          id_usuario: data.usuario.id,
+          id_usuario: data.usuario.id_usuario,
           nombre: data.usuario.nombre,
           apellidos: data.usuario.apellidos,
-          email: data.usuario.email
+          email: data.usuario.email,
+          id_rol: data.usuario.id_rol
         });
 
         await fetch("guardarSesion.php", {
@@ -124,7 +125,8 @@ document.addEventListener("DOMContentLoaded", () => {
             id_usuario: data.usuario.id_usuario,
             nombre: data.usuario.nombre,
             apellidos: data.usuario.apellidos,
-            email: data.usuario.email
+            email: data.usuario.email,
+            id_rol: data.usuario.id_rol
           })
         });
 
@@ -172,9 +174,15 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // ------------------------------------------------------------------
-        //  6.3) Redirigir al home principal
+        // 6.3 Redirigir según rol del usuario
         // ------------------------------------------------------------------
-        window.location.href = "index.php";
+        if (data.usuario.id_rol === 2) {
+          // Empresas → Informe de nodos
+          window.location.href = "informe_nodos.php";
+        } else {
+          // Usuarios normales → Home de siempre
+          window.location.href = "userPage.php";
+        }
 
       } else {
         alert("Error: " + (data.error || "Error desconocido"));

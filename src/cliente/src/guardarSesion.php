@@ -30,7 +30,8 @@ $_SESSION['usuario'] = [
     'id_usuario' => $data['id_usuario'],
     'nombre'     => $data['nombre'] ?? '',
     'apellidos'  => $data['apellidos'] ?? '',
-    'email'      => $data['email'] ?? ''
+    'email'      => $data['email'] ?? '',
+     'id_rol'     => $data['id_rol'] ?? ''
 ];
 
 // ---------------------------------------------------------------
