@@ -1,5 +1,6 @@
 package org.jordi.btlealumnos2021;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -14,12 +15,14 @@ import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 
 import com.android.volley.RequestQueue;
@@ -29,6 +32,10 @@ import com.google.android.gms.location.LocationServices;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import android.content.BroadcastReceiver;
+import android.content.IntentFilter;
+
 // IMPORTANTE: No voy a hacer el promedio porque ya de por sí (por lo que sea) el sensor mide mal, no quiero más problemas, ya hay bastantes (Att: Alan)
 // Segun chat en pantalla apagada no recibe beacons por que Pantalla apagada + apps en segundo plano =  ALTA restricción
 /**
@@ -57,6 +64,12 @@ public class ServicioDeteccionBeacons extends Service {
     // BLE
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothLeScanner escanerBLE;
+
+    // Ajustes del escaneo BLE reutilizables
+    private ScanSettings scanSettings;
+
+    // Handler para reiniciar el escaneo periódicamente (pantalla apagada / Doze)
+    private Handler handlerReinicioScan = new Handler();
 
     // Placa asignada (UUID esperado en ASCII)
     private String placaVinculada;
@@ -113,6 +126,10 @@ public class ServicioDeteccionBeacons extends Service {
         fusedLocation = LocationServices.getFusedLocationProviderClient(this);
 
         inicializarBluetoothYBuscarPlaca();
+
+        // Escuchar cambios de estado del Bluetooth (ON / OFF)
+        IntentFilter filtro = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+        registerReceiver(receptorBT, filtro);
     }
 
     /**
@@ -210,18 +227,52 @@ public class ServicioDeteccionBeacons extends Service {
      */
     private void iniciarEscaneoBLE() {
         try {
+            // Validar Bluetooth
+            if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
+                Log.w(TAG, "Bluetooth no disponible o apagado, no se inicia escaneo");
+                return;
+            }
 
-            // Intentar que deje de filtrar anuncios BLE cuando la pantalla se apaga. (-- NO FUNCIONA :( --)
-            ScanSettings settings = new ScanSettings.Builder()
-                    .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-                    .setMatchMode(ScanSettings.MATCH_MODE_AGGRESSIVE)
-                    .setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
-                    .build();
+            // Asegurar que tenemos escáner
+            if (escanerBLE == null) {
+                BluetoothManager manager =
+                        (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+                bluetoothAdapter = manager.getAdapter();
+                escanerBLE = bluetoothAdapter.getBluetoothLeScanner();
+            }
 
+            // Crear ScanSettings una sola vez y reutilizarlos
+            if (scanSettings == null) {
+                scanSettings = new ScanSettings.Builder()
+                        .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                        .setMatchMode(ScanSettings.MATCH_MODE_AGGRESSIVE)
+                        .setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
+                        .build();
+            }
 
-            escanerBLE.startScan(null, settings, callbackBLE);
+            // Por si acaso había un escaneo anterior
+            try {
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                    // TODO: Consider calling
+                    //    ActivityCompat#requestPermissions
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for ActivityCompat#requestPermissions for more details.
+                    return;
+                }
+                escanerBLE.stopScan(callbackBLE);
+            } catch (Exception ignored) { }
 
+            escanerBLE.startScan(null, scanSettings, callbackBLE);
+            Log.d(TAG, "Escaneo BLE iniciado");
+
+            // Verificación periódica del estado de la placa
             iniciarVerificacionEstado();
+
+            // Workaround para pantalla apagada / Doze: reiniciar escaneo cada X segundos
+            iniciarReinicioPeriodicoEscaneo();
 
         } catch (Exception e) {
             Log.e(TAG, "Error iniciando BLE", e);
@@ -241,8 +292,28 @@ public class ServicioDeteccionBeacons extends Service {
         public void onScanResult(int callbackType, ScanResult result) {
 
             BluetoothDevice dev = result.getDevice();
+            if (ActivityCompat.checkSelfPermission(ServicioDeteccionBeacons.this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
             Log.d(TAG, "BLE detectado: " + dev.getName());
 
+            if (ActivityCompat.checkSelfPermission(ServicioDeteccionBeacons.this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
             Log.d("ATMOS_SCAN", "Beacon bruto detectado: " + result.getDevice().getName());
 
             procesarBeaconDetectado(result);
@@ -449,6 +520,126 @@ public class ServicioDeteccionBeacons extends Service {
             }
         }, 2000);
     }
+
+    // Escucha cambios de estado del Bluetooth (ON / OFF)
+    private final BroadcastReceiver receptorBT = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String accion = intent.getAction();
+
+            if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(accion)) {
+                int estado = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
+
+                if (estado == BluetoothAdapter.STATE_ON) {
+                    Log.d(TAG, "Bluetooth encendido → reiniciando escaneo BLE");
+                    // Solo tiene sentido si ya tenemos placa vinculada
+                    if (placaVinculada != null) {
+                        iniciarEscaneoBLE();
+                    }
+                }
+
+                if (estado == BluetoothAdapter.STATE_OFF) {
+                    Log.d(TAG, "Bluetooth apagado → deteniendo escaneo BLE");
+                    try {
+                        if (escanerBLE != null) {
+                            if (ActivityCompat.checkSelfPermission(ServicioDeteccionBeacons.this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                                // TODO: Consider calling
+                                //    ActivityCompat#requestPermissions
+                                // here to request the missing permissions, and then overriding
+                                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                                //                                          int[] grantResults)
+                                // to handle the case where the user grants the permission. See the documentation
+                                // for ActivityCompat#requestPermissions for more details.
+                                return;
+                            }
+                            escanerBLE.stopScan(callbackBLE);
+                        }
+                    } catch (Exception ignored) { }
+                }
+            }
+        }
+    };
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        // Queremos que el sistema lo reintente si lo mata
+        return START_STICKY;
+    }
+
+    /**
+     * Reinicia periódicamente el escaneo BLE para evitar que Doze / pantalla apagada
+     * lo deje "congelado". Cada 15 segundos se para y se vuelve a arrancar.
+     */
+    private void iniciarReinicioPeriodicoEscaneo() {
+        // Limpiamos callbacks anteriores
+        handlerReinicioScan.removeCallbacksAndMessages(null);
+
+        handlerReinicioScan.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if (bluetoothAdapter != null &&
+                            bluetoothAdapter.isEnabled() &&
+                            escanerBLE != null &&
+                            scanSettings != null) {
+
+                        if (ActivityCompat.checkSelfPermission(ServicioDeteccionBeacons.this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                            // TODO: Consider calling
+                            //    ActivityCompat#requestPermissions
+                            // here to request the missing permissions, and then overriding
+                            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                            //                                          int[] grantResults)
+                            // to handle the case where the user grants the permission. See the documentation
+                            // for ActivityCompat#requestPermissions for more details.
+                            return;
+                        }
+                        escanerBLE.stopScan(callbackBLE);
+                        escanerBLE.startScan(null, scanSettings, callbackBLE);
+                        Log.d(TAG, "Reinicio periódico de escaneo BLE");
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "Error reiniciando escaneo BLE", e);
+                }
+
+                // Programar el siguiente reinicio
+                handlerReinicioScan.postDelayed(this, 15000); // 15 segundos
+            }
+        }, 15000);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        // Parar escaneo BLE
+        try {
+            if (escanerBLE != null) {
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                    // TODO: Consider calling
+                    //    ActivityCompat#requestPermissions
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for ActivityCompat#requestPermissions for more details.
+                    return;
+                }
+                escanerBLE.stopScan(callbackBLE);
+            }
+        } catch (Exception ignored) { }
+
+        // Eliminar callbacks de handlers
+        handlerEstado.removeCallbacksAndMessages(null);
+        handlerReinicioScan.removeCallbacksAndMessages(null);
+
+        // Desregistrar receptor de Bluetooth
+        try {
+            unregisterReceiver(receptorBT);
+        } catch (Exception ignored) { }
+
+        Log.d(TAG, "ServicioDeteccionBeacons destruido");
+    }
+
 
     /**
      * @brief Servicio no enlazado; devuelve siempre null.

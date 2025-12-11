@@ -375,7 +375,11 @@ public class MapasActivity extends FuncionesBaseActivity {
      */
     private void iniciarServicioBeacons() {
         Intent s = new Intent(MapasActivity.this, ServicioDeteccionBeacons.class);
-        startForegroundService(s); ///< Obligatorio para servicios BLE en Android 12+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            startForegroundService(s);
+        } else {
+            startService(s);
+        }
     }
     // ---------------------------------------------------------
 
