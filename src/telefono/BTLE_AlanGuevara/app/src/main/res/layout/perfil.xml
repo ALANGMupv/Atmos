@@ -40,6 +40,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="120dp"
             android:gravity="center"
             android:orientation="vertical"
             android:padding="65dp">
@@ -47,11 +48,6 @@
             <!-- ICONO PERFIL -->
 
             <!-- TITULO USUARIO -->
-            <ImageView
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_marginTop="20dp"
-                android:src="@drawable/icn_perfil" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -75,7 +71,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="32dp"
                 android:fontFamily="@font/roboto_bold"
                 android:text="Correo electronico"
                 android:textSize="16sp"
@@ -95,12 +91,13 @@
                 android:id="@+id/btnEditarPerfil"
                 android:layout_width="220dp"
                 android:layout_height="52dp"
-                android:layout_marginTop="40dp"
-                android:backgroundTint="#00916E"
+                android:layout_marginTop="160dp"
+                android:background="@drawable/btn_redondo_verde"
                 android:fontFamily="@font/roboto_bold"
                 android:text="Editar Perfil"
                 android:textColor="#FFFFFF"
                 android:textSize="14sp" />
+
 
             <!-- BOTÓN CERRAR SESIÓN -->
             <Button
@@ -108,9 +105,9 @@
                 android:layout_width="220dp"
                 android:layout_height="52dp"
                 android:layout_marginTop="20dp"
-                android:backgroundTint="#D36565"
+                android:background="@drawable/btn_redondo_rojo"
                 android:fontFamily="@font/roboto_bold"
-                android:text="Cerrar sesion"
+                android:text="Cerrar sesión"
                 android:textColor="#FFFFFF" />
 
         </LinearLayout>

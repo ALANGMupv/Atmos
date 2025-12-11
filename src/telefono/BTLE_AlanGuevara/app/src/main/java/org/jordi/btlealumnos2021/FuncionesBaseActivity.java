@@ -169,4 +169,15 @@ public class FuncionesBaseActivity extends AppCompatActivity {
             return false;
         });
     }
+
+    /**
+     * Nombre Método: setupBottomNav
+     * Descripción:
+     *   Cuando la página en la que está el usuario no es ninguna de las de que está en el menú se utiliza este método.
+     *   Nada seleccionado.
+     */
+    protected void setupBottomNav() {
+        setupBottomNav(-1); // Indica que ningún botón debe aparecer como seleccionado
+    }
+
 }

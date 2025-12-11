@@ -104,7 +104,12 @@
                     android:id="@+id/btnVincularSensor"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:backgroundTint="@color/verde_principal"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/btn_redondo_verde"
+                    android:paddingStart="20dp"
+                    android:paddingTop="10dp"
+                    android:paddingEnd="20dp"
+                    android:paddingBottom="10dp"
                     android:text="Vincular sensor"
                     android:textColor="@color/white" />
 

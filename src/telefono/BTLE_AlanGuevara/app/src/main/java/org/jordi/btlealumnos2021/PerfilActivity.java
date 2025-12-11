@@ -39,6 +39,7 @@ public class PerfilActivity extends FuncionesBaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.perfil);
+        setupBottomNav();
 
         // --------------------------------------------------
         // 1. Referencias a vistas del layout
