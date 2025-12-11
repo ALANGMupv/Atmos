@@ -32,8 +32,14 @@ if (!isset($active))  { $active = null; }
             <!-- Menú -->
             <div class="nav-right">
 
+                <a href="informe_nodos.php"
+                   class="nav-link <?php echo $active === 'nodos' ? 'is-active' : ''; ?>"
+                    <?php echo $active === 'nodos' ? 'aria-current="page"' : ''; ?>>
+                    NODOS
+                </a>
+
                 <!-- ICONO PERFIL -->
-                <a href="perfil.php"
+                <a href="perfilEmpresario.php"
                    class="icon-btn account <?php echo $active === 'perfil' ? 'is-active' : ''; ?>"
                    title="Mi perfil" aria-label="Mi perfil">
                     <img src="img/perfilLogueado.svg" class="icon" alt="Perfil ATMOS">
