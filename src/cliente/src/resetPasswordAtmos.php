@@ -176,41 +176,5 @@
 
 <script type="module" src="js/resetPasswordAtmos.js"></script>
 
-<script>
-    // Mostrar/ocultar contraseña
-    document.querySelectorAll(".toggle-pass").forEach(icon => {
-        icon.addEventListener("click", () => {
-            const input = document.getElementById(icon.dataset.target);
-            input.type = (input.type === "password") ? "text" : "password";
-            icon.classList.toggle("active");
-        });
-    });
-
-    // Validación en tiempo real
-    const pass1 = document.getElementById("pass1");
-    const pass2 = document.getElementById("pass2");
-
-    const regexPassword = /^(?=.*[A-Za-z])(?=.*[0-9\W]).{8,}$/;
-
-    function validarInput(input, condicion) {
-        if (condicion) {
-            input.classList.add("valid");
-            input.classList.remove("invalid");
-        } else {
-            input.classList.add("invalid");
-            input.classList.remove("valid");
-        }
-    }
-
-    pass1.addEventListener("input", () => {
-        validarInput(pass1, regexPassword.test(pass1.value));
-        validarInput(pass2, pass2.value === pass1.value && pass2.value !== "");
-    });
-
-    pass2.addEventListener("input", () => {
-        validarInput(pass2, pass2.value === pass1.value && pass2.value !== "");
-    });
-</script>
-
 </body>
 </html>

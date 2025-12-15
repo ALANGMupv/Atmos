@@ -13,7 +13,7 @@
  *  - Redirige al login después de actualizarla.
  *
  * @author Alan Guevara Martínez
- * @date 01/12/2025
+ * @date 01/12/2025 - actualizado: 15/12/2025
  */
 
 // -----------------------------------------------------------------------------
@@ -61,6 +61,9 @@ const auth = getAuth(app);
  */
 document.addEventListener("DOMContentLoaded", () => {
 
+    const regexPassword = /^(?=.*[A-Za-z])(?=.*[0-9\W]).{8,}$/;
+
+
     // -------------------------------------------------------------------------
     // Obtención del parámetro oobCode enviado por el enlace de Firebase.
     // -------------------------------------------------------------------------
@@ -99,10 +102,10 @@ document.addEventListener("DOMContentLoaded", () => {
         e.preventDefault();
 
         //! Nueva contraseña ingresada por el usuario.
-        const pass1 = document.getElementById("pass1").value.trim();
+        const pass1 = document.getElementById("pass1").value;
 
         //! Confirmación de la contraseña.
-        const pass2 = document.getElementById("pass2").value.trim();
+        const pass2 = document.getElementById("pass2").value;
 
         // ---------------------------------------------------------------------
         // Validaciones del lado del cliente
@@ -114,9 +117,8 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        /** @brief Valida longitud mínima recomendada por Firebase. */
-        if (pass1.length < 6) {
-            alert("La nueva contraseña debe tener al menos 6 caracteres.");
+        if (!regexPassword.test(pass1)) {
+            alert("La contraseña debe tener mínimo 8 caracteres e incluir letras y al menos un número o símbolo.");
             return;
         }
 
@@ -148,4 +150,46 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // -----------------------------------------------------------------------------
+    // Validación visual y UX (inputs)
+    // -----------------------------------------------------------------------------
+
+    const pass1Input = document.getElementById("pass1");
+    const pass2Input = document.getElementById("pass2");
+
+
+    function validarInput(input, condicion) {
+        if (condicion) {
+            input.classList.add("valid");
+            input.classList.remove("invalid");
+        } else {
+            input.classList.add("invalid");
+            input.classList.remove("valid");
+        }
+    }
+
+    // Validación en tiempo real
+    pass1Input.addEventListener("input", () => {
+        validarInput(pass1Input, regexPassword.test(pass1Input.value));
+        validarInput(
+            pass2Input,
+            pass2Input.value === pass1Input.value && pass2Input.value !== ""
+        );
+    });
+
+    pass2Input.addEventListener("input", () => {
+        validarInput(
+            pass2Input,
+            pass2Input.value === pass1Input.value && pass2Input.value !== ""
+        );
+    });
+
+    // Mostrar / ocultar contraseña
+    document.querySelectorAll(".toggle-pass").forEach(icon => {
+        icon.addEventListener("click", () => {
+            const input = document.getElementById(icon.dataset.target);
+            input.type = (input.type === "password") ? "text" : "password";
+            icon.classList.toggle("active");
+        });
+    });
 });

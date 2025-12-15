@@ -80,7 +80,7 @@ include __DIR__ . '/partials/headerEmpresas.php'; ?>
                         <th>Ubicación</th>
                         <th>Última medida</th>
                         <th>Estado</th>
-                        <th>Tiempo con problema</th>
+                        <th>Tiempo de inactividad</th>
                     </tr>
                     </thead>
                     <tbody id="tbodyNodos">
