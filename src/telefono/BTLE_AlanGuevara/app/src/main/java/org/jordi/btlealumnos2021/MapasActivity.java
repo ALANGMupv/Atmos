@@ -586,25 +586,57 @@ public class MapasActivity extends FuncionesBaseActivity {
             return;
         }
 
-        // Accedemos al servicio de localización del sistema
-        android.location.LocationManager lm =
-                (android.location.LocationManager) getSystemService(LOCATION_SERVICE);
+        // ------------------------------------------------------------------
+        // 1) SI YA TENEMOS UNA UBICACIÓN REAL (GPS o NETWORK) → usarla
+        // ------------------------------------------------------------------
+        if (ultimaLoc != null) {
 
-        // Obtenemos la última ubicación conocida vía GPS
-        android.location.Location loc =
-                lm.getLastKnownLocation(android.location.LocationManager.GPS_PROVIDER);
+            GeoPoint p = new GeoPoint(
+                    ultimaLoc.getLatitude(),
+                    ultimaLoc.getLongitude()
+            );
 
-        // Si tenemos una ubicación anterior, comprobamos si el cambio es significativo
-        if (loc != null) {
-
-            // Convertimos la ubicación a un GeoPoint de OSMDroid
-            GeoPoint p = new GeoPoint(loc.getLatitude(), loc.getLongitude());
-
-            // Acercamos el zoom y animamos el mapa hasta la posición del usuario
             mapa.getController().setZoom(18.0);
             mapa.getController().animateTo(p);
 
-            // Crear marcador SOLO para la ubicación del usuario
+            if (marcadorUsuario == null) {
+                marcadorUsuario = new Marker(mapa);
+                marcadorUsuario.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+                marcadorUsuario.setIcon(
+                        androidx.core.content.ContextCompat.getDrawable(
+                                this,
+                                R.drawable.marker_mi_ubicacion
+                        )
+                );
+                mapa.getOverlays().add(marcadorUsuario);
+            }
+
+            marcadorUsuario.setPosition(p);
+            mapa.invalidate();
+            return;
+        }
+
+        // ------------------------------------------------------------------
+        // 2) SI NO HAY UBICACIÓN AÚN → probar con lastKnownLocation
+        // ------------------------------------------------------------------
+        android.location.LocationManager lm =
+                (android.location.LocationManager) getSystemService(LOCATION_SERVICE);
+
+        android.location.Location loc =
+                lm.getLastKnownLocation(android.location.LocationManager.GPS_PROVIDER);
+
+        if (loc == null) {
+            loc = lm.getLastKnownLocation(android.location.LocationManager.NETWORK_PROVIDER);
+        }
+
+        if (loc != null) {
+
+            ultimaLoc = loc; // MUY IMPORTANTE: sincronizar
+
+            GeoPoint p = new GeoPoint(loc.getLatitude(), loc.getLongitude());
+            mapa.getController().setZoom(18.0);
+            mapa.getController().animateTo(p);
+
             if (marcadorUsuario == null) {
                 marcadorUsuario = new Marker(mapa);
                 marcadorUsuario.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
@@ -621,9 +653,11 @@ public class MapasActivity extends FuncionesBaseActivity {
             mapa.invalidate();
 
         } else {
+            // SOLO ahora tiene sentido mostrar este mensaje
             Toast.makeText(this, "No se pudo obtener la ubicación", Toast.LENGTH_SHORT).show();
         }
     }
+
 
     /**
      * @brief Cierra todos los popups o paneles inferiores visibles.
@@ -791,8 +825,65 @@ public class MapasActivity extends FuncionesBaseActivity {
          *   - Cada 2000 ms (2 segundos)
          *   - Cada 1 metro recorrido
          */
+
+        // -------------------------------------------------------------
+        // 1) GPS_PROVIDER → muy preciso, pero puede NO emitir en interior
+        // -------------------------------------------------------------
         lm.requestLocationUpdates(
                 android.location.LocationManager.GPS_PROVIDER,
+                2000,   // intervalo mínimo en ms
+                1,      // distancia mínima en metros
+                location -> {
+
+                    // Si tenemos una ubicación previa, verificamos si el movimiento es significativo
+                    if (ultimaLoc != null) {
+
+                        float distancia = location.distanceTo(ultimaLoc);
+
+                        // Si el movimiento es menor de 2 metros → ignorar para evitar jitter
+                        if (distancia < 2) {
+                            return;
+                        }
+                    }
+
+                    // Guardamos esta ubicación como última válida
+                    ultimaLoc = location;
+
+                    // Convertimos la ubicación a un GeoPoint compatible con OSMDroid
+                    GeoPoint p = new GeoPoint(location.getLatitude(), location.getLongitude());
+
+                    // Si el marcador no existe, lo creamos una vez
+                    if (marcadorUsuario == null) {
+                        marcadorUsuario = new Marker(mapa);
+
+                        // Centramos el icono en el punto
+                        marcadorUsuario.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+
+                        // Icono personalizado: tu circulito de ubicación
+                        marcadorUsuario.setIcon(
+                                androidx.core.content.ContextCompat.getDrawable(
+                                        this,
+                                        R.drawable.marker_mi_ubicacion
+                                )
+                        );
+
+                        // Lo añadimos al mapa
+                        mapa.getOverlays().add(marcadorUsuario);
+                    }
+
+                    // Actualizamos la posición del marcador
+                    marcadorUsuario.setPosition(p);
+
+                    // Redibujamos
+                    mapa.invalidate();
+                }
+        );
+
+        // -----------------------------------------------------------------
+        // 2) NETWORK_PROVIDER → menos preciso, pero SIEMPRE responde en ciudad
+        // -----------------------------------------------------------------
+        lm.requestLocationUpdates(
+                android.location.LocationManager.NETWORK_PROVIDER,
                 2000,   // intervalo mínimo en ms
                 1,      // distancia mínima en metros
                 location -> {
