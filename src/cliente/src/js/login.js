@@ -48,6 +48,29 @@ setPersistence(auth, browserLocalPersistence)
       console.error("Error aplicando la persistencia:", err);
     });
 
+// Traduce los mensajes de Firebase al español para una buena UX
+function traducirErrorFirebase(code) {
+  switch (code) {
+    case "auth/user-not-found":
+    case "auth/invalid-credential":
+      return "Correo o contraseña incorrectos.";
+
+    case "auth/wrong-password":
+      return "La contraseña es incorrecta.";
+
+    case "auth/invalid-email":
+      return "El formato del correo electrónico no es válido.";
+
+    case "auth/user-disabled":
+      return "Esta cuenta ha sido deshabilitada.";
+
+    case "auth/too-many-requests":
+      return "Demasiados intentos fallidos. Inténtalo más tarde.";
+
+    default:
+      return "Error al iniciar sesión. Inténtalo de nuevo.";
+  }
+}
 
 // --------------------------------------------------------------------------
 //  Manejador principal de inicio de sesión
@@ -190,7 +213,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     } catch (err) {
       console.error("Error en login:", err);
-      alert("Error: " + err.message);
+      alert(traducirErrorFirebase(err.code));
     }
   });
 });

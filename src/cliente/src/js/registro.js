@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const inputContrasena = document.getElementById("contrasena");
   const inputRepetir = document.getElementById("repetir");
 
-  // Patrones de validación (6 caracteres y almenos un número)
+  // Patrón: mínimo 8 caracteres, al menos una letra y un número o símbolo
   const regexPassword =   /^(?=.*[A-Za-z])(?=.*[0-9\W]).{8,}$/;
 
   function validarInput(input, condicion) {
