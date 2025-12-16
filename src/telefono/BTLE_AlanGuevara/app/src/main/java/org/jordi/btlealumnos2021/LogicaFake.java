@@ -1176,92 +1176,136 @@ public class LogicaFake {
      * @date 16/12/2025
      */
     public void obtenerEstacionesOficiales(EstacionesCallback callback) {
+        // Handler para poder "hablar" con la interfaz de usuario (UI) desde el hilo de fondo.
         Handler mainHandler = new Handler(Looper.getMainLooper());
 
+        // Iniciamos un nuevo hilo (Thread) porque Android prohíbe conexiones de red en el hilo principal.
         new Thread(() -> {
             HttpURLConnection conn = null;
             try {
-                // URL para obtener estaciones de España
+                // -----------------------------------------------------------------------
+                // 1. CONFIGURACIÓN DE LA URL (FILTRO POR COMUNIDAD VALENCIANA)
+                // -----------------------------------------------------------------------
+                // Usamos el parámetro 'bbox' (Bounding Box) que define un rectángulo de coordenadas:
+                // Formato: min_longitud, min_latitud, max_longitud, max_latitud
+                // Coordenadas aprox. CV: Oest:-2.0, Sur:37.7, Este:0.8, Norte:40.8
                 String urlString = "https://api.openaq.org/v3/locations"
-                        + "?iso=ES"
-                        + "&limit=100"
-                        + "&page=1";
+                        + "?bbox=-2.0,37.7,0.8,40.8"  // Rectángulo de la C. Valenciana
+                        + "&limit=1000"                // Máximo 1000 estaciones (habrá menos)
+                        + "&page=1";                  // Página 1
 
                 URL url = new URL(urlString);
                 conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
 
-                // --- CORRECCIÓN AQUÍ ---
-                // No uses "Authorization" ni "Bearer".
-                // Usa "X-API-Key" y pon la clave tal cual, sin prefijos.
+                // -----------------------------------------------------------------------
+                // 2. SEGURIDAD Y CABECERAS (HEADERS)
+                // -----------------------------------------------------------------------
                 conn.setRequestProperty("X-API-Key", "3dd56585357ae0bd5b39f7c77852e61d63b0d3ac21f6da1b8befedd154d58e0a");
 
+                // Indicamos que queremos recibir la respuesta en formato JSON
                 conn.setRequestProperty("Accept", "application/json");
-                conn.setRequestProperty("User-Agent", "AtmosApp");
+                conn.setRequestProperty("User-Agent", "AtmosApp/1.0");
 
-                // Verificamos respuesta
+                // -----------------------------------------------------------------------
+                // 3. GESTIÓN DE LA RESPUESTA DEL SERVIDOR
+                // -----------------------------------------------------------------------
                 int responseCode = conn.getResponseCode();
                 InputStream is;
 
+                // Si el código es 200 (OK), leemos la respuesta normal.
                 if (responseCode >= 200 && responseCode < 300) {
                     is = conn.getInputStream();
                 } else {
+                    // Si hay error (401, 404, 500), leemos el mensaje de error para debuggear.
                     is = conn.getErrorStream();
                     String errorMsg = new Scanner(is).useDelimiter("\\A").next();
-                    Log.e("OPENAQ", "ERROR DEL SERVIDOR (" + responseCode + "): " + errorMsg);
+                    Log.e("OPENAQ", "Error del servidor (" + responseCode + "): " + errorMsg);
                     is.close();
-                    return;
+                    return; // Detenemos la ejecución si falló la conexión
                 }
 
-                // Procesamiento del JSON
+                // -----------------------------------------------------------------------
+                // 4. PARSING (LECTURA) DEL JSON
+                // -----------------------------------------------------------------------
+                // Convertimos el flujo de datos (Stream) a un String gigante
                 String json = new Scanner(is).useDelimiter("\\A").next();
+
+                // Creamos el objeto raíz JSON
                 JSONObject root = new JSONObject(json);
-                JSONArray results = root.getJSONArray("results");
+                JSONArray results = root.getJSONArray("results"); // Array con las estaciones found
+
                 List<EstacionOficial> lista = new ArrayList<>();
 
+                // Recorremos cada estación encontrada
                 for (int i = 0; i < results.length(); i++) {
                     JSONObject e = results.getJSONObject(i);
                     EstacionOficial est = new EstacionOficial();
 
+                    // A. OBTENER NOMBRE
+                    // A veces viene en "name", si no, usamos el ID como respaldo
                     est.nombre = e.has("name") ? e.getString("name") : "Estación " + e.getInt("id");
 
+                    // B. OBTENER COORDENADAS
                     if (e.has("coordinates")) {
                         JSONObject coords = e.getJSONObject("coordinates");
                         est.lat = coords.getDouble("latitude");
                         est.lon = coords.getDouble("longitude");
                     }
 
+                    // C. OBTENER SENSORES (CONTAMINANTES)
+                    // En v3 se llama "sensors". Contiene info del sensor y su última lectura.
                     if (e.has("sensors")) {
                         JSONArray sensors = e.getJSONArray("sensors");
+
                         for (int j = 0; j < sensors.length(); j++) {
                             JSONObject s = sensors.getJSONObject(j);
                             JSONObject paramObj = s.getJSONObject("parameter");
 
-                            String paramName = paramObj.getString("name");
-                            String unit = paramObj.getString("units");
+                            String paramName = paramObj.getString("name"); // ej: "no2"
+                            String unit = paramObj.getString("units");     // ej: "µg/m³"
 
+                            // Solo procesamos si el sensor tiene un dato reciente ("latest")
                             if (s.has("latest") && !s.isNull("latest")) {
                                 JSONObject latestObj = s.getJSONObject("latest");
                                 double value = latestObj.getDouble("value");
 
+                                // Asignamos el valor al atributo correcto de nuestra clase
                                 switch (paramName.toLowerCase()) {
-                                    case "no2": est.no2 = value; est.unidadNO2 = unit; break;
-                                    case "o3":  est.o3 = value;  est.unidadO3 = unit;  break;
-                                    case "co":  est.co = value;  est.unidadCO = unit;  break;
-                                    case "so2": est.so2 = value; est.unidadSO2 = unit; break;
+                                    case "no2":
+                                        est.no2 = value;
+                                        est.unidadNO2 = unit;
+                                        break;
+                                    case "o3":
+                                        est.o3 = value;
+                                        est.unidadO3 = unit;
+                                        break;
+                                    case "co":
+                                        est.co = value;
+                                        est.unidadCO = unit;
+                                        break;
+                                    case "so2":
+                                        est.so2 = value;
+                                        est.unidadSO2 = unit;
+                                        break;
                                 }
                             }
                         }
                     }
+                    // Añadimos la estación ya rellena a la lista
                     lista.add(est);
                 }
 
+                // -----------------------------------------------------------------------
+                // 5. VOLVER AL HILO PRINCIPAL (UI THREAD)
+                // -----------------------------------------------------------------------
+                // No podemos tocar la pantalla desde este hilo de fondo.
+                // Usamos el mainHandler para enviar la lista a la actividad principal.
                 mainHandler.post(() -> callback.onResult(lista));
 
             } catch (Exception e) {
-                Log.e("OPENAQ", "Excepción fatal: " + e.getMessage(), e);
-            } finally {
-                if (conn != null) conn.disconnect();
+                // Capturamos cualquier error (falta de internet, JSON mal formado, etc.)
+                Log.e("OPENAQ", "⚠Excepción fatal: " + e.getMessage(), e);
             }
         }).start();
     }
