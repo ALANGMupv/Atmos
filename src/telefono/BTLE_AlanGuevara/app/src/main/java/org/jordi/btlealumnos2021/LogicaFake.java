@@ -1164,133 +1164,252 @@ public class LogicaFake {
     // ESTACIONES OFICIALES (OpenAQ)
     // =========================================================
 
-
-
     /**
-     * @brief Obtiene estaciones y sus datos detalle uno a uno (Estrategia fiable v3).
-     * * 1. Baja la lista de estaciones (limitada a 40 para no saturar).
-     * 2. Recorre la lista y descarga los sensores específicos de cada ID (/locations/{id}/sensors).
-     * 3. Rellena los datos y los envía al mapa.
+     * @brief Obtiene estaciones oficiales y sus datos de contaminantes uno a uno
+     *        utilizando una estrategia fiable basada en OpenAQ v3.
+     *
+     * @details
+     * Este método implementa una estrategia en tres fases:
+     *
+     * 1. Descarga una lista limitada de estaciones (locations) dentro de una
+     *    zona geográfica concreta, para evitar saturar la API.
+     * 2. Para cada estación obtenida, realiza una petición adicional al endpoint
+     *    `/locations/{id}/sensors` para recuperar los sensores y su última medición.
+     * 3. Rellena los datos de cada {@link EstacionOficial} y devuelve el resultado
+     *    al hilo principal mediante un callback.
+     *
+     *
+     * @param callback Callback que recibe la lista final de estaciones oficiales
+     *                 completamente procesadas.
+     *
+     * @author Alan Guevara Martinez
+     * @date 16/12/2025
      */
     public void obtenerEstacionesOficiales(EstacionesCallback callback) {
+
+        // Handler asociado al hilo principal (UI thread).
+        // Se utilizará para devolver el resultado al mapa de forma segura.
         Handler mainHandler = new Handler(Looper.getMainLooper());
 
+        // Se lanza un hilo secundario para evitar bloquear el hilo principal
+        // durante las múltiples operaciones de red.
         new Thread(() -> {
             try {
                 // -----------------------------------------------------------
-                // PASO 1: Obtener lista de estaciones (Chinchetas)
+                // PASO 1: Descarga de la lista de estaciones (locations)
                 // -----------------------------------------------------------
-                // Bajamos a 40 el límite porque vamos a hacer una petición por cada una.
+                // Se limita el número de estaciones a 40 para evitar realizar
+                // demasiadas peticiones individuales en el siguiente paso.
                 String urlLoc = "https://api.openaq.org/v3/locations"
                         + "?bbox=-2.0,37.7,0.8,40.8"
                         + "&limit=40";
 
                 Log.d("OPENAQ", "Paso 1: Bajando lista de estaciones...");
+
+                // Descarga del JSON con la lista de estaciones
                 String jsonLoc = descargarUrl(urlLoc);
 
-                if (jsonLoc == null) return; // Error ya logueado en descargarUrl
+                // Si ocurre un error en la descarga, se aborta el proceso
+                // (el método descargarUrl ya registra el error en Logcat)
+                if (jsonLoc == null) return;
 
+                // Parseo del JSON recibido
                 JSONObject rootLoc = new JSONObject(jsonLoc);
                 JSONArray resultsLoc = rootLoc.getJSONArray("results");
 
+                // Lista final donde se almacenarán las estaciones procesadas
                 List<EstacionOficial> listaEstaciones = new ArrayList<>();
 
-                Log.d("OPENAQ", "Estaciones encontradas: " + resultsLoc.length() + ". Bajando detalles...");
+                Log.d(
+                        "OPENAQ",
+                        "Estaciones encontradas: " + resultsLoc.length() + ". Bajando detalles..."
+                );
 
                 // -----------------------------------------------------------
-                // PASO 2: Bucle para bajar el DETALLE de cada estación
+                // PASO 2: Descarga del detalle de cada estación (sensores)
                 // -----------------------------------------------------------
+                // Para cada estación, se consulta su endpoint específico
+                // /locations/{id}/sensors para obtener los contaminantes disponibles
                 for (int i = 0; i < resultsLoc.length(); i++) {
+
                     JSONObject e = resultsLoc.getJSONObject(i);
+
+                    // Se crea el objeto EstacionOficial para esta estación
                     EstacionOficial est = new EstacionOficial();
 
-                    // Datos básicos
+                    // Identificador único de la estación en OpenAQ
                     est.id = e.getInt("id");
+
+                    // Nombre de la estación (si no existe, se genera uno genérico)
                     est.nombre = e.optString("name", "Estación " + est.id);
 
+                    // Coordenadas geográficas de la estación
                     JSONObject coords = e.getJSONObject("coordinates");
                     est.lat = coords.getDouble("latitude");
                     est.lon = coords.getDouble("longitude");
 
-                    // --- AHORA LA MAGIA: Descargamos los sensores de ESTA estación ---
+                    // -------------------------------------------------------
+                    // DESCARGA DEL DETALLE DE SENSORES DE ESTA ESTACIÓN
+                    // -------------------------------------------------------
                     try {
-                        String urlDetalle = "https://api.openaq.org/v3/locations/" + est.id + "/sensors";
+                        // Endpoint específico para los sensores de la estación
+                        String urlDetalle =
+                                "https://api.openaq.org/v3/locations/" + est.id + "/sensors";
+
+                        // Descarga del JSON con los sensores
                         String jsonDetalle = descargarUrl(urlDetalle);
 
+                        // Si la descarga es correcta, se procesan los sensores
                         if (jsonDetalle != null) {
                             JSONObject rootDet = new JSONObject(jsonDetalle);
                             JSONArray sensors = rootDet.getJSONArray("results");
 
+                            // Se recorren todos los sensores de la estación
                             for (int j = 0; j < sensors.length(); j++) {
+
                                 JSONObject s = sensors.getJSONObject(j);
 
-                                // Nombre del gas
+                                // Información del contaminante asociado al sensor
                                 JSONObject paramObj = s.getJSONObject("parameter");
-                                String paramName = paramObj.getString("name").toLowerCase();
-                                String unit = paramObj.optString("units", "µg/m³");
 
-                                // Valor (latest)
+                                // Nombre del contaminante (normalizado a minúsculas)
+                                String paramName =
+                                        paramObj.getString("name").toLowerCase();
+
+                                // Unidad de medida del contaminante
+                                String unit =
+                                        paramObj.optString("units", "µg/m³");
+
+                                // Se obtiene la última medición disponible del sensor
                                 if (s.has("latest") && !s.isNull("latest")) {
                                     JSONObject latest = s.getJSONObject("latest");
                                     double val = latest.getDouble("value");
 
-                                    // Rellenamos
-                                    if (paramName.contains("no2") || paramName.contains("nitrogen")) {
-                                        est.no2 = val; est.unidadNO2 = unit;
-                                    } else if (paramName.contains("o3") || paramName.contains("ozone")) {
-                                        est.o3 = val; est.unidadO3 = unit;
-                                    } else if (paramName.contains("co") || paramName.contains("carbon")) {
-                                        est.co = val; est.unidadCO = unit;
-                                    } else if (paramName.contains("so2") || paramName.contains("sulfur")) {
-                                        est.so2 = val; est.unidadSO2 = unit;
+                                    // Asignación del valor al campo correspondiente
+                                    // Se utilizan contains() para cubrir variaciones
+                                    // de nomenclatura en la API
+                                    if (paramName.contains("no2")
+                                            || paramName.contains("nitrogen")) {
+                                        est.no2 = val;
+                                        est.unidadNO2 = unit;
+
+                                    } else if (paramName.contains("o3")
+                                            || paramName.contains("ozone")) {
+                                        est.o3 = val;
+                                        est.unidadO3 = unit;
+
+                                    } else if (paramName.contains("co")
+                                            || paramName.contains("carbon")) {
+                                        est.co = val;
+                                        est.unidadCO = unit;
+
+                                    } else if (paramName.contains("so2")
+                                            || paramName.contains("sulfur")) {
+                                        est.so2 = val;
+                                        est.unidadSO2 = unit;
                                     }
                                 }
                             }
                         }
+
                     } catch (Exception ex) {
-                        Log.w("OPENAQ", "Error bajando detalle estación " + est.id);
+                        // Si falla la descarga del detalle de una estación,
+                        // se registra el error pero se continúa con las demás
+                        Log.w(
+                                "OPENAQ",
+                                "Error bajando detalle estación " + est.id
+                        );
                     }
 
-                    // Añadimos a la lista final
+                    // Se añade la estación (con los datos disponibles) a la lista final
                     listaEstaciones.add(est);
                 }
 
                 // -----------------------------------------------------------
-                // PASO 3: Enviar al mapa
+                // PASO 3: Envío del resultado al hilo principal
                 // -----------------------------------------------------------
-                Log.d("OPENAQ", "Proceso terminado. Enviando " + listaEstaciones.size() + " estaciones.");
+                Log.d(
+                        "OPENAQ",
+                        "Proceso terminado. Enviando "
+                                + listaEstaciones.size()
+                                + " estaciones."
+                );
+
+                // Se ejecuta el callback en el hilo principal para que
+                // el mapa pueda actualizar la interfaz gráfica
                 mainHandler.post(() -> callback.onResult(listaEstaciones));
 
             } catch (Exception e) {
+                // Captura de cualquier error no controlado durante el proceso
                 Log.e("OPENAQ", "Error fatal: " + e.getMessage(), e);
             }
         }).start();
     }
 
+
     /**
-     * Método auxiliar para descargar JSON de una URL.
-     * Gestiona la conexión, headers y errores.
+     * @brief Descarga el contenido JSON desde una URL mediante una petición HTTP GET.
+     *
+     * @details
+     * Método auxiliar encargado de realizar una petición HTTP a la URL indicada,
+     * configurando las cabeceras necesarias (incluida la API Key).
+     *
+     * @param urlString Cadena con la URL completa desde la que se desea descargar el JSON.
+     * @return Cadena con el contenido JSON descargado, o {@code null} si ocurre un error.
+     *
+     * @author Alan Guevara Martínez
+     * @date 16/12/2025
      */
     private String descargarUrl(String urlString) {
+
+        // Referencia a la conexión HTTP para poder cerrarla en el bloque finally
         HttpURLConnection conn = null;
+
         try {
+            // Creación del objeto URL a partir de la cadena proporcionada
             URL url = new URL(urlString);
+
+            // Apertura de la conexión HTTP
             conn = (HttpURLConnection) url.openConnection();
+
+            // Configuración del método HTTP (GET)
             conn.setRequestMethod("GET");
-            conn.setRequestProperty("X-API-Key", "3dd56585357ae0bd5b39f7c77852e61d63b0d3ac21f6da1b8befedd154d58e0a");
+
+            // Cabecera obligatoria para autenticación en la API OpenAQ
+            conn.setRequestProperty(
+                    "X-API-Key",
+                    "3dd56585357ae0bd5b39f7c77852e61d63b0d3ac21f6da1b8befedd154d58e0a"
+            );
+
+            // Indica que se espera una respuesta en formato JSON
             conn.setRequestProperty("Accept", "application/json");
 
+            // Se obtiene el código de respuesta HTTP del servidor
             int code = conn.getResponseCode();
+
+            // Si el código HTTP indica error (4xx o 5xx),
+            // se registra en el log y se devuelve null
             if (code >= 400) {
                 Log.e("OPENAQ", "Error HTTP " + code + " en: " + urlString);
                 return null;
             }
-            return new Scanner(conn.getInputStream()).useDelimiter("\\A").next();
+
+            // Si la respuesta es correcta, se lee todo el InputStream
+            // y se devuelve el contenido JSON como String
+            return new Scanner(conn.getInputStream())
+                    .useDelimiter("\\A")
+                    .next();
+
         } catch (Exception e) {
-            Log.e("OPENAQ", "Error red: " + e.getMessage());
+            // Captura de errores de red, formato de URL o lectura de datos
+            Log.e("OPENAQ", "Error de red o lectura: " + e.getMessage());
             return null;
+
         } finally {
-            if (conn != null) conn.disconnect();
+            // Se cierra la conexión HTTP para liberar recursos del sistema
+            if (conn != null) {
+                conn.disconnect();
+            }
         }
     }
 

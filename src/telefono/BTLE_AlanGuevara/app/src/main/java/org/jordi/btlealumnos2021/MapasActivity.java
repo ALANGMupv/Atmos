@@ -986,6 +986,7 @@ public class MapasActivity extends FuncionesBaseActivity {
     }
 
     /* ----- SECCIÓN PINTAR MAPA ----- */
+
     /**
      * @brief Carga puntos de contaminación desde la API y los envía al overlay.
      *
@@ -1229,41 +1230,80 @@ public class MapasActivity extends FuncionesBaseActivity {
 
     /* ----- SECCIÓN ESTACIONES DE MEDIDA REAL - API https://explore.openaq.org -----*/
 
+    // --------------------------------------------------------------------------------------
     /**
-     * @brief Calcula el nivel de contaminación predominante de una estación oficial.
+     * @brief Convierte NO₂ a ppm si la unidad viene en µg/m³.
      *
      * @details
-     * Se normaliza cada gas disponible usando las tablas EPA
-     * y se selecciona el valor MÁS ALTO (peor calidad).
+     * Las estaciones oficiales (OpenAQ) devuelven valores en µg/m³,
+     * mientras que la normalización interna usa ppm (EPA).
+     * Esta conversión SOLO se aplica a estaciones oficiales.
+     */
+    private double convertirNO2(double v, String u) {
+        if (u != null && u.contains("µg")) {
+            return v / 1880.0;
+        }
+        return v;
+    }
+
+    /**
+     * @brief Convierte O₃ a ppm si la unidad viene en µg/m³.
+     * @details Solo se usa para estaciones oficiales.
+     */
+    private double convertirO3(double v, String u) {
+        if (u != null && u.contains("µg")) {
+            return v / 2000.0;
+        }
+        return v;
+    }
+
+    /**
+     * @brief Convierte SO₂ a ppm si la unidad viene en µg/m³.
+     * @details Solo se usa para estaciones oficiales.
+     */
+    private double convertirSO2(double v, String u) {
+        if (u != null && u.contains("µg")) {
+            return v / 2620.0;
+        }
+        return v;
+    }
+
+    /**
+     * @brief Convierte CO a ppm si la unidad viene en µg/m³.
+     * @details Solo se aplica a estaciones oficiales (OpenAQ).
+     */
+    private double convertirCO(double v, String u) {
+        if (u != null && u.contains("µg")) {
+            return v / 1145.0; // µg/m³ → ppm
+        }
+        return v;
+    }
+    // --------------------------------------------------------------------------------------
+
+    /**
+     * @brief Calcula el nivel de contaminación de una estación oficial.
      *
-     * @param e Estación oficial.
-     * @return Nivel normalizado entre 0 y 1.
+     * @details
+     * Convierte las unidades si es necesario y devuelve el peor
+     * nivel normalizado entre los contaminantes disponibles.
+     * No afecta al mapa interpolado ni al índice global.
      */
     private double calcularNivelEstacion(EstacionOficial e) {
 
-        // Variable que almacenará el peor nivel de contaminación detectado
-        // Se inicializa a 0.0 (nivel mínimo)
         double peor = 0.0;
 
-        // Si existe medición de NO₂, se normaliza y se compara con el valor actual
-        if (e.no2 != null) {
-            // Código 11 corresponde al gas NO₂
-            peor = Math.max(peor, normal(e.no2, 11));
-        }
+        if (e.no2 != null)
+            peor = Math.max(peor, normal(convertirNO2(e.no2, e.unidadNO2), 11));
 
-        if (e.co != null) {
-            peor = Math.max(peor, normal(e.co, 12));
-        }
+        if (e.o3 != null)
+            peor = Math.max(peor, normal(convertirO3(e.o3, e.unidadO3), 13));
 
-        if (e.o3 != null) {
-            peor = Math.max(peor, normal(e.o3, 13));
-        }
+        if (e.so2 != null)
+            peor = Math.max(peor, normal(convertirSO2(e.so2, e.unidadSO2), 14));
 
-        if (e.so2 != null) {
-            peor = Math.max(peor, normal(e.so2, 14));
-        }
+        if (e.co != null)
+            peor = Math.max(peor, normal(convertirCO(e.co, e.unidadCO), 12));
 
-        // Se devuelve el peor nivel detectado entre todos los contaminantes
         return peor;
     }
 
