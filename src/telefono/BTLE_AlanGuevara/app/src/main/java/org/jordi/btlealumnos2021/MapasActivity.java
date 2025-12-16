@@ -1263,28 +1263,35 @@ public class MapasActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * @brief Devuelve el color visual asociado a un nivel de contaminación.
+     * @brief Devuelve el color visual asociado al nivel de contaminación.
+     *
+     * Si no hay datos disponibles, la estación se muestra en gris.
      *
      * @param nivel Nivel normalizado (0 a 1).
      * @return Color ARGB para el marcador.
      */
     private int colorPorNivel(double nivel) {
 
+        // Sin datos reales
+        if (nivel <= 0.0) {
+            return Color.parseColor("#9CA3AF"); // Gris
+        }
+
         if (nivel >= 1.0) {
-            return Color.parseColor("#DC2626"); // Rojo (mala)
+            return Color.parseColor("#DC2626"); // Roja
         }
 
         if (nivel >= 0.75) {
-            return Color.parseColor("#EA580C"); // Naranja (insalubre)
+            return Color.parseColor("#EA580C"); // Naranja
         }
 
         if (nivel >= 0.45) {
-            return Color.parseColor("#CA8A04"); // Amarillo (moderada)
+            return Color.parseColor("#CA8A04"); // Amarillo
         }
 
-        return Color.parseColor("#059669");     // Verde (buena)
+        return Color.parseColor("#059669");     // Verde
     }
-
+    
     /**
      * @brief Dibuja en el mapa las estaciones oficiales de calidad del aire.
      *
