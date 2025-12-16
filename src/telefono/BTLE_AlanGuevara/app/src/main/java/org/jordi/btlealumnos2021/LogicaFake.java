@@ -1,6 +1,9 @@
 package org.jordi.btlealumnos2021;
 
+import android.os.Looper;
 import android.util.Log;
+
+import androidx.recyclerview.widget.SortedList;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -22,6 +25,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Scanner;
+import android.os.Handler;
+import android.os.Looper;
+
 
 /**
  * @file LogicaFake.java
@@ -1151,6 +1158,135 @@ public class LogicaFake {
         void onResult(JSONArray arr);
     }
 
+    // =========================================================
+    // ESTACIONES OFICIALES (OpenAQ)
+    // =========================================================
+
+    /**
+     * @brief Obtiene estaciones oficiales de calidad del aire desde la API pública OpenAQ.
+     *
+     * Este método realiza una petición HTTP en un hilo secundario para evitar bloquear
+     * el hilo principal.
+     *
+     * @param callback Callback que recibe la lista de estaciones oficiales obtenidas.
+     *                 El método {@code onResult(List<EstacionOficial>)} se ejecuta
+     *                 siempre en el hilo principal.
+     *
+     * @author Alan Guevara Martínez
+     * @date 16/12/2025
+     */
+    public void obtenerEstacionesOficiales(EstacionesCallback callback) {
+        Handler mainHandler = new Handler(Looper.getMainLooper());
+
+        new Thread(() -> {
+            HttpURLConnection conn = null;
+            try {
+                // URL para obtener estaciones de España
+                String urlString = "https://api.openaq.org/v3/locations"
+                        + "?iso=ES"
+                        + "&limit=100"
+                        + "&page=1";
+
+                URL url = new URL(urlString);
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+
+                // --- CORRECCIÓN AQUÍ ---
+                // No uses "Authorization" ni "Bearer".
+                // Usa "X-API-Key" y pon la clave tal cual, sin prefijos.
+                conn.setRequestProperty("X-API-Key", "3dd56585357ae0bd5b39f7c77852e61d63b0d3ac21f6da1b8befedd154d58e0a");
+
+                conn.setRequestProperty("Accept", "application/json");
+                conn.setRequestProperty("User-Agent", "AtmosApp");
+
+                // Verificamos respuesta
+                int responseCode = conn.getResponseCode();
+                InputStream is;
+
+                if (responseCode >= 200 && responseCode < 300) {
+                    is = conn.getInputStream();
+                } else {
+                    is = conn.getErrorStream();
+                    String errorMsg = new Scanner(is).useDelimiter("\\A").next();
+                    Log.e("OPENAQ", "ERROR DEL SERVIDOR (" + responseCode + "): " + errorMsg);
+                    is.close();
+                    return;
+                }
+
+                // Procesamiento del JSON
+                String json = new Scanner(is).useDelimiter("\\A").next();
+                JSONObject root = new JSONObject(json);
+                JSONArray results = root.getJSONArray("results");
+                List<EstacionOficial> lista = new ArrayList<>();
+
+                for (int i = 0; i < results.length(); i++) {
+                    JSONObject e = results.getJSONObject(i);
+                    EstacionOficial est = new EstacionOficial();
+
+                    est.nombre = e.has("name") ? e.getString("name") : "Estación " + e.getInt("id");
+
+                    if (e.has("coordinates")) {
+                        JSONObject coords = e.getJSONObject("coordinates");
+                        est.lat = coords.getDouble("latitude");
+                        est.lon = coords.getDouble("longitude");
+                    }
+
+                    if (e.has("sensors")) {
+                        JSONArray sensors = e.getJSONArray("sensors");
+                        for (int j = 0; j < sensors.length(); j++) {
+                            JSONObject s = sensors.getJSONObject(j);
+                            JSONObject paramObj = s.getJSONObject("parameter");
+
+                            String paramName = paramObj.getString("name");
+                            String unit = paramObj.getString("units");
+
+                            if (s.has("latest") && !s.isNull("latest")) {
+                                JSONObject latestObj = s.getJSONObject("latest");
+                                double value = latestObj.getDouble("value");
+
+                                switch (paramName.toLowerCase()) {
+                                    case "no2": est.no2 = value; est.unidadNO2 = unit; break;
+                                    case "o3":  est.o3 = value;  est.unidadO3 = unit;  break;
+                                    case "co":  est.co = value;  est.unidadCO = unit;  break;
+                                    case "so2": est.so2 = value; est.unidadSO2 = unit; break;
+                                }
+                            }
+                        }
+                    }
+                    lista.add(est);
+                }
+
+                mainHandler.post(() -> callback.onResult(lista));
+
+            } catch (Exception e) {
+                Log.e("OPENAQ", "Excepción fatal: " + e.getMessage(), e);
+            } finally {
+                if (conn != null) conn.disconnect();
+            }
+        }).start();
+    }
+
+    /**
+     * @interface EstacionesCallback
+     * @brief Callback para recibir la lista de estaciones oficiales de calidad del aire.
+     *
+     * @author Alan Guevara Martínez
+     * @date 16/12/2025
+     */
+    public interface EstacionesCallback {
+        /**
+         * @param estaciones Lista de objetos {@link EstacionOficial} con los datos
+         *                   de localización y contaminantes (NO2, O3, CO, SO2).
+         *
+         * @note Si ocurre un error durante la petición o el procesado de datos,
+         *       la lista puede estar vacía.
+         */
+        void onResult(List<EstacionOficial> estaciones);
+    }
+
+    // =========================================================
+    // FIN ESTACIONES OFICIALES (OpenAQ)
+    // =========================================================
 }
 
 

@@ -186,9 +186,6 @@ public class ContaminacionOverlay extends Overlay {
         final double EXP = 2.2;        // exponente IDW, 2 = estándar
         final float ALPHA = 0.11f; // opacidad del heatmap
 
-        // Reutilizado para obtener proyecciones de píxeles
-        Point pixel = new Point();
-
         // Recorrer toda la cuadrícula
         for (int ix = 0; ix < GRID; ix++) {
             for (int iy = 0; iy < GRID; iy++) {

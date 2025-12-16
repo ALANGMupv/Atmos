@@ -4,8 +4,10 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -16,6 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 
 import org.json.JSONObject;
 import org.osmdroid.config.Configuration;
@@ -603,6 +606,12 @@ public class MapasActivity extends FuncionesBaseActivity {
 
         // Dibujar mapa desde el principio al incializarlo
         cargarContaminacion("TODOS");
+
+        // ----------------  CARGAR ESTACIONES OFICIALES ----------------
+        logica.obtenerEstacionesOficiales(estaciones ->
+                runOnUiThread(() -> pintarEstacionesOficiales(estaciones))
+        );
+        // --------------------------------------------------------------
     }
 
     /* -------------------------------------------------------------------------
@@ -1212,5 +1221,174 @@ public class MapasActivity extends FuncionesBaseActivity {
         }
     }
     /* ----- FIN SECCIÓN ACTUALIZAR PANEL ÍNDICES MAPA -----*/
+
+    /* ----- SECCIÓN ESTACIONES DE MEDIDA REAL - API https://explore.openaq.org -----*/
+
+    /**
+     * @brief Calcula el nivel de contaminación predominante de una estación oficial.
+     *
+     * @details
+     * Se normaliza cada gas disponible usando las tablas EPA
+     * y se selecciona el valor MÁS ALTO (peor calidad).
+     *
+     * @param e Estación oficial.
+     * @return Nivel normalizado entre 0 y 1.
+     */
+    private double calcularNivelEstacion(EstacionOficial e) {
+
+        // Variable que almacenará el peor nivel de contaminación detectado
+        // Se inicializa a 0.0 (nivel mínimo)
+        double peor = 0.0;
+
+        // Si existe medición de NO₂, se normaliza y se compara con el valor actual
+        if (e.no2 != null) {
+            // Código 11 corresponde al gas NO₂
+            peor = Math.max(peor, normal(e.no2, 11));
+        }
+
+        if (e.co != null) {
+            peor = Math.max(peor, normal(e.co, 12));
+        }
+
+        if (e.o3 != null) {
+            peor = Math.max(peor, normal(e.o3, 13));
+        }
+
+        if (e.so2 != null) {
+            peor = Math.max(peor, normal(e.so2, 14));
+        }
+
+        // Se devuelve el peor nivel detectado entre todos los contaminantes
+        return peor;
+    }
+
+    /**
+     * @brief Devuelve el color visual asociado a un nivel de contaminación.
+     *
+     * @param nivel Nivel normalizado (0 a 1).
+     * @return Color ARGB para el marcador.
+     */
+    private int colorPorNivel(double nivel) {
+
+        if (nivel >= 1.0) {
+            return Color.parseColor("#DC2626"); // Rojo (mala)
+        }
+
+        if (nivel >= 0.75) {
+            return Color.parseColor("#EA580C"); // Naranja (insalubre)
+        }
+
+        if (nivel >= 0.45) {
+            return Color.parseColor("#CA8A04"); // Amarillo (moderada)
+        }
+
+        return Color.parseColor("#059669");     // Verde (buena)
+    }
+
+    /**
+     * @brief Dibuja en el mapa las estaciones oficiales de calidad del aire.
+     *
+     * @details
+     * Para cada estación:
+     *  - Se crea un marcador en su posición geográfica.
+     *  - Se calcula el nivel de contaminación predominante
+     *    (peor gas disponible según la API).
+     *  - Se colorea el marcador según dicho nivel.
+     *  - Se muestra un popup con los valores EXACTOS de la API,
+     *    incluyendo sus unidades originales.
+     *
+     * Este método NO modifica el mapa interpolado ni los datos del backend.
+     *
+     * @param estaciones Lista de estaciones oficiales obtenidas desde la API.
+     *
+     * @author Alan Guevara Martínez
+     * @date 16/12/2025
+     */
+    private void pintarEstacionesOficiales(List<EstacionOficial> estaciones) {
+
+        Log.d("ESTACIONES", "Número de estaciones recibidas: " + estaciones.size());
+
+        // Recorremos todas las estaciones oficiales recibidas
+        for (EstacionOficial e : estaciones) {
+
+            // -------------------------------------------------------------
+            // 1) Crear marcador asociado al mapa
+            // -------------------------------------------------------------
+            Marker m = new Marker(mapa);
+
+            // Posición geográfica de la estación
+            m.setPosition(new GeoPoint(e.lat, e.lon));
+
+            // Anclaje del icono (centrado horizontal, punta inferior)
+            m.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+
+            // -------------------------------------------------------------
+            // 2) Calcular nivel predominante de la estación
+            //    (peor gas según API oficial)
+            // -------------------------------------------------------------
+            double nivel = calcularNivelEstacion(e);
+
+            // Obtener color visual según nivel
+            int color = colorPorNivel(nivel);
+
+            // Icono base de estación oficial
+            Drawable icono = ContextCompat.getDrawable(
+                    this,
+                    R.drawable.marker_estacion_oficial
+            );
+
+            // Aplicar color al icono según el nivel de contaminación
+            if (icono != null) {
+                icono.setTint(color);
+                m.setIcon(icono);
+            }
+
+            // -------------------------------------------------------------
+            // 3) Configurar popup de información
+            // -------------------------------------------------------------
+
+            // Título del popup (nombre de la estación)
+            m.setTitle(e.nombre);
+
+            // Texto del popup con valores y UNIDADES de la API
+            m.setSnippet(
+                    "NO₂: " + valor(e.no2, e.unidadNO2) + "\n" +
+                            "O₃: "  + valor(e.o3,  e.unidadO3)  + "\n" +
+                            "CO: "  + valor(e.co,  e.unidadCO)  + "\n" +
+                            "SO₂: " + valor(e.so2, e.unidadSO2)
+            );
+
+            // -------------------------------------------------------------
+            // 4) Añadir marcador al mapa
+            // -------------------------------------------------------------
+            mapa.getOverlays().add(m);
+        }
+
+        // Forzar repintado del mapa para mostrar los nuevos marcadores
+        mapa.invalidate();
+    }
+
+    /**
+     * @brief Formatea un valor de contaminante junto a su unidad.
+     *
+     * @param v Valor del contaminante.
+     * @param u Unidad proporcionada por la API.
+     * @return Cadena lista para mostrar en el popup.
+     */
+    private String valor(Double v, String u) {
+
+        if (v == null) {
+            return "—";
+        }
+
+        if (u == null) {
+            return v.toString();
+        }
+
+        return v + " " + u;
+    }
+
+    /* ----- FIN SECCIÓN ESTACIONES DE MEDIDA REAL - API https://explore.openaq.org -----*/
+
     // ---------------------------------------------------------
 }
