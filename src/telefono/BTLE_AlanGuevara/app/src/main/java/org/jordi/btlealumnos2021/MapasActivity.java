@@ -985,11 +985,8 @@ public class MapasActivity extends FuncionesBaseActivity {
                                 Math.max(normal(o3, 13), normal(so2, 14))
                         );
 
-                        // Elegimos color según el nivel normalizado
-                        int[] rgb = colorPorNivel(peor);
-
                         // Creamos punto para el overlay
-                        lista.add(new ContaminacionOverlay.PuntoContaminacion(lat, lon, rgb[0], rgb[1], rgb[2]));
+                        lista.add(new ContaminacionOverlay.PuntoContaminacion(lat, lon, peor));
 
                     } catch (Exception ignored) {}
                 }
@@ -1025,10 +1022,12 @@ public class MapasActivity extends FuncionesBaseActivity {
                         // Normalizar el valor según la tabla del gas correspondiente
                         double n = normal(v, gas);
 
-                        // Convertir nivel a color
-                        int[] rgb = colorPorNivel(n);
-
-                        lista.add(new ContaminacionOverlay.PuntoContaminacion(lat, lon, rgb[0], rgb[1], rgb[2]));
+                        /*
+                         * En modo gas individual:
+                         * seguimos usando IDW clásico,
+                         * pero enviamos el nivel, no el color
+                         */
+                        lista.add(new ContaminacionOverlay.PuntoContaminacion(lat, lon, n));
 
                     } catch (Exception ignored) {}
                 }

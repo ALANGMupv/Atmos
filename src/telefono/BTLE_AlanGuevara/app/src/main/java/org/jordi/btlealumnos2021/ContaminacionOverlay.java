@@ -36,28 +36,25 @@ import java.util.List;
  *  - ALPHA:  opacidad del círculo pintado (mezcla con el mapa).
  *
  * @author Alan Guevara Martinez
- * @date 10/12/2025
+ * @date 10/12/2025 - Modificado: 16/12/2025 (para que se pinte bien el peor nivel cuando todos los contaminantes estén seleccionados).
  */
 public class ContaminacionOverlay extends Overlay {
 
     /**
      * @class PuntoContaminacion
-     * @brief Representa un punto de muestreo: latitud, longitud y color en RGB.
-     * @details Los valores RGB deben venir ya normalizados (ej. 0–255).
-     * Cada punto influirá en la interpolación en función de su distancia
+     * @brief Representa un punto de muestreo: latitud, longitud y nivel.
+     * @details Cada punto influirá en la interpolación en función de su distancia
      * respecto al píxel consultado.
      */
     public static class PuntoContaminacion {
         public double lat;
         public double lon;
-        public int r, g, b;
+        public double nivel;
 
-        public PuntoContaminacion(double lat, double lon, int r, int g, int b) {
+        public PuntoContaminacion(double lat, double lon, double nivel) {
             this.lat = lat;
             this.lon = lon;
-            this.r = r;
-            this.g = g;
-            this.b = b;
+            this.nivel = nivel;
         }
     }
 
@@ -168,7 +165,7 @@ public class ContaminacionOverlay extends Overlay {
 
 
         // Número de divisiones por eje del lienzo.
-        final int GRID = 38;
+        final int GRID = 50;
 
         // Objeto Paint reutilizado para dibujar los círculos interpolados.
         final Paint paint = new Paint();
@@ -187,7 +184,7 @@ public class ContaminacionOverlay extends Overlay {
         // Radio de influencia geográfico para IDW.
         final double RADIO = 0.012;  // ≈1–1.2 km dependiendo latitud
         final double EXP = 2;        // exponente IDW, 2 = estándar
-        final float ALPHA = 0.10f; // opacidad del heatmap
+        final float ALPHA = 0.12f; // opacidad del heatmap
 
         // Reutilizado para obtener proyecciones de píxeles
         Point pixel = new Point();
@@ -208,7 +205,7 @@ public class ContaminacionOverlay extends Overlay {
 
                 // Acumuladores IDW
                 double sumW = 0;      // suma de pesos
-                double sumR = 0, sumG = 0, sumB = 0;
+                double maxNivel = 0; // Nos quedaremos con el PEOR nivel para cuando se seleccionen todos los contaminantes
 
                 // Evaluar influencia de cada punto sobre la celda actual
                 for (PuntoContaminacion p : puntos) {
@@ -225,9 +222,13 @@ public class ContaminacionOverlay extends Overlay {
                     double w = d == 0 ? 1 : 1 / Math.pow(d, EXP);
 
                     sumW += w;
-                    sumR += w * p.r;
-                    sumG += w * p.g;
-                    sumB += w * p.b;
+
+                    /*
+                     * En lugar de interpolar colores,
+                     * nos quedamos con el nivel MÁS ALTO
+                     * (el contaminante más peligroso)
+                     */
+                    maxNivel = Math.max(maxNivel, p.nivel);
                 }
 
                 // Enviar resultados índices a la Activity
@@ -266,10 +267,11 @@ public class ContaminacionOverlay extends Overlay {
                 // Si ningún punto aporta peso, este píxel se descarta
                 if (sumW == 0) continue;
 
-                // Color resultante por interpolación ponderada
-                int rr = (int) (sumR / sumW);
-                int gg = (int) (sumG / sumW);
-                int bb = (int) (sumB / sumW);
+                // Convertimos el PEOR nivel a color
+                int[] rgb = colorPorNivel(maxNivel);
+                int rr = rgb[0];
+                int gg = rgb[1];
+                int bb = rgb[2];
 
                 // Índices calidad del aire, contabilizar celdas y clasificar
                 String nivel = clasificar(rr, gg, bb);
@@ -305,4 +307,47 @@ public class ContaminacionOverlay extends Overlay {
             }
         }
     }
+
+    /**
+     * @brief Convierte un nivel normalizado de contaminación en un color RGB.
+     *
+     * @details
+     * Este método traduce un valor normalizado (entre 0.1 y 1.0) a un color
+     * representativo de la calidad del aire, siguiendo la misma escala visual
+     * utilizada en el índice de calidad:
+     *
+     *  - 0.10 → Verde (calidad buena)
+     *  - 0.45 → Amarillo (calidad moderada)
+     *  - 0.75 → Naranja (calidad insalubre)
+     *  - 1.00 → Rojo (calidad mala)
+     *
+     * El color devuelto se utiliza tanto para:
+     *  - Pintar el mapa de contaminación.
+     *  - Clasificar las celdas visibles para calcular el índice global.
+     *
+     * @param n Nivel normalizado de contaminación.
+     * @return Array de enteros {R, G, B} con valores entre 0 y 255.
+     * @date 16/12/2025
+     */
+    private int[] colorPorNivel(double n) {
+
+        // Calidad buena → verde
+        if (n <= 0.10) {
+            return new int[]{36, 255, 84};
+        }
+
+        // Calidad moderada → amarillo
+        if (n <= 0.45) {
+            return new int[]{255, 240, 0};
+        }
+
+        // Calidad insalubre → naranja
+        if (n <= 0.75) {
+            return new int[]{255, 144, 0};
+        }
+
+        // Calidad mala → rojo
+        return new int[]{255, 48, 48};
+    }
+
 }
