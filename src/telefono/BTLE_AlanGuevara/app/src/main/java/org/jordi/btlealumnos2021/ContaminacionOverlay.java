@@ -165,7 +165,7 @@ public class ContaminacionOverlay extends Overlay {
 
 
         // Número de divisiones por eje del lienzo.
-        final int GRID = 50;
+        final int GRID = 55;
 
         // Objeto Paint reutilizado para dibujar los círculos interpolados.
         final Paint paint = new Paint();
@@ -182,9 +182,9 @@ public class ContaminacionOverlay extends Overlay {
         float stepY = height / (float) GRID;
 
         // Radio de influencia geográfico para IDW.
-        final double RADIO = 0.012;  // ≈1–1.2 km dependiendo latitud
-        final double EXP = 2;        // exponente IDW, 2 = estándar
-        final float ALPHA = 0.12f; // opacidad del heatmap
+        final double RADIO = 0.013;  // ≈1–1.2 km dependiendo latitud
+        final double EXP = 2.2;        // exponente IDW, 2 = estándar
+        final float ALPHA = 0.11f; // opacidad del heatmap
 
         // Reutilizado para obtener proyecciones de píxeles
         Point pixel = new Point();
@@ -228,7 +228,9 @@ public class ContaminacionOverlay extends Overlay {
                      * nos quedamos con el nivel MÁS ALTO
                      * (el contaminante más peligroso)
                      */
-                    maxNivel = Math.max(maxNivel, p.nivel);
+                    maxNivel = Math.max(maxNivel, p.nivel - 0.05);
+                    if (maxNivel < 0) maxNivel = 0;
+
                 }
 
                 // Enviar resultados índices a la Activity
