@@ -1242,6 +1242,9 @@ public class LogicaFake {
                     JSONObject e = results.getJSONObject(i);
                     EstacionOficial est = new EstacionOficial();
 
+                    // ID único de la estación en OpenAQ (clave para pedir mediciones)
+                    est.id = e.getInt("id");
+
                     // A. OBTENER NOMBRE
                     // A veces viene en "name", si no, usamos el ID como respaldo
                     est.nombre = e.has("name") ? e.getString("name") : "Estación " + e.getInt("id");
@@ -1253,53 +1256,6 @@ public class LogicaFake {
                         est.lon = coords.getDouble("longitude");
                     }
 
-                    // C. OBTENER SENSORES (CONTAMINANTES)
-                    // En v3 se llama "sensors". Contiene info del sensor y su última lectura.
-                    if (e.has("sensors")) {
-                        JSONArray sensors = e.getJSONArray("sensors");
-
-                        for (int j = 0; j < sensors.length(); j++) {
-                            JSONObject s = sensors.getJSONObject(j);
-                            JSONObject paramObj = s.getJSONObject("parameter");
-
-                            String paramName = paramObj.getString("name"); // ej: "no2"
-                            String unit = paramObj.getString("units");     // ej: "µg/m³"
-
-                            // LOG para ver que devuelve
-                            Log.d("OPENAQ_SENSOR",
-                                    "Estación=" + est.nombre +
-                                            " param=" + paramName +
-                                            " tieneLatest=" + s.has("latest")
-                            );
-
-
-                            // Solo procesamos si el sensor tiene un dato reciente ("latest")
-                            if (s.has("latest") && !s.isNull("latest")) {
-                                JSONObject latestObj = s.getJSONObject("latest");
-                                double value = latestObj.getDouble("value");
-
-                                // Asignamos el valor al atributo correcto de nuestra clase
-                                switch (paramName.toLowerCase()) {
-                                    case "no2":
-                                        est.no2 = value;
-                                        est.unidadNO2 = unit;
-                                        break;
-                                    case "o3":
-                                        est.o3 = value;
-                                        est.unidadO3 = unit;
-                                        break;
-                                    case "co":
-                                        est.co = value;
-                                        est.unidadCO = unit;
-                                        break;
-                                    case "so2":
-                                        est.so2 = value;
-                                        est.unidadSO2 = unit;
-                                        break;
-                                }
-                            }
-                        }
-                    }
                     // Añadimos la estación ya rellena a la lista
                     lista.add(est);
                 }
@@ -1313,10 +1269,107 @@ public class LogicaFake {
 
             } catch (Exception e) {
                 // Capturamos cualquier error (falta de internet, JSON mal formado, etc.)
-                Log.e("OPENAQ", "⚠Excepción fatal: " + e.getMessage(), e);
+                Log.e("OPENAQ", "Excepción fatal: " + e.getMessage(), e);
             }
         }).start();
     }
+
+    /**
+     * @brief Carga las últimas mediciones reales de una estación oficial OpenAQ.
+     *
+     * @details
+     * Consulta el endpoint /v3/measurements usando el ID de la estación
+     * y rellena los valores de contaminantes (NO2, O3, CO, SO2) junto
+     * con sus unidades originales.
+     *
+     * Si una estación no tiene datos recientes, los valores permanecen null.
+     *
+     * @param est Estación oficial a completar.
+     */
+    private void cargarUltimasMedidas(EstacionOficial est) {
+
+        HttpURLConnection conn = null;
+
+        try {
+            // Endpoint oficial de mediciones OpenAQ v3
+            String urlString =
+                    "https://api.openaq.org/v3/measurements"
+                            + "?location_id=" + est.id
+                            + "&limit=50"
+                            + "&sort=desc";
+
+            URL url = new URL(urlString);
+            conn = (HttpURLConnection) url.openConnection();
+
+            // Método HTTP
+            conn.setRequestMethod("GET");
+
+            // Autenticación OpenAQ v3
+            conn.setRequestProperty(
+                    "X-API-Key",
+                    "TU_API_KEY_AQUI"
+            );
+
+            // Cabeceras recomendadas
+            conn.setRequestProperty("Accept", "application/json");
+            conn.setRequestProperty("User-Agent", "AtmosApp/1.0");
+
+            // Leer respuesta
+            InputStream is = conn.getInputStream();
+            String json = new Scanner(is).useDelimiter("\\A").next();
+
+            JSONObject root = new JSONObject(json);
+            JSONArray results = root.getJSONArray("results");
+
+            // Recorremos mediciones (ordenadas de más reciente a más antigua)
+            for (int i = 0; i < results.length(); i++) {
+
+                JSONObject r = results.getJSONObject(i);
+
+                String param = r.getString("parameter");
+                double value = r.getDouble("value");
+                String unit = r.getString("unit");
+
+                // Guardamos solo la PRIMERA aparición de cada gas
+                switch (param) {
+                    case "no2":
+                        if (est.no2 == null) {
+                            est.no2 = value;
+                            est.unidadNO2 = unit;
+                        }
+                        break;
+
+                    case "o3":
+                        if (est.o3 == null) {
+                            est.o3 = value;
+                            est.unidadO3 = unit;
+                        }
+                        break;
+
+                    case "co":
+                        if (est.co == null) {
+                            est.co = value;
+                            est.unidadCO = unit;
+                        }
+                        break;
+
+                    case "so2":
+                        if (est.so2 == null) {
+                            est.so2 = value;
+                            est.unidadSO2 = unit;
+                        }
+                        break;
+                }
+            }
+
+        } catch (Exception ex) {
+            // Es normal que algunas estaciones no tengan datos recientes
+            Log.w("OPENAQ", "Sin mediciones para estación ID=" + est.id);
+        } finally {
+            if (conn != null) conn.disconnect();
+        }
+    }
+
 
     /**
      * @interface EstacionesCallback
