@@ -1,14 +1,20 @@
-<?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="oval">
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="32dp"
+    android:height="32dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
 
-    <size
-        android:width="18dp"
-        android:height="18dp"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M12,2C8.14,2 5,5.14 5,9c0,5.25 7,13 7,13s7,-7.75 7,-13C19,5.14 15.86,2 12,2z"/>
 
-    <solid android:color="#2563EB"/> <!-- azul estaciones oficiales -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M12,4c-2.76,0 -5,2.24 -5,5c0,2.88 3.68,8.58 5,10.29c1.32,-1.71 5,-7.41 5,-10.29C17,6.24 14.76,4 12,4z"/>
 
-    <stroke
-        android:width="2dp"
-        android:color="#FFFFFF"/>
-</shape>
+    <path
+        android:fillColor="#00000000"
+        android:strokeWidth="2"
+        android:strokeColor="#FFFFFF"
+        android:pathData="M12,9m-2,0a2,2 0 1,1 4,0a2,2 0 1,1 -4,0"/>
+</vector>
