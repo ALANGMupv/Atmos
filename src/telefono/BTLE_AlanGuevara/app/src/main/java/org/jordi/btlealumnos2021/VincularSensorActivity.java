@@ -72,6 +72,9 @@ public class VincularSensorActivity extends FuncionesBaseActivity {
 
         inicializarVistas();
         configurarListeners();
+
+        // Activamos el menú inferior
+        setupBottomNav();
     }
 
     /**

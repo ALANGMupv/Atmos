@@ -69,7 +69,7 @@ public class MapasActivity extends FuncionesBaseActivity {
     private final android.os.Handler handlerMovimiento = new android.os.Handler();
     private Runnable tareaFinMovimiento = null;
     // -----------------------------------------------------------------------
-
+    private boolean indiceRecibidoTrasMovimiento = false;
 
     /**
      * @param savedInstanceState Estado previo en caso de recreación.
@@ -477,13 +477,26 @@ public class MapasActivity extends FuncionesBaseActivity {
 
                 // Cada vez que hay un scroll → marcar como en movimiento
                 mapaEnMovimiento = true;
+                indiceRecibidoTrasMovimiento = false;
 
                 // Cancelar detección anterior
                 if (tareaFinMovimiento != null)
                     handlerMovimiento.removeCallbacks(tareaFinMovimiento);
 
                 // Programar detección de “movimiento detenido”
-                tareaFinMovimiento = () -> mapaEnMovimiento = false;
+                tareaFinMovimiento = () -> {
+                    // Solo marcamos que el mapa ha dejado de moverse
+                    mapaEnMovimiento = false;
+                };
+
+                // Esperamos un poco a ver si el overlay responde
+                new android.os.Handler().postDelayed(() -> {
+                    if (!indiceRecibidoTrasMovimiento) {
+                        runOnUiThread(() ->
+                                actualizarPanelIndice(0, 0, 0, 0, "sin_datos")
+                        );
+                    }
+                }, 300);
 
                 // Si pasan 120 ms sin nuevos scrolls → movimiento parado
                 handlerMovimiento.postDelayed(tareaFinMovimiento, 120);
@@ -548,17 +561,39 @@ public class MapasActivity extends FuncionesBaseActivity {
         mapa.getOverlays().add(overlayContaminacion);
         /* --------------------------- */
 
-        /* --- RECIBIR ÍNDICE CALCULADO POR EL OVERLAY --- */
+        /* -------------------------------------------------------------------------
+         * RECEPCIÓN DEL ÍNDICE DE CALIDAD DEL AIRE DESDE EL OVERLAY
+         * @brief Recibe los porcentajes calculados por el ContaminacionOverlay.
+         *
+         * Si no hay datos visibles en el área actual del mapa, se limpia el panel
+         * de índice para evitar mostrar información obsoleta (última ciudad válida).
+         * ------------------------------------------------------------------------- */
         overlayContaminacion.setOnIndiceUpdateListener((b, m, i, ma, dominante) -> {
+
+            indiceRecibidoTrasMovimiento = true;
 
             // Cancelamos cualquier actualización pendiente
             if (tareaDelayedIndice != null)
                 handlerIndice.removeCallbacks(tareaDelayedIndice);
 
-            // Si el mapa se está moviendo → posponer
+            // Tarea diferida para evitar recalcular mientras el mapa se mueve
             tareaDelayedIndice = () -> {
                 if (!mapaEnMovimiento) {
-                    runOnUiThread(() -> actualizarPanelIndice(b, m, i, ma, dominante));
+
+                    int total = b + m + i + ma;
+
+                    // CASO: no hay datos visibles → limpiar panel de índice
+                    if (total == 0) {
+                        runOnUiThread(() ->
+                                actualizarPanelIndice(0, 0, 0, 0, "sin_datos")
+                        );
+                        return;
+                    }
+
+                    // CASO: hay datos válidos → actualizar panel normalmente
+                    runOnUiThread(() ->
+                            actualizarPanelIndice(b, m, i, ma, dominante)
+                    );
                 }
             };
 
@@ -568,8 +603,11 @@ public class MapasActivity extends FuncionesBaseActivity {
 
         // Dibujar mapa desde el principio al incializarlo
         cargarContaminacion("TODOS");
-
     }
+
+    /* -------------------------------------------------------------------------
+     * LIMPIEZA DEL PANEL DE ÍNDICE DE CALIDAD DEL AIRE
+     * ------------------------------------------------------------------------- */
 
     /**
      * Solicita la ubicación actual del usuario y centra el mapa en ese punto.
@@ -1085,24 +1123,6 @@ public class MapasActivity extends FuncionesBaseActivity {
         return 0;
     }
 
-    /**
-     * @brief Devuelve un color RGB según el nivel de contaminación.
-     *
-     * @details
-     * 0.10 -> verde (bueno)
-     * 0.45 -> amarillo (moderado)
-     * 0.75 -> naranja (malo)
-     * >0.75 -> rojo (muy malo)
-     *
-     * @param n Nivel normalizado entre 0.1 y 1.
-     * @return Array {r, g, b}
-     */
-    private int[] colorPorNivel(double n) {
-        if (n <= 0.10) return new int[]{36, 255, 84};    // verde
-        if (n <= 0.45) return new int[]{255, 240, 0};    // amarillo
-        if (n <= 0.75) return new int[]{255, 144, 0};    // naranja
-        return new int[]{255, 48, 48};                  // rojo
-    }
     /* ----- FIN SECCIÓN PINTAR MAPA -----*/
 
     /* ----- SECCIÓN ACTUALIZAR PANEL ÍNDICES MAPA -----*/
@@ -1130,6 +1150,9 @@ public class MapasActivity extends FuncionesBaseActivity {
         LinearLayout recBox = findViewById(R.id.boxRecomendacion);
         TextView recText = findViewById(R.id.txtRecomendacion);
 
+        // IMPORTANTE: reactivar recomendaciones tras haberlas ocultado
+        recBox.setVisibility(View.VISIBLE);
+
         // === Mostrar porcentajes ===
         tBuena.setText(buena + "%");
         tModerada.setText(moderada + "%");
@@ -1138,6 +1161,14 @@ public class MapasActivity extends FuncionesBaseActivity {
 
         // === Cambiar color, texto y recomendación ===
         switch (dominante) {
+
+            case "sin_datos":
+                txtCalidad.setText("Sin datos disponibles");
+                txtCalidad.setTextColor(Color.parseColor("#6B7280"));
+                recBox.setBackgroundColor(Color.parseColor("#E5E7EB"));
+                recText.setText("No existen mediciones de calidad del aire en esta zona.");
+                recText.setTextColor(Color.parseColor("#374151"));
+                break;
 
             case "buena":
                 txtCalidad.setText("Calidad Buena");
@@ -1169,6 +1200,14 @@ public class MapasActivity extends FuncionesBaseActivity {
                 recBox.setBackgroundColor(Color.parseColor("#FECACA"));
                 recText.setText("Evitar actividades al aire libre. Se recomienda permanecer en interiores.");
                 recText.setTextColor(Color.parseColor("#7F1D1D"));
+                break;
+
+            default:
+                txtCalidad.setText("Sin datos disponibles");
+                txtCalidad.setTextColor(Color.parseColor("#6B7280"));
+                recBox.setBackgroundColor(Color.parseColor("#E5E7EB"));
+                recText.setText("No existen mediciones de calidad del aire en esta zona.");
+                recText.setTextColor(Color.parseColor("#374151"));
                 break;
         }
     }
