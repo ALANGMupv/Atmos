@@ -613,7 +613,7 @@ public class MapasActivity extends FuncionesBaseActivity {
                 Toast.makeText(this, "No se encontraron estaciones", Toast.LENGTH_SHORT).show();
             } else {
                 pintarEstacionesOficiales(estaciones);
-                Toast.makeText(this, "Se cargaron " + estaciones.size() + " estaciones", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Se encontaron " + estaciones.size() + " estaciones de medida en la Comunitat Valenciana", Toast.LENGTH_SHORT).show();
             }
         });
         // --------------------------------------------------------------

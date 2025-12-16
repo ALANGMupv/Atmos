@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
 import android.os.Handler;
@@ -1195,6 +1198,13 @@ public class LogicaFake {
         // durante las múltiples operaciones de red.
         new Thread(() -> {
             try {
+
+                // Usamos varios hilos para descargar los sensores y que no tarde tanto
+                ExecutorService pool = Executors.newFixedThreadPool(8);
+
+                // Lista de tareas para poder esperar a que todas terminen
+                List<Future<?>> tareas = new ArrayList<>();
+
                 // -----------------------------------------------------------
                 // PASO 1: Descarga de la lista de estaciones (locations)
                 // -----------------------------------------------------------
@@ -1251,79 +1261,95 @@ public class LogicaFake {
                     // -------------------------------------------------------
                     // DESCARGA DEL DETALLE DE SENSORES DE ESTA ESTACIÓN
                     // -------------------------------------------------------
-                    try {
-                        // Endpoint específico para los sensores de la estación
-                        String urlDetalle =
-                                "https://api.openaq.org/v3/locations/" + est.id + "/sensors";
+                    // Cada estación se descarga en un hilo independiente
+                    Future<?> tarea = pool.submit(() -> {
+                        try {
 
-                        // Descarga del JSON con los sensores
-                        String jsonDetalle = descargarUrl(urlDetalle);
+                            String urlDetalle =
+                                    "https://api.openaq.org/v3/locations/" + est.id + "/sensors";
 
-                        // Si la descarga es correcta, se procesan los sensores
-                        if (jsonDetalle != null) {
-                            JSONObject rootDet = new JSONObject(jsonDetalle);
-                            JSONArray sensors = rootDet.getJSONArray("results");
+                            // Descarga bloqueante, pero ahora en hilo paralelo
+                            String jsonDetalle = descargarUrl(urlDetalle);
 
-                            // Se recorren todos los sensores de la estación
-                            for (int j = 0; j < sensors.length(); j++) {
+                            if (jsonDetalle != null) {
 
-                                JSONObject s = sensors.getJSONObject(j);
+                                JSONObject rootDet = new JSONObject(jsonDetalle);
+                                JSONArray sensors = rootDet.getJSONArray("results");
 
-                                // Información del contaminante asociado al sensor
-                                JSONObject paramObj = s.getJSONObject("parameter");
+                                // Recorremos sensores de esta estación
+                                for (int j = 0; j < sensors.length(); j++) {
 
-                                // Nombre del contaminante (normalizado a minúsculas)
-                                String paramName =
-                                        paramObj.getString("name").toLowerCase();
+                                    JSONObject s = sensors.getJSONObject(j);
+                                    JSONObject paramObj = s.getJSONObject("parameter");
 
-                                // Unidad de medida del contaminante
-                                String unit =
-                                        paramObj.optString("units", "µg/m³");
+                                    String paramName =
+                                            paramObj.getString("name").toLowerCase();
 
-                                // Se obtiene la última medición disponible del sensor
-                                if (s.has("latest") && !s.isNull("latest")) {
-                                    JSONObject latest = s.getJSONObject("latest");
-                                    double val = latest.getDouble("value");
+                                    String unit =
+                                            paramObj.optString("units", "µg/m³");
 
-                                    // Asignación del valor al campo correspondiente
-                                    // Se utilizan contains() para cubrir variaciones
-                                    // de nomenclatura en la API
-                                    if (paramName.contains("no2")
-                                            || paramName.contains("nitrogen")) {
-                                        est.no2 = val;
-                                        est.unidadNO2 = unit;
+                                    // Última medición del sensor
+                                    if (s.has("latest") && !s.isNull("latest")) {
 
-                                    } else if (paramName.contains("o3")
-                                            || paramName.contains("ozone")) {
-                                        est.o3 = val;
-                                        est.unidadO3 = unit;
+                                        JSONObject latest = s.getJSONObject("latest");
+                                        double val = latest.getDouble("value");
 
-                                    } else if (paramName.contains("co")
-                                            || paramName.contains("carbon")) {
-                                        est.co = val;
-                                        est.unidadCO = unit;
+                                        // Asignación según contaminante
+                                        if (paramName.contains("no2")
+                                                || paramName.contains("nitrogen")) {
 
-                                    } else if (paramName.contains("so2")
-                                            || paramName.contains("sulfur")) {
-                                        est.so2 = val;
-                                        est.unidadSO2 = unit;
+                                            est.no2 = val;
+                                            est.unidadNO2 = unit;
+
+                                        } else if (paramName.contains("o3")
+                                                || paramName.contains("ozone")) {
+
+                                            est.o3 = val;
+                                            est.unidadO3 = unit;
+
+                                        } else if (paramName.contains("co")
+                                                || paramName.contains("carbon")) {
+
+                                            est.co = val;
+                                            est.unidadCO = unit;
+
+                                        } else if (paramName.contains("so2")
+                                                || paramName.contains("sulfur")) {
+
+                                            est.so2 = val;
+                                            est.unidadSO2 = unit;
+                                        }
                                     }
                                 }
                             }
-                        }
 
-                    } catch (Exception ex) {
-                        // Si falla la descarga del detalle de una estación,
-                        // se registra el error pero se continúa con las demás
-                        Log.w(
-                                "OPENAQ",
-                                "Error bajando detalle estación " + est.id
-                        );
-                    }
+                        } catch (Exception ex) {
+                            // Si falla esta estación, no bloquea a las demás
+                            Log.w("OPENAQ", "Error bajando detalle estación " + est.id);
+                        }
+                    });
+
+                    // Guardamos la tarea para esperar luego a que termine
+                    tareas.add(tarea);
 
                     // Se añade la estación (con los datos disponibles) a la lista final
                     listaEstaciones.add(est);
                 }
+
+                // -----------------------------------------------------------
+                // ESPERAR A QUE TODAS LAS DESCARGAS TERMINEN
+                // -----------------------------------------------------------
+                for (Future<?> f : tareas) {
+                    try {
+                        // Bloquea hasta que la tarea termina
+                        f.get();
+                    } catch (Exception ignored) {
+                    }
+                }
+
+                // Cerramos el pool de hilos
+                pool.shutdown();
+
 
                 // -----------------------------------------------------------
                 // PASO 3: Envío del resultado al hilo principal
