@@ -608,9 +608,14 @@ public class MapasActivity extends FuncionesBaseActivity {
         cargarContaminacion("TODOS");
 
         // ----------------  CARGAR ESTACIONES OFICIALES ----------------
-        logica.obtenerEstacionesOficiales(estaciones ->
-                runOnUiThread(() -> pintarEstacionesOficiales(estaciones))
-        );
+        logica.obtenerEstacionesOficiales(estaciones -> {
+            if (estaciones.isEmpty()) {
+                Toast.makeText(this, "No se encontraron estaciones", Toast.LENGTH_SHORT).show();
+            } else {
+                pintarEstacionesOficiales(estaciones);
+                Toast.makeText(this, "Se cargaron " + estaciones.size() + " estaciones", Toast.LENGTH_SHORT).show();
+            }
+        });
         // --------------------------------------------------------------
     }
 
@@ -1291,7 +1296,7 @@ public class MapasActivity extends FuncionesBaseActivity {
 
         return Color.parseColor("#059669");     // Verde
     }
-    
+
     /**
      * @brief Dibuja en el mapa las estaciones oficiales de calidad del aire.
      *
@@ -1317,6 +1322,17 @@ public class MapasActivity extends FuncionesBaseActivity {
 
         // Recorremos todas las estaciones oficiales recibidas
         for (EstacionOficial e : estaciones) {
+
+            // --- LOG PARA VER QUE COÑO SALE ---
+            Log.d("ESTACIONES",
+                    "Estación id=" + e.id +
+                            " nombre=" + e.nombre +
+                            " no2=" + e.no2 +
+                            " o3=" + e.o3 +
+                            " co=" + e.co +
+                            " so2=" + e.so2
+            );
+
 
             // -------------------------------------------------------------
             // 1) Crear marcador asociado al mapa

@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.function.Consumer;
+
 import android.os.Handler;
 import android.os.Looper;
 
@@ -1162,214 +1164,135 @@ public class LogicaFake {
     // ESTACIONES OFICIALES (OpenAQ)
     // =========================================================
 
+
+
     /**
-     * @brief Obtiene estaciones oficiales de calidad del aire desde la API pública OpenAQ.
-     *
-     * Este método realiza una petición HTTP en un hilo secundario para evitar bloquear
-     * el hilo principal.
-     *
-     * @param callback Callback que recibe la lista de estaciones oficiales obtenidas.
-     *                 El método {@code onResult(List<EstacionOficial>)} se ejecuta
-     *                 siempre en el hilo principal.
-     *
-     * @author Alan Guevara Martínez
-     * @date 16/12/2025
+     * @brief Obtiene estaciones y sus datos detalle uno a uno (Estrategia fiable v3).
+     * * 1. Baja la lista de estaciones (limitada a 40 para no saturar).
+     * 2. Recorre la lista y descarga los sensores específicos de cada ID (/locations/{id}/sensors).
+     * 3. Rellena los datos y los envía al mapa.
      */
     public void obtenerEstacionesOficiales(EstacionesCallback callback) {
-        // Handler para poder "hablar" con la interfaz de usuario (UI) desde el hilo de fondo.
         Handler mainHandler = new Handler(Looper.getMainLooper());
 
-        // Iniciamos un nuevo hilo (Thread) porque Android prohíbe conexiones de red en el hilo principal.
         new Thread(() -> {
-            HttpURLConnection conn = null;
             try {
-                // -----------------------------------------------------------------------
-                // 1. CONFIGURACIÓN DE LA URL (FILTRO POR COMUNIDAD VALENCIANA)
-                // -----------------------------------------------------------------------
-                // Usamos el parámetro 'bbox' (Bounding Box) que define un rectángulo de coordenadas:
-                // Formato: min_longitud, min_latitud, max_longitud, max_latitud
-                // Coordenadas aprox. CV: Oest:-2.0, Sur:37.7, Este:0.8, Norte:40.8
-                String urlString = "https://api.openaq.org/v3/locations"
-                        + "?bbox=-2.0,37.7,0.8,40.8"  // Rectángulo de la C. Valenciana
-                        + "&limit=1000"                // Máximo 1000 estaciones (habrá menos)
-                        + "&page=1";                  // Página 1
+                // -----------------------------------------------------------
+                // PASO 1: Obtener lista de estaciones (Chinchetas)
+                // -----------------------------------------------------------
+                // Bajamos a 40 el límite porque vamos a hacer una petición por cada una.
+                String urlLoc = "https://api.openaq.org/v3/locations"
+                        + "?bbox=-2.0,37.7,0.8,40.8"
+                        + "&limit=40";
 
-                URL url = new URL(urlString);
-                conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("GET");
+                Log.d("OPENAQ", "Paso 1: Bajando lista de estaciones...");
+                String jsonLoc = descargarUrl(urlLoc);
 
-                // -----------------------------------------------------------------------
-                // 2. SEGURIDAD Y CABECERAS (HEADERS)
-                // -----------------------------------------------------------------------
-                conn.setRequestProperty("X-API-Key", "3dd56585357ae0bd5b39f7c77852e61d63b0d3ac21f6da1b8befedd154d58e0a");
+                if (jsonLoc == null) return; // Error ya logueado en descargarUrl
 
-                // Indicamos que queremos recibir la respuesta en formato JSON
-                conn.setRequestProperty("Accept", "application/json");
-                conn.setRequestProperty("User-Agent", "AtmosApp/1.0");
+                JSONObject rootLoc = new JSONObject(jsonLoc);
+                JSONArray resultsLoc = rootLoc.getJSONArray("results");
 
-                // -----------------------------------------------------------------------
-                // 3. GESTIÓN DE LA RESPUESTA DEL SERVIDOR
-                // -----------------------------------------------------------------------
-                int responseCode = conn.getResponseCode();
-                InputStream is;
+                List<EstacionOficial> listaEstaciones = new ArrayList<>();
 
-                // Si el código es 200 (OK), leemos la respuesta normal.
-                if (responseCode >= 200 && responseCode < 300) {
-                    is = conn.getInputStream();
-                } else {
-                    // Si hay error (401, 404, 500), leemos el mensaje de error para debuggear.
-                    is = conn.getErrorStream();
-                    String errorMsg = new Scanner(is).useDelimiter("\\A").next();
-                    Log.e("OPENAQ", "Error del servidor (" + responseCode + "): " + errorMsg);
-                    is.close();
-                    return; // Detenemos la ejecución si falló la conexión
-                }
+                Log.d("OPENAQ", "Estaciones encontradas: " + resultsLoc.length() + ". Bajando detalles...");
 
-                // -----------------------------------------------------------------------
-                // 4. PARSING (LECTURA) DEL JSON
-                // -----------------------------------------------------------------------
-                // Convertimos el flujo de datos (Stream) a un String gigante
-                String json = new Scanner(is).useDelimiter("\\A").next();
-
-                // Creamos el objeto raíz JSON
-                JSONObject root = new JSONObject(json);
-                JSONArray results = root.getJSONArray("results"); // Array con las estaciones found
-
-                List<EstacionOficial> lista = new ArrayList<>();
-
-                // Recorremos cada estación encontrada
-                for (int i = 0; i < results.length(); i++) {
-                    JSONObject e = results.getJSONObject(i);
+                // -----------------------------------------------------------
+                // PASO 2: Bucle para bajar el DETALLE de cada estación
+                // -----------------------------------------------------------
+                for (int i = 0; i < resultsLoc.length(); i++) {
+                    JSONObject e = resultsLoc.getJSONObject(i);
                     EstacionOficial est = new EstacionOficial();
 
-                    // ID único de la estación en OpenAQ (clave para pedir mediciones)
+                    // Datos básicos
                     est.id = e.getInt("id");
+                    est.nombre = e.optString("name", "Estación " + est.id);
 
-                    // A. OBTENER NOMBRE
-                    // A veces viene en "name", si no, usamos el ID como respaldo
-                    est.nombre = e.has("name") ? e.getString("name") : "Estación " + e.getInt("id");
+                    JSONObject coords = e.getJSONObject("coordinates");
+                    est.lat = coords.getDouble("latitude");
+                    est.lon = coords.getDouble("longitude");
 
-                    // B. OBTENER COORDENADAS
-                    if (e.has("coordinates")) {
-                        JSONObject coords = e.getJSONObject("coordinates");
-                        est.lat = coords.getDouble("latitude");
-                        est.lon = coords.getDouble("longitude");
+                    // --- AHORA LA MAGIA: Descargamos los sensores de ESTA estación ---
+                    try {
+                        String urlDetalle = "https://api.openaq.org/v3/locations/" + est.id + "/sensors";
+                        String jsonDetalle = descargarUrl(urlDetalle);
+
+                        if (jsonDetalle != null) {
+                            JSONObject rootDet = new JSONObject(jsonDetalle);
+                            JSONArray sensors = rootDet.getJSONArray("results");
+
+                            for (int j = 0; j < sensors.length(); j++) {
+                                JSONObject s = sensors.getJSONObject(j);
+
+                                // Nombre del gas
+                                JSONObject paramObj = s.getJSONObject("parameter");
+                                String paramName = paramObj.getString("name").toLowerCase();
+                                String unit = paramObj.optString("units", "µg/m³");
+
+                                // Valor (latest)
+                                if (s.has("latest") && !s.isNull("latest")) {
+                                    JSONObject latest = s.getJSONObject("latest");
+                                    double val = latest.getDouble("value");
+
+                                    // Rellenamos
+                                    if (paramName.contains("no2") || paramName.contains("nitrogen")) {
+                                        est.no2 = val; est.unidadNO2 = unit;
+                                    } else if (paramName.contains("o3") || paramName.contains("ozone")) {
+                                        est.o3 = val; est.unidadO3 = unit;
+                                    } else if (paramName.contains("co") || paramName.contains("carbon")) {
+                                        est.co = val; est.unidadCO = unit;
+                                    } else if (paramName.contains("so2") || paramName.contains("sulfur")) {
+                                        est.so2 = val; est.unidadSO2 = unit;
+                                    }
+                                }
+                            }
+                        }
+                    } catch (Exception ex) {
+                        Log.w("OPENAQ", "Error bajando detalle estación " + est.id);
                     }
 
-                    // Añadimos la estación ya rellena a la lista
-                    lista.add(est);
+                    // Añadimos a la lista final
+                    listaEstaciones.add(est);
                 }
 
-                // -----------------------------------------------------------------------
-                // 5. VOLVER AL HILO PRINCIPAL (UI THREAD)
-                // -----------------------------------------------------------------------
-                // No podemos tocar la pantalla desde este hilo de fondo.
-                // Usamos el mainHandler para enviar la lista a la actividad principal.
-                mainHandler.post(() -> callback.onResult(lista));
+                // -----------------------------------------------------------
+                // PASO 3: Enviar al mapa
+                // -----------------------------------------------------------
+                Log.d("OPENAQ", "Proceso terminado. Enviando " + listaEstaciones.size() + " estaciones.");
+                mainHandler.post(() -> callback.onResult(listaEstaciones));
 
             } catch (Exception e) {
-                // Capturamos cualquier error (falta de internet, JSON mal formado, etc.)
-                Log.e("OPENAQ", "Excepción fatal: " + e.getMessage(), e);
+                Log.e("OPENAQ", "Error fatal: " + e.getMessage(), e);
             }
         }).start();
     }
 
     /**
-     * @brief Carga las últimas mediciones reales de una estación oficial OpenAQ.
-     *
-     * @details
-     * Consulta el endpoint /v3/measurements usando el ID de la estación
-     * y rellena los valores de contaminantes (NO2, O3, CO, SO2) junto
-     * con sus unidades originales.
-     *
-     * Si una estación no tiene datos recientes, los valores permanecen null.
-     *
-     * @param est Estación oficial a completar.
+     * Método auxiliar para descargar JSON de una URL.
+     * Gestiona la conexión, headers y errores.
      */
-    private void cargarUltimasMedidas(EstacionOficial est) {
-
+    private String descargarUrl(String urlString) {
         HttpURLConnection conn = null;
-
         try {
-            // Endpoint oficial de mediciones OpenAQ v3
-            String urlString =
-                    "https://api.openaq.org/v3/measurements"
-                            + "?location_id=" + est.id
-                            + "&limit=50"
-                            + "&sort=desc";
-
             URL url = new URL(urlString);
             conn = (HttpURLConnection) url.openConnection();
-
-            // Método HTTP
             conn.setRequestMethod("GET");
-
-            // Autenticación OpenAQ v3
-            conn.setRequestProperty(
-                    "X-API-Key",
-                    "TU_API_KEY_AQUI"
-            );
-
-            // Cabeceras recomendadas
+            conn.setRequestProperty("X-API-Key", "3dd56585357ae0bd5b39f7c77852e61d63b0d3ac21f6da1b8befedd154d58e0a");
             conn.setRequestProperty("Accept", "application/json");
-            conn.setRequestProperty("User-Agent", "AtmosApp/1.0");
 
-            // Leer respuesta
-            InputStream is = conn.getInputStream();
-            String json = new Scanner(is).useDelimiter("\\A").next();
-
-            JSONObject root = new JSONObject(json);
-            JSONArray results = root.getJSONArray("results");
-
-            // Recorremos mediciones (ordenadas de más reciente a más antigua)
-            for (int i = 0; i < results.length(); i++) {
-
-                JSONObject r = results.getJSONObject(i);
-
-                String param = r.getString("parameter");
-                double value = r.getDouble("value");
-                String unit = r.getString("unit");
-
-                // Guardamos solo la PRIMERA aparición de cada gas
-                switch (param) {
-                    case "no2":
-                        if (est.no2 == null) {
-                            est.no2 = value;
-                            est.unidadNO2 = unit;
-                        }
-                        break;
-
-                    case "o3":
-                        if (est.o3 == null) {
-                            est.o3 = value;
-                            est.unidadO3 = unit;
-                        }
-                        break;
-
-                    case "co":
-                        if (est.co == null) {
-                            est.co = value;
-                            est.unidadCO = unit;
-                        }
-                        break;
-
-                    case "so2":
-                        if (est.so2 == null) {
-                            est.so2 = value;
-                            est.unidadSO2 = unit;
-                        }
-                        break;
-                }
+            int code = conn.getResponseCode();
+            if (code >= 400) {
+                Log.e("OPENAQ", "Error HTTP " + code + " en: " + urlString);
+                return null;
             }
-
-        } catch (Exception ex) {
-            // Es normal que algunas estaciones no tengan datos recientes
-            Log.w("OPENAQ", "Sin mediciones para estación ID=" + est.id);
+            return new Scanner(conn.getInputStream()).useDelimiter("\\A").next();
+        } catch (Exception e) {
+            Log.e("OPENAQ", "Error red: " + e.getMessage());
+            return null;
         } finally {
             if (conn != null) conn.disconnect();
         }
     }
-
 
     /**
      * @interface EstacionesCallback
