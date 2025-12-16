@@ -1265,6 +1265,14 @@ public class LogicaFake {
                             String paramName = paramObj.getString("name"); // ej: "no2"
                             String unit = paramObj.getString("units");     // ej: "µg/m³"
 
+                            // LOG para ver que devuelve
+                            Log.d("OPENAQ_SENSOR",
+                                    "Estación=" + est.nombre +
+                                            " param=" + paramName +
+                                            " tieneLatest=" + s.has("latest")
+                            );
+
+
                             // Solo procesamos si el sensor tiene un dato reciente ("latest")
                             if (s.has("latest") && !s.isNull("latest")) {
                                 JSONObject latestObj = s.getJSONObject("latest");
