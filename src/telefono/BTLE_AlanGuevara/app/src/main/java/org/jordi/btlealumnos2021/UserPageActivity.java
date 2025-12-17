@@ -101,8 +101,17 @@ public class UserPageActivity extends FuncionesBaseActivity {
         /* ------------ Distancia recorrida ------------ */
         Button btnIniciar = findViewById(R.id.btnIniciarRecorrido);
         Button btnDetener = findViewById(R.id.btnDetenerRecorrido);
+        TextView tvRecorridoHoy = findViewById(R.id.tvRecorridoHoy);
+        TextView tvRecorridoAyer = findViewById(R.id.tvRecorridoAyer);
 
-        recorridoController = new RecorridoController(btnIniciar, btnDetener);
+        // Constructor de la clase RecorridoController
+        recorridoController = new RecorridoController(
+                this,
+                btnIniciar,
+                btnDetener,
+                tvRecorridoHoy,
+                tvRecorridoAyer
+        );
         /* ------------ FIN - Distancia recorrida ------------ */
 
         // ---------------------------------------------------------------
@@ -854,5 +863,23 @@ public class UserPageActivity extends FuncionesBaseActivity {
             // Auto cerrar
             new android.os.Handler().postDelayed(popupWindow::dismiss, 3000);
         });
+    }
+
+    /**
+     * @brief Se ejecuta cuando la actividad es destruida.
+     *
+     * Libera los recursos utilizados por el controlador del recorrido
+     * para evitar fugas de memoria antes de finalizar la actividad.
+     *
+     * @author Alan
+     * @date 2025-12-17
+     */
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        if (recorridoController != null) {
+            recorridoController.liberar();
+        }
     }
 }

@@ -19,6 +19,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.android.volley.Request;
+import com.android.volley.toolbox.JsonObjectRequest;
+import org.json.JSONObject;
 
 /**
  * @file LogicaFake.java
@@ -40,6 +43,7 @@ public class LogicaFake {
     private static final String URL_LOGIN    = "https://nagufor.upv.edu.es/login";
     private static final String URL_VINCULAR = "https://nagufor.upv.edu.es/vincular";
     private static final String URL_DESVINCULAR = "https://nagufor.upv.edu.es/desvincular";
+    private static final String URL_RECORRIDO = "https://nagufor.upv.edu.es/recorrido";
 
     /**
      * @brief Envía al backend una medición (ahora también permite valores promediados).
@@ -1146,4 +1150,107 @@ public class LogicaFake {
     public interface CallbackJSONArray {
         void onResult(JSONArray arr);
     }
+
+    /* ------------------- DISTANCIA RECORRIDA ------------------- */
+    /**
+     * @interface CallbackRecorrido
+     * @brief Callback para devolver el recorrido del usuario (hoy y ayer).
+     *
+     * @author Alan Guevara Martínez
+     * @date 17/12/2025
+     */
+    public interface CallbackRecorrido {
+
+        /**
+         * @brief Respuesta con las distancias de hoy y ayer.
+         *
+         * @param hoy  Metros recorridos hoy
+         * @param ayer Metros recorridos ayer
+         */
+        void onRespuesta(double hoy, double ayer);
+    }
+
+    /**
+     * @brief Envía al backend la distancia acumulada de un recorrido.
+     *
+     * Llama al endpoint POST /recorrido enviando la distancia recorrida
+     * para que el backend la acumule en el día correspondiente.
+     *
+     * @param idUsuario ID del usuario
+     * @param distancia Distancia acumulada en metros
+     * @param queue     Cola Volley para ejecutar la petición
+     *
+     * @author Alan Guevara Martínez
+     * @date 17/12/2025
+     */
+    public static void guardarRecorrido(
+            int idUsuario,
+            double distancia,
+            RequestQueue queue
+    ) {
+
+        try {
+            // Construir el cuerpo JSON
+            JSONObject body = new JSONObject();
+            body.put("id_usuario", idUsuario);
+            body.put("distancia_m", distancia);
+
+            // Crear petición POST
+            JsonObjectRequest req = new JsonObjectRequest(
+                    Request.Method.POST,
+                    URL_RECORRIDO,
+                    body,
+                    r -> {
+                        // Guardado correcto (sin acción adicional)
+                    },
+                    e -> Log.e(TAG, "Error guardando recorrido", e)
+            );
+
+            // Enviar petición
+            queue.add(req);
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error creando JSON de recorrido", e);
+        }
+    }
+
+    /**
+     * @brief Obtiene del backend los metros recorridos hoy y ayer.
+     *
+     * Llama al endpoint GET /recorrido?id_usuario=XX.
+     * En caso de error, devuelve valores 0 para no romper la UI.
+     *
+     * @param idUsuario ID del usuario
+     * @param queue     Cola Volley
+     * @param callback  Callback con (hoy, ayer)
+     *
+     * @author Alan Guevara Martínez
+     * @date 17/12/2025
+     */
+    public static void obtenerRecorrido(
+            int idUsuario,
+            RequestQueue queue,
+            CallbackRecorrido callback
+    ) {
+
+        String url = URL_RECORRIDO + "?id_usuario=" + idUsuario;
+
+        JsonObjectRequest req = new JsonObjectRequest(
+                Request.Method.GET,
+                url,
+                null,
+                r -> {
+                    double hoy = r.optDouble("hoy", 0);
+                    double ayer = r.optDouble("ayer", 0);
+                    callback.onRespuesta(hoy, ayer);
+                },
+                e -> {
+                    Log.e(TAG, "Error obteniendo recorrido", e);
+                    callback.onRespuesta(0, 0);
+                }
+        );
+
+        queue.add(req);
+    }
+    /* ------------------- FIN DISTANCIA RECORRIDA ------------------- */
 }

@@ -683,7 +683,7 @@ class Logica {
             // Convertimos resultado a un mapa: { "2025-11-15": 0.08, ... }
             const mapa = {};
             rows.forEach(r => {
-                mapa[r.fecha.toISOString().substring(0,10)] = Number(r.promedio);
+                mapa[r.fecha.toISOString().substring(0, 10)] = Number(r.promedio);
             });
 
             // Construimos salida en orden cronológico
@@ -780,26 +780,26 @@ class Logica {
     }
 
     // --------------------------------------------------------------------------
-// Autor: Alan Guevara Martínez
-// Fecha: 20/11/2025
-// Método: guardarMedidaYActualizarDistancia()
-// --------------------------------------------------------------------------
-// Descripción:
-//   Inserta una nueva medida en la tabla "medida" (como guardarMedida),
-//   y además actualiza el campo "distancia" de la tabla "placa"
-//   usando el RSSI recibido (ahora se guarda el valor crudo).
-//
-// Parámetros:
-//   - id_placa {string} : identificador de la placa.
-//   - tipo     {number} : tipo de gas.
-//   - valor    {number} : valor medido.
-//   - latitud  {number} : latitud registrada (opcional).
-//   - longitud {number} : longitud registrada (opcional).
-//   - rssi     {number} : intensidad de señal del beacon.
-//
-// Devuelve:
-//   - {Promise<Object>} : fila insertada en "medida".
-// --------------------------------------------------------------------------
+    // Autor: Alan Guevara Martínez
+    // Fecha: 20/11/2025
+    // Método: guardarMedidaYActualizarDistancia()
+    // --------------------------------------------------------------------------
+    // Descripción:
+    //   Inserta una nueva medida en la tabla "medida" (como guardarMedida),
+    //   y además actualiza el campo "distancia" de la tabla "placa"
+    //   usando el RSSI recibido (ahora se guarda el valor crudo).
+    //
+    // Parámetros:
+    //   - id_placa {string} : identificador de la placa.
+    //   - tipo     {number} : tipo de gas.
+    //   - valor    {number} : valor medido.
+    //   - latitud  {number} : latitud registrada (opcional).
+    //   - longitud {number} : longitud registrada (opcional).
+    //   - rssi     {number} : intensidad de señal del beacon.
+    //
+    // Devuelve:
+    //   - {Promise<Object>} : fila insertada en "medida".
+    // --------------------------------------------------------------------------
     async guardarMedidaYActualizarDistancia(
         id_placa,
         tipo,
@@ -1250,17 +1250,17 @@ class Logica {
     }
 
     // --------------------------------------------------------------------------
-// Método: obtenerUltimasMedidasGlobalTodasLasPlacas()
-// Autor: Santiago Fuenmayor Ruiz
-// Fecha: 05/12/2025 (revisado)
-// --------------------------------------------------------------------------
-// Descripción:
-//   Devuelve, para CADA placa que tenga mediciones en la tabla "medida",
-//   las últimas coordenadas y el último valor de cada gas (11,12,13,14)
-//   en UNA única fila por placa.
-//
-//   Solo salen placas que tengan al menos una medida y lat/long no nulas.
-// --------------------------------------------------------------------------
+    // Método: obtenerUltimasMedidasGlobalTodasLasPlacas()
+    // Autor: Santiago Fuenmayor Ruiz
+    // Fecha: 05/12/2025 (revisado)
+    // --------------------------------------------------------------------------
+    // Descripción:
+    //   Devuelve, para CADA placa que tenga mediciones en la tabla "medida",
+    //   las últimas coordenadas y el último valor de cada gas (11,12,13,14)
+    //   en UNA única fila por placa.
+    //
+    //   Solo salen placas que tengan al menos una medida y lat/long no nulas.
+    // --------------------------------------------------------------------------
     async obtenerUltimasMedidasGlobalTodasLasPlacas() {
         const conn = await this.pool.getConnection();
         try {
@@ -1421,9 +1421,9 @@ class Logica {
             conn.release();
         }
     }
-//* --------------------------------------------------------------------------
-//* NOTIFICACIONES
-//* --------------------------------------------------------------------------
+    //* --------------------------------------------------------------------------
+    //* NOTIFICACIONES
+    //* --------------------------------------------------------------------------
     /* --------------------------------------------------------------------------
      * Método: obtenerNotificacionesUsuarioDesdeBD()
      * Lee las notificaciones reales desde la tabla `notificacion`
@@ -1488,15 +1488,15 @@ class Logica {
      *  - icono      {string|null} (p.ej. 'alerta', 'desconexion')
      * -------------------------------------------------------------------------- */
     async insertarNotificacion({
-                                   id_usuario,
-                                   id_placa = null,
-                                   tipo,
-                                   titulo,
-                                   mensaje,
-                                   nivel = "info",
-                                   icono = null,
-                                   estado = 0
-                               }) {
+        id_usuario,
+        id_placa = null,
+        tipo,
+        titulo,
+        mensaje,
+        nivel = "info",
+        icono = null,
+        estado = 0
+    }) {
         const conn = await this.pool.getConnection();
         try {
             const sql = `
@@ -1623,10 +1623,108 @@ class Logica {
         }
     }
 
+    /**
+     * @brief Guarda o acumula la distancia diaria de un usuario.
+     *
+     * Inserta un nuevo registro de recorrido diario para el usuario
+     * o, si ya existe un registro para la misma fecha, acumula
+     * la distancia sumando los metros recorridos.
+     *
+     * Se utiliza principalmente al finalizar un recorrido.
+     *
+     * @param {number} id_usuario   Identificador del usuario.
+     * @param {number} distancia_m  Distancia recorrida en metros.
+     * @param {string|null} fecha   Fecha del recorrido (YYYY-MM-DD).
+     *                              Si es null, se utiliza la fecha actual.
+     *
+     * @author Alan Guevara Martínez
+     * @date   2025-12-17
+     */
+    async guardarRecorridoDiario(id_usuario, distancia_m, fecha = null) {
 
-//* --------------------------------------------------------------------------
-//* NOTIFICACIONES
-//* --------------------------------------------------------------------------
+        // 1. Obtener una conexión del pool
+        const conn = await this.pool.getConnection();
+
+        try {
+
+            // 2. SQL de inserción / actualización
+            //
+            // - Inserta un nuevo recorrido diario
+            // - Si ya existe (id_usuario + fecha):
+            //   acumula la distancia recorrida
+            const sql = `
+            INSERT INTO recorrido_diario (id_usuario, fecha, distancia_m)
+            VALUES (?, COALESCE(?, CURDATE()), ?)
+            ON DUPLICATE KEY UPDATE
+                distancia_m = distancia_m + VALUES(distancia_m)
+        `;
+
+            // 3. Ejecutar la consulta con parámetros
+            await conn.execute(sql, [
+                id_usuario,
+                fecha,
+                distancia_m
+            ]);
+
+        } finally {
+
+            // 4. Liberar la conexión (siempre)
+            conn.release();
+        }
+    }
+
+    /**
+     * @brief Obtiene la distancia recorrida por un usuario hoy y ayer.
+     *
+     * Consulta la tabla de recorridos diarios y devuelve los metros
+     * recorridos en el día actual y en el día anterior.
+     *
+     * Si no existen registros para alguno de los días,
+     * el valor correspondiente será null.
+     *
+     * @param {number} id_usuario Identificador del usuario.
+     *
+     * @returns {Object} Objeto con las distancias:
+     *                   { hoy: number|null, ayer: number|null }
+     *
+     * @author Alan Guevara Martínez
+     * @date   2025-12-17
+     */
+    async obtenerRecorridoHoyYAyer(id_usuario) {
+
+        // 1. Obtener conexión del pool
+        const conn = await this.pool.getConnection();
+
+        try {
+
+            // 2. Consulta SQL
+            //    - Recupera el recorrido de hoy y ayer
+            //    - Usa CURDATE() para trabajar con fechas del servidor
+            const sql = `
+            SELECT
+                SUM(CASE WHEN fecha = CURDATE() THEN distancia_m ELSE 0 END) AS hoy,
+                SUM(CASE WHEN fecha = CURDATE() - INTERVAL 1 DAY THEN distancia_m ELSE 0 END) AS ayer
+            FROM recorrido_diario
+            WHERE id_usuario = ?
+        `;
+
+            // 3. Ejecutar la consulta
+            const [rows] = await conn.execute(sql, [id_usuario]);
+
+            // 4. Devolver resultados normalizados
+            return {
+                hoy: rows[0]?.hoy ?? null,
+                ayer: rows[0]?.ayer ?? null
+            };
+
+        } finally {
+
+            // 5. Liberar la conexión
+            conn.release();
+        }
+    }
+
+    // --------------------------------------------------------------------------
 }
 // --------------------------------------------------------------------------
 // Exportación de la clase
