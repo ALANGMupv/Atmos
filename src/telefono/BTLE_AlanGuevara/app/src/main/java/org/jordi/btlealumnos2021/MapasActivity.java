@@ -25,6 +25,7 @@ import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.modules.MBTilesFileArchive;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.tileprovider.tilesource.XYTileSource;
+import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
@@ -45,6 +46,7 @@ import java.util.List;
  * el usuario ha concedido los permisos necesarios para realizar escaneo BLE en
  * segundo plano. Si no están concedidos, se solicitan al usuario.
  */
+
 public class MapasActivity extends FuncionesBaseActivity {
     /**
      * @brief Variables privadas
@@ -55,24 +57,34 @@ public class MapasActivity extends FuncionesBaseActivity {
     private Runnable tareaBusqueda = null;
     private android.text.TextWatcher watcher;
     private Marker marcadorUsuario = null;
+
     // Overlay encargado de pintar el mapa interpolado de contaminación
     private ContaminacionOverlay overlayContaminacion;
+
     // Acceso a la lógica fake que realiza peticiones a la API y devuelve JSON
     private LogicaFake logica = new LogicaFake();
+
     // Variable global mapa
     private MapView mapa;
+
     // Para que el marcador de ubi no se mueva
     private android.location.Location ultimaLoc = null;
+
     // Variables para evitar recalcular el índice mientras el usuario arrastra el mapa (VA/IBA LENTO TRAS PONER LOS INDICES EN FUNCIONAMIENTO).
     private boolean mapaEnMovimiento = false;
     private final android.os.Handler handlerIndice = new android.os.Handler();
     private Runnable tareaDelayedIndice;
+
     // -----------------------------------------------------------------------
-    // handler para detectar FIN DE MOVIMIENTO
+    // Handler para detectar FIN DE MOVIMIENTO
     private final android.os.Handler handlerMovimiento = new android.os.Handler();
     private Runnable tareaFinMovimiento = null;
     // -----------------------------------------------------------------------
+
     private boolean indiceRecibidoTrasMovimiento = false;
+
+    // Acceso a la clase que se comunica con la API de estaciones
+    private EstacionesMedidaAPI apiEstaciones = new EstacionesMedidaAPI();
 
     /**
      * @param savedInstanceState Estado previo en caso de recreación.
@@ -547,8 +559,29 @@ public class MapasActivity extends FuncionesBaseActivity {
         mapa.setMultiTouchControls(true);
 
         // Configuración de inicio
+        mapa.setMinZoomLevel(4.0);
         mapa.getController().setZoom(14.0);
         mapa.getController().setCenter(new GeoPoint(38.995, -0.160));
+
+        // ---------------------------------------------------------
+        // EVITAR REPETICIÓN INFINITA DEL MAPA (WORLD WRAP)
+        // ---------------------------------------------------------
+        mapa.setHorizontalMapRepetitionEnabled(false);
+        mapa.setVerticalMapRepetitionEnabled(false);
+
+        // ---- LIMITAR DESPLAZAMIENTO ----
+        // Límites geográficos del planeta
+        GeoPoint norteOeste = new GeoPoint(85.0511, -180.0);
+        GeoPoint surEste   = new GeoPoint(-85.0511, 180.0);
+
+        mapa.setScrollableAreaLimitDouble(
+                new BoundingBox(
+                        norteOeste.getLatitude(),
+                        surEste.getLongitude(),
+                        surEste.getLatitude(),
+                        norteOeste.getLongitude()
+                )
+        );
 
         // Botón Mi Ubicación
         findViewById(R.id.btnMiUbicacion).setOnClickListener(v -> pedirUbicacion(mapa));
@@ -608,7 +641,7 @@ public class MapasActivity extends FuncionesBaseActivity {
         cargarContaminacion("TODOS");
 
         // ----------------  CARGAR ESTACIONES OFICIALES ----------------
-        logica.obtenerEstacionesOficiales(estaciones -> {
+        apiEstaciones.obtenerEstacionesOficiales(estaciones -> {
             if (estaciones.isEmpty()) {
                 Toast.makeText(this, "No se encontraron estaciones", Toast.LENGTH_SHORT).show();
             } else {
@@ -1452,6 +1485,20 @@ public class MapasActivity extends FuncionesBaseActivity {
     }
 
     /* ----- FIN SECCIÓN ESTACIONES DE MEDIDA REAL - API https://explore.openaq.org -----*/
+
+    /* Ciclo de vida - Android */
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mapa != null) mapa.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mapa != null) mapa.onPause();
+    }
+    /* Fin Ciclo de vida - Android */
 
     // ---------------------------------------------------------
 }
