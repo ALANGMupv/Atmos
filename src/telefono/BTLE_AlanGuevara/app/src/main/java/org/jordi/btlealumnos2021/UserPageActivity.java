@@ -1,6 +1,5 @@
 package org.jordi.btlealumnos2021;
 
-import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -8,7 +7,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
-import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -21,17 +19,9 @@ import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
-import com.github.mikephil.charting.components.XAxis;
-import com.github.mikephil.charting.components.YAxis;
-import com.github.mikephil.charting.data.BarData;
-import com.github.mikephil.charting.data.BarDataSet;
-import com.github.mikephil.charting.data.BarEntry;
-import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -72,6 +62,9 @@ public class UserPageActivity extends FuncionesBaseActivity {
     // tipo de gas seleccionado en el spinner
     private int tipoSeleccionado = 13;
 
+    // Instancia a la clase recorrido para no añadir más lineas de código aquí
+    private RecorridoController recorridoController;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,7 +81,7 @@ public class UserPageActivity extends FuncionesBaseActivity {
         nombre = SesionManager.obtenerNombre(this);
 
         // ---------------------------------------------------------------
-        // REFERENCIAS A LA TARJETA DE PRIMEDIO Y ULTIMA
+        // REFERENCIAS A LA TARJETA DE PROMEDIO Y ULTIMA
         // ---------------------------------------------------------------
         txtUltimaFecha = findViewById(R.id.tv_ultima_fecha);
         txtPromedioFecha = findViewById(R.id.tv_promedio_fecha);
@@ -105,6 +98,13 @@ public class UserPageActivity extends FuncionesBaseActivity {
         imgPromedioCalidad = findViewById(R.id.img_promedio_calidad);
         imgUltimaCalidad = findViewById(R.id.img_ultima_calidad);
 
+        /* ------------ Distancia recorrida ------------ */
+        Button btnIniciar = findViewById(R.id.btnIniciarRecorrido);
+        Button btnDetener = findViewById(R.id.btnDetenerRecorrido);
+
+        recorridoController = new RecorridoController(btnIniciar, btnDetener);
+        /* ------------ FIN - Distancia recorrida ------------ */
+
         // ---------------------------------------------------------------
         // REFERENCIAS DE LA TARJETA DE LA GRÁFICA
         // ---------------------------------------------------------------
@@ -115,9 +115,9 @@ public class UserPageActivity extends FuncionesBaseActivity {
         TextView btnModoDia = findViewById(R.id.btnModoDia);
         TextView btnModoHora = findViewById(R.id.btnModoHora);
 
-// ---------------------------------------------------------------
-// CREAR HELPER DE GRÁFICA
-// ---------------------------------------------------------------
+    // ---------------------------------------------------------------
+    // CREAR HELPER DE GRÁFICA
+    // ---------------------------------------------------------------
         graficaHelper = new GraficaHelper(
                 this,
                 barChart,
