@@ -15,12 +15,9 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -43,7 +40,6 @@ public class LogicaFake {
     private static final String URL_LOGIN    = "https://nagufor.upv.edu.es/login";
     private static final String URL_VINCULAR = "https://nagufor.upv.edu.es/vincular";
     private static final String URL_DESVINCULAR = "https://nagufor.upv.edu.es/desvincular";
-
 
     /**
      * @brief Envía al backend una medición (ahora también permite valores promediados).
@@ -1150,8 +1146,4 @@ public class LogicaFake {
     public interface CallbackJSONArray {
         void onResult(JSONArray arr);
     }
-
 }
-
-
-

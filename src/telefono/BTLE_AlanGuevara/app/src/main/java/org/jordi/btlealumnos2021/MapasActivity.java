@@ -4,8 +4,10 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -16,12 +18,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 
 import org.json.JSONObject;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.modules.MBTilesFileArchive;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.tileprovider.tilesource.XYTileSource;
+import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
@@ -42,6 +46,7 @@ import java.util.List;
  * el usuario ha concedido los permisos necesarios para realizar escaneo BLE en
  * segundo plano. Si no están concedidos, se solicitan al usuario.
  */
+
 public class MapasActivity extends FuncionesBaseActivity {
     /**
      * @brief Variables privadas
@@ -52,24 +57,34 @@ public class MapasActivity extends FuncionesBaseActivity {
     private Runnable tareaBusqueda = null;
     private android.text.TextWatcher watcher;
     private Marker marcadorUsuario = null;
+
     // Overlay encargado de pintar el mapa interpolado de contaminación
     private ContaminacionOverlay overlayContaminacion;
+
     // Acceso a la lógica fake que realiza peticiones a la API y devuelve JSON
     private LogicaFake logica = new LogicaFake();
+
     // Variable global mapa
     private MapView mapa;
+
     // Para que el marcador de ubi no se mueva
     private android.location.Location ultimaLoc = null;
+
     // Variables para evitar recalcular el índice mientras el usuario arrastra el mapa (VA/IBA LENTO TRAS PONER LOS INDICES EN FUNCIONAMIENTO).
     private boolean mapaEnMovimiento = false;
     private final android.os.Handler handlerIndice = new android.os.Handler();
     private Runnable tareaDelayedIndice;
+
     // -----------------------------------------------------------------------
-    // handler para detectar FIN DE MOVIMIENTO
+    // Handler para detectar FIN DE MOVIMIENTO
     private final android.os.Handler handlerMovimiento = new android.os.Handler();
     private Runnable tareaFinMovimiento = null;
     // -----------------------------------------------------------------------
+
     private boolean indiceRecibidoTrasMovimiento = false;
+
+    // Acceso a la clase que se comunica con la API de estaciones
+    private EstacionesMedidaAPI apiEstaciones = new EstacionesMedidaAPI();
 
     /**
      * @param savedInstanceState Estado previo en caso de recreación.
@@ -544,8 +559,29 @@ public class MapasActivity extends FuncionesBaseActivity {
         mapa.setMultiTouchControls(true);
 
         // Configuración de inicio
+        mapa.setMinZoomLevel(4.0);
         mapa.getController().setZoom(14.0);
         mapa.getController().setCenter(new GeoPoint(38.995, -0.160));
+
+        // ---------------------------------------------------------
+        // EVITAR REPETICIÓN INFINITA DEL MAPA (WORLD WRAP)
+        // ---------------------------------------------------------
+        mapa.setHorizontalMapRepetitionEnabled(false);
+        mapa.setVerticalMapRepetitionEnabled(false);
+
+        // ---- LIMITAR DESPLAZAMIENTO ----
+        // Límites geográficos del planeta
+        GeoPoint norteOeste = new GeoPoint(85.0511, -180.0);
+        GeoPoint surEste   = new GeoPoint(-85.0511, 180.0);
+
+        mapa.setScrollableAreaLimitDouble(
+                new BoundingBox(
+                        norteOeste.getLatitude(),
+                        surEste.getLongitude(),
+                        surEste.getLatitude(),
+                        norteOeste.getLongitude()
+                )
+        );
 
         // Botón Mi Ubicación
         findViewById(R.id.btnMiUbicacion).setOnClickListener(v -> pedirUbicacion(mapa));
@@ -603,6 +639,17 @@ public class MapasActivity extends FuncionesBaseActivity {
 
         // Dibujar mapa desde el principio al incializarlo
         cargarContaminacion("TODOS");
+
+        // ----------------  CARGAR ESTACIONES OFICIALES ----------------
+        apiEstaciones.obtenerEstacionesOficiales(estaciones -> {
+            if (estaciones.isEmpty()) {
+                Toast.makeText(this, "No se encontraron estaciones", Toast.LENGTH_SHORT).show();
+            } else {
+                pintarEstacionesOficiales(estaciones);
+                Toast.makeText(this, "Se encontaron " + estaciones.size() + " estaciones de medida en la Comunitat Valenciana", Toast.LENGTH_SHORT).show();
+            }
+        });
+        // --------------------------------------------------------------
     }
 
     /* -------------------------------------------------------------------------
@@ -972,6 +1019,7 @@ public class MapasActivity extends FuncionesBaseActivity {
     }
 
     /* ----- SECCIÓN PINTAR MAPA ----- */
+
     /**
      * @brief Carga puntos de contaminación desde la API y los envía al overlay.
      *
@@ -1212,5 +1260,245 @@ public class MapasActivity extends FuncionesBaseActivity {
         }
     }
     /* ----- FIN SECCIÓN ACTUALIZAR PANEL ÍNDICES MAPA -----*/
+
+    /* ----- SECCIÓN ESTACIONES DE MEDIDA REAL - API https://explore.openaq.org -----*/
+
+    // --------------------------------------------------------------------------------------
+    /**
+     * @brief Convierte NO₂ a ppm si la unidad viene en µg/m³.
+     *
+     * @details
+     * Las estaciones oficiales (OpenAQ) devuelven valores en µg/m³,
+     * mientras que la normalización interna usa ppm (EPA).
+     * Esta conversión SOLO se aplica a estaciones oficiales.
+     */
+    private double convertirNO2(double v, String u) {
+        if (u != null && u.contains("µg")) {
+            return v / 1880.0;
+        }
+        return v;
+    }
+
+    /**
+     * @brief Convierte O₃ a ppm si la unidad viene en µg/m³.
+     * @details Solo se usa para estaciones oficiales.
+     */
+    private double convertirO3(double v, String u) {
+        if (u != null && u.contains("µg")) {
+            return v / 2000.0;
+        }
+        return v;
+    }
+
+    /**
+     * @brief Convierte SO₂ a ppm si la unidad viene en µg/m³.
+     * @details Solo se usa para estaciones oficiales.
+     */
+    private double convertirSO2(double v, String u) {
+        if (u != null && u.contains("µg")) {
+            return v / 2620.0;
+        }
+        return v;
+    }
+
+    /**
+     * @brief Convierte CO a ppm si la unidad viene en µg/m³.
+     * @details Solo se aplica a estaciones oficiales (OpenAQ).
+     */
+    private double convertirCO(double v, String u) {
+        if (u != null && u.contains("µg")) {
+            return v / 1145.0; // µg/m³ → ppm
+        }
+        return v;
+    }
+    // --------------------------------------------------------------------------------------
+
+    /**
+     * @brief Calcula el nivel de contaminación de una estación oficial.
+     *
+     * @details
+     * Convierte las unidades si es necesario y devuelve el peor
+     * nivel normalizado entre los contaminantes disponibles.
+     * No afecta al mapa interpolado ni al índice global.
+     */
+    private double calcularNivelEstacion(EstacionOficial e) {
+
+        double peor = 0.0;
+
+        if (e.no2 != null)
+            peor = Math.max(peor, normal(convertirNO2(e.no2, e.unidadNO2), 11));
+
+        if (e.o3 != null)
+            peor = Math.max(peor, normal(convertirO3(e.o3, e.unidadO3), 13));
+
+        if (e.so2 != null)
+            peor = Math.max(peor, normal(convertirSO2(e.so2, e.unidadSO2), 14));
+
+        if (e.co != null)
+            peor = Math.max(peor, normal(convertirCO(e.co, e.unidadCO), 12));
+
+        return peor;
+    }
+
+    /**
+     * @brief Devuelve el color visual asociado al nivel de contaminación.
+     *
+     * Si no hay datos disponibles, la estación se muestra en gris.
+     *
+     * @param nivel Nivel normalizado (0 a 1).
+     * @return Color ARGB para el marcador.
+     */
+    private int colorPorNivel(double nivel) {
+
+        // Sin datos reales
+        if (nivel <= 0.0) {
+            return Color.parseColor("#9CA3AF"); // Gris
+        }
+
+        if (nivel >= 1.0) {
+            return Color.parseColor("#DC2626"); // Roja
+        }
+
+        if (nivel >= 0.75) {
+            return Color.parseColor("#EA580C"); // Naranja
+        }
+
+        if (nivel >= 0.45) {
+            return Color.parseColor("#CA8A04"); // Amarillo
+        }
+
+        return Color.parseColor("#059669");     // Verde
+    }
+
+    /**
+     * @brief Dibuja en el mapa las estaciones oficiales de calidad del aire.
+     *
+     * @details
+     * Para cada estación:
+     *  - Se crea un marcador en su posición geográfica.
+     *  - Se calcula el nivel de contaminación predominante
+     *    (peor gas disponible según la API).
+     *  - Se colorea el marcador según dicho nivel.
+     *  - Se muestra un popup con los valores EXACTOS de la API,
+     *    incluyendo sus unidades originales.
+     *
+     * Este método NO modifica el mapa interpolado ni los datos del backend.
+     *
+     * @param estaciones Lista de estaciones oficiales obtenidas desde la API.
+     *
+     * @author Alan Guevara Martínez
+     * @date 16/12/2025
+     */
+    private void pintarEstacionesOficiales(List<EstacionOficial> estaciones) {
+
+        Log.d("ESTACIONES", "Número de estaciones recibidas: " + estaciones.size());
+
+        // Recorremos todas las estaciones oficiales recibidas
+        for (EstacionOficial e : estaciones) {
+
+            // --- LOG PARA VER QUE COÑO SALE ---
+            Log.d("ESTACIONES",
+                    "Estación id=" + e.id +
+                            " nombre=" + e.nombre +
+                            " no2=" + e.no2 +
+                            " o3=" + e.o3 +
+                            " co=" + e.co +
+                            " so2=" + e.so2
+            );
+
+
+            // -------------------------------------------------------------
+            // 1) Crear marcador asociado al mapa
+            // -------------------------------------------------------------
+            Marker m = new Marker(mapa);
+
+            // Posición geográfica de la estación
+            m.setPosition(new GeoPoint(e.lat, e.lon));
+
+            // Anclaje del icono (centrado horizontal, punta inferior)
+            m.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+
+            // -------------------------------------------------------------
+            // 2) Calcular nivel predominante de la estación
+            //    (peor gas según API oficial)
+            // -------------------------------------------------------------
+            double nivel = calcularNivelEstacion(e);
+
+            // Obtener color visual según nivel
+            int color = colorPorNivel(nivel);
+
+            // Icono base de estación oficial
+            Drawable icono = ContextCompat.getDrawable(
+                    this,
+                    R.drawable.marker_estacion_oficial
+            );
+
+            // Aplicar color al icono según el nivel de contaminación
+            if (icono != null) {
+                icono.setTint(color);
+                m.setIcon(icono);
+            }
+
+            // -------------------------------------------------------------
+            // 3) Configurar popup de información
+            // -------------------------------------------------------------
+
+            // Título del popup (nombre de la estación)
+            m.setTitle(e.nombre);
+
+            // Texto del popup con valores y UNIDADES de la API
+            m.setSnippet(
+                    "NO₂: " + valor(e.no2, e.unidadNO2) + "\n" +
+                            "O₃: "  + valor(e.o3,  e.unidadO3)  + "\n" +
+                            "CO: "  + valor(e.co,  e.unidadCO)  + "\n" +
+                            "SO₂: " + valor(e.so2, e.unidadSO2)
+            );
+
+            // -------------------------------------------------------------
+            // 4) Añadir marcador al mapa
+            // -------------------------------------------------------------
+            mapa.getOverlays().add(m);
+        }
+
+        // Forzar repintado del mapa para mostrar los nuevos marcadores
+        mapa.invalidate();
+    }
+
+    /**
+     * @brief Formatea un valor de contaminante junto a su unidad.
+     *
+     * @param v Valor del contaminante.
+     * @param u Unidad proporcionada por la API.
+     * @return Cadena lista para mostrar en el popup.
+     */
+    private String valor(Double v, String u) {
+
+        if (v == null) {
+            return "—";
+        }
+
+        if (u == null) {
+            return v.toString();
+        }
+
+        return v + " " + u;
+    }
+
+    /* ----- FIN SECCIÓN ESTACIONES DE MEDIDA REAL - API https://explore.openaq.org -----*/
+
+    /* Ciclo de vida - Android */
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mapa != null) mapa.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mapa != null) mapa.onPause();
+    }
+    /* Fin Ciclo de vida - Android */
+
     // ---------------------------------------------------------
 }
