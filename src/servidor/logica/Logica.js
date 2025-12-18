@@ -1647,11 +1647,18 @@ class Logica {
 
         try {
 
-            // 2. SQL de inserción / actualización
-            //
-            // - Inserta un nuevo recorrido diario
-            // - Si ya existe (id_usuario + fecha):
-            //   acumula la distancia recorrida
+            /* -- VALUES define los valores a insertar:
+            -- 1er ?  → id_usuario (lo pasas desde el código)
+            -- 2º ?  → fecha (opcional)
+            -- COALESCE(?, CURDATE()):
+            --    - si el parámetro fecha NO es NULL → usa esa fecha
+            --    - si es NULL → usa la fecha actual del sistema (CURDATE())
+            -- 3er ? → distancia_m
+            -- En caso de duplicado:
+            -- - no se crea una nueva fila
+            -- - se actualiza la existente
+            -- - suma la distancia nueva a la ya almacenada*/
+
             const sql = `
             INSERT INTO recorrido_diario (id_usuario, fecha, distancia_m)
             VALUES (?, COALESCE(?, CURDATE()), ?)
@@ -1668,7 +1675,7 @@ class Logica {
 
         } finally {
 
-            // 4. Liberar la conexión (siempre)
+            // 4. Liberar la conexión
             conn.release();
         }
     }
@@ -1697,9 +1704,11 @@ class Logica {
 
         try {
 
-            // 2. Consulta SQL
-            //    - Recupera el recorrido de hoy y ayer
-            //    - Usa CURDATE() para trabajar con fechas del servidor
+            /*   -- Suma la distancia SOLO de las filas cuya fecha sea hoy
+                -- Si la fecha no es hoy, aporta 0 a la suma
+                -- El resultado se devuelve con el alias "hoy"
+                --Lo mimso para ayer, el ? se le pasa desde el código (id_usuario)*/
+
             const sql = `
             SELECT
                 SUM(CASE WHEN fecha = CURDATE() THEN distancia_m ELSE 0 END) AS hoy,

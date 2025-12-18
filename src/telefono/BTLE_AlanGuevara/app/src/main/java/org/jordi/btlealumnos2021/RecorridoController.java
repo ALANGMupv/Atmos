@@ -25,9 +25,6 @@ import com.android.volley.toolbox.Volley;
  *  - Comunicación con el backend para obtener recorridos históricos
  *  - Actualización dinámica de los componentes de la interfaz
  *
- * De este modo se desacopla la Activity de la lógica de control,
- * facilitando el mantenimiento y la reutilización del código.
- *
  * @author Alan Guevara Martínez
  * @date 17/12/2025
  * @version 1.0
@@ -51,6 +48,13 @@ public class RecorridoController {
 
     /** Receiver encargado de recibir actualizaciones en tiempo real del servicio GPS */
     private BroadcastReceiver recorridoReceiver;
+
+    /** Receiver que detecta la detención del servicio */
+    private BroadcastReceiver stopReceiver;
+
+    /** Última distancia válida mostrada en pantalla */
+    private double ultimoValorMostradoHoy = -1; // Para que no se muestre 0 por error si algo falla
+
 
     /**
      * @brief Constructor del controlador.
@@ -97,26 +101,69 @@ public class RecorridoController {
         btnIniciar.setOnClickListener(v -> iniciarRecorrido());
         btnDetener.setOnClickListener(v -> detenerRecorrido());
 
-        // Receiver para recibir actualizaciones periódicas del servicio GPS
+        // ------------------------------------------------------------------
+        // Receiver para recibir ACTUALIZACIONES EN TIEMPO REAL del recorrido
+        // desde el ServicioRecorridoGPS mientras el usuario camina.
+        // ------------------------------------------------------------------
         recorridoReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
 
-                double total = intent.getDoubleExtra("distancia_total", 0);
+                // Distancia total acumulada enviada por el servicio
+                double total = intent.getDoubleExtra("distancia_total", -1);
 
-                // Actualización de la interfaz con la distancia acumulada
+                // Protección básica: si llega un valor inválido, no tocamos la UI
+                if (total < 0) {
+                    Log.w("RecorridoController",
+                            "Distancia inválida recibida en UI");
+                    return;
+                }
+
+                // Actualización inmediata del TextView (tiempo real)
                 tvHoy.setText("Recorrido de hoy: " + (int) total + " m");
+                ultimoValorMostradoHoy = total;
 
                 Log.d("RecorridoController",
                         "UI actualizada en tiempo real: " + total + " m");
             }
         };
 
-        // Registro del receiver para escuchar los broadcasts del servicio
+        // Registro del receiver para escuchar los broadcasts del servicio GPS
         context.registerReceiver(
                 recorridoReceiver,
                 new IntentFilter(ServicioRecorridoGPS.ACTION_RECorrido_UPDATE)
         );
+
+
+        // Receiver para detectar cuando el servicio se detiene desde notificación
+        stopReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+
+                Log.d("RecorridoController", "Servicio detenido detectado en UI");
+
+                // Volver al estado inicial del botón
+                btnDetener.setVisibility(View.GONE);
+                btnIniciar.setVisibility(View.VISIBLE);
+
+                // Refrescar datos finales
+                cargarRecorrido();
+            }
+        };
+
+        context.registerReceiver(
+                stopReceiver,
+                new IntentFilter(ServicioRecorridoGPS.ACTION_SERVICIO_DETENIDO)
+        );
+
+        // Sincronizar botones con el estado real del servicio
+        if (ServicioRecorridoGPS.isRunning()) {
+            btnIniciar.setVisibility(View.GONE);
+            btnDetener.setVisibility(View.VISIBLE);
+        } else {
+            btnDetener.setVisibility(View.GONE);
+            btnIniciar.setVisibility(View.VISIBLE);
+        }
     }
 
     /**
@@ -173,7 +220,14 @@ public class RecorridoController {
                     @Override
                     public void onRespuesta(double hoy, double ayer) {
 
-                        tvHoy.setText("Recorrido de hoy: " + (int) hoy + " m");
+                        // Protección: evitar sobrescribir con 0 si ya hay datos válidos
+                        if (hoy > 0 || ultimoValorMostradoHoy < 0) {
+                            tvHoy.setText("Recorrido de hoy: " + (int) hoy + " m");
+                            ultimoValorMostradoHoy = hoy;
+                        } else {
+                            Log.w("RecorridoController",
+                                    "Respuesta 0 ignorada para evitar borrar la UI");
+                        }
                         tvAyer.setText("Ayer: " + (int) ayer + " m");
                     }
                 }
@@ -190,9 +244,9 @@ public class RecorridoController {
     public void liberar() {
         try {
             context.unregisterReceiver(recorridoReceiver);
-            Log.d("RecorridoController", "Receiver liberado");
+            context.unregisterReceiver(stopReceiver);
+            Log.d("RecorridoController", "Receivers liberados");
         } catch (Exception ignored) {
-            // Evita fallo si el receiver ya estaba desregistrado
         }
     }
 }

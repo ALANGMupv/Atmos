@@ -11,7 +11,7 @@
  *   - obtenerEstadoPlaca()
  *   - obtenerEstadoSenal()
  * @author Alan Guevara Martínez
- * @date 15/12/2025 (Actualizado)
+ * @date 18/12/2025 (Actualizado)
  * .............................................................................
  */
 

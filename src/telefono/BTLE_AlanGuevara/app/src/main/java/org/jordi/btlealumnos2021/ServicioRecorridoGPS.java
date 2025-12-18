@@ -34,7 +34,6 @@ import com.google.android.gms.location.*;
  *
  * @author Alan Guevara Martínez
  * @date 17/12/2025
- * @version 1.0
  */
 public class ServicioRecorridoGPS extends Service {
 
@@ -67,6 +66,27 @@ public class ServicioRecorridoGPS extends Service {
             "org.jordi.btlealumnos2021.RECORRIDO_UPDATE";
 
     /**
+     * Indica si el servicio de recorrido está actualmente en ejecución.
+     * Se usa para sincronizar el estado de la UI al volver a la Activity.
+     */
+    private static boolean servicioActivo = false;
+
+    /**
+     * Acción broadcast enviada cuando el servicio se detiene completamente.
+     * Permite a la UI sincronizar su estado (botón iniciar/detener).
+     */
+    public static final String ACTION_SERVICIO_DETENIDO =
+            "org.jordi.btlealumnos2021.RECORRIDO_STOPPED";
+
+
+    /**
+     * Permite consultar desde fuera si el servicio está activo.
+     */
+    public static boolean isRunning() {
+        return servicioActivo;
+    }
+
+    /**
      * Método invocado al iniciar el servicio.
      *
      * Configura el servicio como primer plano, crea el canal
@@ -83,13 +103,13 @@ public class ServicioRecorridoGPS extends Service {
 
         Log.d(TAG, "Servicio iniciado");
 
+        // Marcar servicio como activo
+        servicioActivo = true;
+
         crearCanal();
         startForeground(NOTIF_ID, crearNotificacion());
 
-        // Inicialización de la distancia acumulada desde backend
         inicializarDistanciaAcumulada();
-
-        // Inicio de la localización GPS
         iniciarLocalizacion();
 
         return START_STICKY;
@@ -120,9 +140,11 @@ public class ServicioRecorridoGPS extends Service {
         }
 
         LocationRequest request = LocationRequest.create()
-                .setInterval(15_000)
-                .setFastestInterval(10_000)
+                .setInterval(2000)
+                .setFastestInterval(1000)
+                .setSmallestDisplacement(1.0f)
                 .setPriority(Priority.PRIORITY_HIGH_ACCURACY);
+
 
         // Callback que procesa las localizaciones recibidas
         locationCallback = new LocationCallback() {
@@ -170,66 +192,98 @@ public class ServicioRecorridoGPS extends Service {
                 + nueva.getLongitude()
                 + " | Accuracy: " + nueva.getAccuracy());
 
-        // Descartar localizaciones poco precisas
-        if (nueva.getAccuracy() > 20) {
-            Log.w(TAG, "Localización descartada por baja precisión");
+        // ------------------------------------------------------------------
+        // Filtro de precisión GPS
+        //    Si la precisión es peor de 15 metros, se descarta la lectura
+        //    porque puede generar saltos falsos en la distancia.
+        // ------------------------------------------------------------------
+        if (nueva.getAccuracy() > 15) {
+            Log.w(TAG,
+                    "Localización descartada por baja precisión: "
+                            + nueva.getAccuracy());
             return;
         }
 
-        if (ultimaLocalizacion != null) {
-
-            double incremento = ultimaLocalizacion.distanceTo(nueva);
-
-            // Descartar movimientos irreales
-            if (incremento < 1) {
-                Log.w(TAG, "Incremento < 1 m descartado");
-                return;
-            }
-
-            if (incremento > 10) {
-                Log.w(TAG, "Salto irreal descartado: " + incremento + " m");
-                return;
-            }
-
-            // Usuario parado
-            if (nueva.hasSpeed() && nueva.getSpeed() < 0.3f) {
-                return;
-            }
-
-            distanciaAcumulada += incremento;
-
-            int idUsuario = SesionManager.obtenerIdUsuario(this);
-
-            Log.d(TAG, "Incremento aceptado: " + incremento + " m");
-            Log.d(TAG,
-                    "Total acumulado (local): "
-                            + distanciaAcumulada + " m");
-
-            if (idUsuario > 0) {
-
-                // Guardado incremental en backend
-                LogicaFake.guardarRecorrido(
-                        idUsuario,
-                        incremento,
-                        Volley.newRequestQueue(this)
-                );
-
-                Log.d(TAG, "Incremento enviado al backend");
-
-                // Broadcast para actualización inmediata de la UI
-                Intent intent = new Intent(ACTION_RECorrido_UPDATE);
-                intent.putExtra("distancia_total", distanciaAcumulada);
-                sendBroadcast(intent);
-
-                Log.d(TAG,
-                        "Broadcast enviado. Distancia total: "
-                                + distanciaAcumulada);
-            }
-
-        } else {
-            Log.d(TAG, "Primera localización válida recibida");
+        // ------------------------------------------------------------------
+        // Primera localización válida
+        //    No se puede calcular distancia todavía porque no hay
+        //    un punto anterior con el que comparar.
+        // ------------------------------------------------------------------
+        if (ultimaLocalizacion == null) {
+            ultimaLocalizacion = nueva;
+            Log.d(TAG, "Primera localización válida registrada");
+            return;
         }
 
+        // ------------------------------------------------------------------
+        // Cálculo del incremento real de distancia
+        //    Se calcula la distancia entre la última localización válida
+        //    y la nueva localización recibida.
+        // ------------------------------------------------------------------
+        double incremento = ultimaLocalizacion.distanceTo(nueva);
+
+        // ------------------------------------------------------------------
+        // Filtro de ruido
+        //    Incrementos demasiado pequeños (< 0.8 m) suelen ser ruido
+        //    del GPS cuando el usuario está parado o se mueve muy poco.
+        // ------------------------------------------------------------------
+        if (incremento < 0.8) {
+            Log.d(TAG,
+                    "Incremento demasiado pequeño descartado: "
+                            + incremento + " m");
+            return;
+        }
+
+        // ------------------------------------------------------------------
+        // Filtro de saltos irreales
+        //    Incrementos grandes (> 8 m) en poco tiempo suelen indicar
+        //    errores del GPS (rebotes o cambios bruscos de señal).
+        // ------------------------------------------------------------------
+        if (incremento > 8) {
+            Log.w(TAG,
+                    "Salto GPS descartado: "
+                            + incremento + " m");
+            return;
+        }
+
+        // ------------------------------------------------------------------
+        // Incremento válido
+        //    Se suma la distancia al total acumulado del día.
+        // ------------------------------------------------------------------
+        distanciaAcumulada += incremento;
+
+        int idUsuario = SesionManager.obtenerIdUsuario(this);
+
+        Log.d(TAG, "Incremento aceptado: " + incremento + " m");
+        Log.d(TAG,
+                "Total acumulado (local): "
+                        + distanciaAcumulada + " m");
+
+        if (idUsuario > 0) {
+
+            // Guardado incremental en backend
+            LogicaFake.guardarRecorrido(
+                    idUsuario,
+                    incremento,
+                    Volley.newRequestQueue(this)
+            );
+
+            Log.d(TAG, "Incremento enviado al backend");
+
+            // Broadcast para actualización inmediata de la UI
+            Intent intent = new Intent(ACTION_RECorrido_UPDATE);
+            intent.putExtra("distancia_total", distanciaAcumulada);
+            sendBroadcast(intent);
+
+            Log.d(TAG,
+                    "Broadcast enviado. Distancia total: "
+                            + distanciaAcumulada);
+        }
+
+        // ------------------------------------------------------------------
+        // Actualización de la última localización válida
+        //    Solo se actualiza cuando el incremento ha sido aceptado.
+        // ------------------------------------------------------------------
         ultimaLocalizacion = nueva;
     }
 
@@ -244,13 +298,21 @@ public class ServicioRecorridoGPS extends Service {
 
         Log.d(TAG, "Servicio detenido");
 
+        // Marcar servicio como inactivo
+        servicioActivo = false;
+
         if (fusedClient != null && locationCallback != null) {
             fusedClient.removeLocationUpdates(locationCallback);
             Log.d(TAG, "LocationUpdates eliminados");
         }
 
+        // Avisar a la UI de que el servicio se ha detenido
+        Intent intent = new Intent(ACTION_SERVICIO_DETENIDO);
+        sendBroadcast(intent);
+
         super.onDestroy();
     }
+
 
     /**
      * Servicio no enlazable.
