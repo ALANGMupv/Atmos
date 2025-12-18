@@ -681,7 +681,7 @@ public class MapasActivity extends FuncionesBaseActivity {
                     ultimaLoc.getLongitude()
             );
 
-            mapa.getController().setZoom(18.0);
+            mapa.getController().setZoom(17.0);
             mapa.getController().animateTo(p);
 
             if (marcadorUsuario == null) {
@@ -719,7 +719,7 @@ public class MapasActivity extends FuncionesBaseActivity {
             ultimaLoc = loc; // MUY IMPORTANTE: sincronizar
 
             GeoPoint p = new GeoPoint(loc.getLatitude(), loc.getLongitude());
-            mapa.getController().setZoom(18.0);
+            mapa.getController().setZoom(17.0);
             mapa.getController().animateTo(p);
 
             if (marcadorUsuario == null) {
@@ -818,7 +818,7 @@ public class MapasActivity extends FuncionesBaseActivity {
                 runOnUiThread(() -> {
 
                     // Centramos el mapa y ajustamos el zoom
-                    mapa.getController().setZoom(17.0);
+                    mapa.getController().setZoom(16.0);
                     mapa.getController().animateTo(destino);
 
                     Toast.makeText(this, "Ubicación encontrada", Toast.LENGTH_SHORT).show();
@@ -1262,7 +1262,6 @@ public class MapasActivity extends FuncionesBaseActivity {
     /* ----- FIN SECCIÓN ACTUALIZAR PANEL ÍNDICES MAPA -----*/
 
     /* ----- SECCIÓN ESTACIONES DE MEDIDA REAL - API https://explore.openaq.org -----*/
-
     // --------------------------------------------------------------------------------------
     /**
      * @brief Convierte NO₂ a ppm si la unidad viene en µg/m³.
@@ -1355,12 +1354,8 @@ public class MapasActivity extends FuncionesBaseActivity {
             return Color.parseColor("#9CA3AF"); // Gris
         }
 
-        if (nivel >= 1.0) {
-            return Color.parseColor("#DC2626"); // Roja
-        }
-
         if (nivel >= 0.75) {
-            return Color.parseColor("#EA580C"); // Naranja
+            return Color.parseColor("#DC2626"); // Roja
         }
 
         if (nivel >= 0.45) {

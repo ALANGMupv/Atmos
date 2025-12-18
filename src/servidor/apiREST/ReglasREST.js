@@ -1230,6 +1230,116 @@ function reglasREST(logica) {
         }
     });
 
+    /**
+     * @route   POST /recorrido
+     * @brief   Registra el recorrido diario de un usuario.
+     *
+     * Este endpoint recibe la distancia recorrida por un usuario en un día
+     * concreto y la almacena en el sistema. Se utiliza para guardar el total
+     * de metros recorridos al finalizar un recorrido o al cerrar la sesión.
+     *
+     * ---
+     * 
+     * @param {number} id_usuario   Identificador único del usuario.
+     * @param {number} distancia_m  Distancia recorrida en metros.
+     * @param {string} [fecha]      Fecha opcional del recorrido (YYYY-MM-DD).
+     *                              Si no se envía, el backend usará la fecha actual.
+     *
+     * @returns {Object} JSON con el estado de la operación.
+     * @returns {string} status     "ok" si el recorrido se ha guardado correctamente.
+     *
+     * @throws {400} Datos incompletos si faltan parámetros obligatorios.
+     * @throws {500} Error interno del servidor si ocurre una excepción.
+     *
+     * @author  Alan Guevara Martínez
+     * @date    2025-12-17
+     */
+    router.post("/recorrido", async (req, res) => {
+
+        try {
+
+            // 1. Extraer los datos del cuerpo de la petición
+            const { id_usuario, distancia_m, fecha } = req.body;
+
+            // 2. Validación básica de parámetros obligatorios
+            if (!id_usuario || distancia_m === undefined) {
+                return res.status(400).json({
+                    error: "Datos incompletos"
+                });
+            }
+
+            // 3. Guardar el recorrido diario
+            //    - Si fecha es null, la lógica asignará la fecha actual
+            await logica.guardarRecorridoDiario(
+                id_usuario,
+                distancia_m,
+                fecha || null
+            );
+
+            // 4. Respuesta correcta al cliente
+            res.json({
+                status: "ok"
+            });
+
+        } catch (err) {
+
+            // 5. Manejo de errores inesperados
+            console.error("Error POST /recorrido:", err);
+
+            res.status(500).json({
+                error: "Error interno"
+            });
+        }
+    });
+
+    /**
+     * @route   GET /recorrido
+     * @brief   Obtiene la distancia recorrida por un usuario hoy y ayer.
+     *
+     * Consulta la capa de lógica para recuperar los metros recorridos
+     * en el día actual y el día anterior. Si no existen datos para
+     * alguno de los días, se devuelve 0.
+     *
+     * @param {number} id_usuario  Identificador del usuario (query).
+     *
+     * @returns {Object} JSON con el estado y las distancias.
+     * @returns {string} status   "ok" si la operación es correcta.
+     * @returns {number} hoy      Metros recorridos hoy.
+     * @returns {number} ayer     Metros recorridos ayer.
+     *
+     * @throws {500} Error interno del servidor.
+     *
+     * @author  Alan Guevara Martínez
+     * @date    2025-12
+     */
+    router.get("/recorrido", async (req, res) => {
+
+        try {
+
+            // 1. Obtener el identificador del usuario desde la query
+            const { id_usuario } = req.query;
+
+            // 2. Consultar la capa de lógica para obtener los recorridos
+            //    del día actual y del día anterior
+            const datos = await logica.obtenerRecorridoHoyYAyer(id_usuario);
+
+            // 3. Responder al cliente
+            //    - Si no hay datos, se devuelven 0 metros
+            res.json({
+                status: "ok",
+                hoy: datos.hoy || 0,
+                ayer: datos.ayer || 0
+            });
+
+        } catch (err) {
+
+            // 4. Manejo de errores inesperados
+            res.status(500).json({
+                error: "Error interno"
+            });
+        }
+    });
+
     // --------------------------------------------------------------------------
     //  Devolvemos el router con todas las rutas activas
     // --------------------------------------------------------------------------

@@ -119,6 +119,17 @@
         <activity
             android:name=".ActividadInicio"
             android:exported="false"/>
+
+        <service
+            android:name=".ServicioRecorridoGPS"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="location" />
+
+        <receiver
+            android:name=".RecorridoStopReceiver"
+            android:exported="false" />
+
     </application>
 
 </manifest>

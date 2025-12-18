@@ -173,6 +173,78 @@
                     </LinearLayout>
 
                     <!-- =====================================================
+                    PANEL RECORRIDO
+                    ===================================================== -->
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/cardRecorrido"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="8dp"
+                        app:cardCornerRadius="18dp"
+                        app:cardElevation="6dp"
+                        app:cardUseCompatPadding="true">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:padding="12dp">
+
+                            <!-- TEXTO IZQUIERDA -->
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:id="@+id/tvRecorridoHoy"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Recorrido de hoy: 100 m"
+                                    android:textSize="15sp"
+                                    android:textStyle="bold"
+                                    android:textColor="@color/black"/>
+
+                                <TextView
+                                    android:id="@+id/tvRecorridoAyer"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Ayer: 85 m"
+                                    android:textSize="13sp"
+                                    android:textColor="#777"
+                                    android:layout_marginTop="4dp"/>
+                            </LinearLayout>
+
+                            <!-- BOTÓN INICIAR -->
+                            <Button
+                                android:id="@+id/btnIniciarRecorrido"
+                                android:layout_width="104dp"
+                                android:layout_height="38dp"
+                                android:background="@drawable/btn_redondo_verde"
+                                android:text="Iniciar"
+                                android:textColor="@color/white"
+                                android:textSize="13sp"/>
+
+                            <!-- BOTÓN DETENER -->
+                            <Button
+                                android:id="@+id/btnDetenerRecorrido"
+                                android:layout_width="104dp"
+                                android:layout_height="38dp"
+                                android:background="@drawable/btn_redondo_rojo"
+                                android:text="Detener"
+                                android:textColor="@color/white"
+                                android:textSize="13sp"
+                                android:visibility="gone"/>
+
+                        </LinearLayout>
+
+                    </androidx.cardview.widget.CardView>
+
+
+                    <!-- =====================================================
                          FILA 1: Estado del Sensor + Distancia al Sensor
                          ===================================================== -->
                     <LinearLayout
