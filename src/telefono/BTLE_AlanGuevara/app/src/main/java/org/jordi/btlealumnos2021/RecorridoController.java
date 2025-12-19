@@ -129,11 +129,18 @@ public class RecorridoController {
         };
 
         // Registro del receiver para escuchar los broadcasts del servicio GPS
-        context.registerReceiver(
-                recorridoReceiver,
-                new IntentFilter(ServicioRecorridoGPS.ACTION_RECorrido_UPDATE)
-        );
-
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            context.registerReceiver(
+                    recorridoReceiver,
+                    new IntentFilter(ServicioRecorridoGPS.ACTION_RECorrido_UPDATE),
+                    Context.RECEIVER_NOT_EXPORTED // ← OBLIGATORIO desde Android 13
+            );
+        } else {
+            context.registerReceiver(
+                    recorridoReceiver,
+                    new IntentFilter(ServicioRecorridoGPS.ACTION_RECorrido_UPDATE)
+            );
+        }
 
         // Receiver para detectar cuando el servicio se detiene desde notificación
         stopReceiver = new BroadcastReceiver() {
@@ -151,10 +158,20 @@ public class RecorridoController {
             }
         };
 
-        context.registerReceiver(
-                stopReceiver,
-                new IntentFilter(ServicioRecorridoGPS.ACTION_SERVICIO_DETENIDO)
-        );
+        // Receiver para detectar cuando el servicio se detiene desde notificación
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            context.registerReceiver(
+                    stopReceiver,
+                    new IntentFilter(ServicioRecorridoGPS.ACTION_SERVICIO_DETENIDO),
+                    Context.RECEIVER_NOT_EXPORTED // ← OBLIGATORIO desde Android 13
+            );
+        } else {
+            context.registerReceiver(
+                    stopReceiver,
+                    new IntentFilter(ServicioRecorridoGPS.ACTION_SERVICIO_DETENIDO)
+            );
+        }
+
 
         // Sincronizar botones con el estado real del servicio
         if (ServicioRecorridoGPS.isRunning()) {
