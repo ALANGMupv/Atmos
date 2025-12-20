@@ -14,6 +14,16 @@
 
 // --------------------------------------------------------------
 // --------------------------------------------------------------
+
+/**
+ * @details Se modificó el código para la autonomía de la batería.
+ * Se comentó lo relacionado con los LEDS. 
+ * Se redujo el tiempo de medición.
+ * Bajar los baudios del puerto serie.
+ * @author Modificado por Alan Guevara Martínez
+ * @date 20/12/2025
+ */
+
 #include <bluefruit.h>
 
 // Eliminar macros “molestas”
@@ -31,7 +41,7 @@ namespace Globales {
   
   LED elLED ( /* NUMERO DEL PIN LED = */ 7 );
 
-  PuertoSerie elPuerto ( /* velocidad = */ 115200 ); // 115200 o 9600 o ...
+  PuertoSerie elPuerto ( /* velocidad = */ 9600 ); // 115200 o 9600 o ...
 
   // Serial1 en el ejemplo de Curro creo que es la conexión placa-sensor 
 };
@@ -66,7 +76,9 @@ void inicializarPlaquita () {
 // --------------------------------------------------------------
 void setup() {
 
-// Se queda en bucle hasta que el puerto serie (Serial) esté listo para imprimir
+  Globales::elLED.apagar(); // Apago el LED PERO NO SE APAGA PORQUE?
+
+  // Se queda en bucle hasta que el puerto serie (Serial) esté listo para imprimir
   //Globales::elPuerto.esperarDisponible();
 
   // 
@@ -94,7 +106,7 @@ void setup() {
   // 
   // 
   // 
-  esperar( 1000 );
+  delay( 1000 );
 
   Globales::elPuerto.escribir( "---- setup(): fin ---- \n " );
 
@@ -102,7 +114,7 @@ void setup() {
 
 // --------------------------------------------------------------
 // --------------------------------------------------------------
-inline void lucecitas() { // La llamamos en el loop.
+/* inline void lucecitas() { // La llamamos en el loop.
   using namespace Globales;
 
   elLED.brillar( 100 ); // 100 encendido
@@ -113,7 +125,7 @@ inline void lucecitas() { // La llamamos en el loop.
   esperar ( 400 ); //  100 apagado
   Globales::elLED.brillar( 1000 ); // 1000 encendido
   esperar ( 1000 ); //  100 apagado
-} // ()
+} // () */
 
 // --------------------------------------------------------------
 // loop ()
@@ -136,7 +148,7 @@ void loop () {
   elPuerto.escribir( "\n" );
 
 
-  lucecitas();
+  // COMENTADO: lucecitas();
 
   // 
   // mido y publico
@@ -147,7 +159,7 @@ void loop () {
   
   elPublicador.publicarCO2( valorCO2, // Se publica en el UUID
 							cont,
-							1000 // intervalo de emisión
+							60000 // intervalo de emisión - AHORA UN MINUTO
 							);
   
   // 
@@ -188,7 +200,7 @@ elPublicador.laEmisora.emitirAnuncioIBeaconLibre(datos, 21);
 */
 
 
-  esperar(2000); 
+  // esperar(2000); LO QUITO DE MOMENTO 
 
 
   // elPublicador.laEmisora.detenerAnuncio(); ESTO YA NO ME SIRVE, PUEDE DETENER EL ANUNCIO PERO NO LIMPIA BUFFER POR LO QUE NO EMITE UNO NUEVO, AHORA LIMPIO YA BUFFERS EN emitirAnuncioIBeacon()

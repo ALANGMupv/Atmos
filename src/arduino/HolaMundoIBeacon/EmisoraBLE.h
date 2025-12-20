@@ -22,6 +22,13 @@
 // ----------------------------------------------------------
 #include "ServicioEnEmisora.h"
 
+/**
+ * @details Se modificó el código para la autonomía de la batería.
+ * Se aumentó el timepo de setInerval... para que emita menos anuncios por segundo
+ * @author Modificado por Alan Guevara Martínez
+ * @date 20/12/2025
+ */
+
 // ----------------------------------------------------------
 // ----------------------------------------------------------
 class EmisoraBLE {
@@ -151,7 +158,7 @@ public:
 	// ? qué valorers poner aquí
 	//
 	Bluefruit.Advertising.restartOnDisconnect(true); // no hace falta, pero lo pongo
-	Bluefruit.Advertising.setInterval(100, 100);    // in unit of 0.625 ms
+	Bluefruit.Advertising.setInterval(125, 125);    // in unit of 0.625 ms
 
 	//
 	// empieza el anuncio, 0 = tiempo indefinido (ya lo pararán)
@@ -265,7 +272,7 @@ public:
 	// ? qué valores poner aquí ?
 	//
 	Bluefruit.Advertising.restartOnDisconnect(true); 
-	Bluefruit.Advertising.setInterval(100, 100);    // in unit of 0.625 ms, velocidad de anuncio
+	Bluefruit.Advertising.setInterval(125, 125);    // in unit of 0.625 ms, velocidad de anuncio
 
 	Bluefruit.Advertising.setFastTimeout( 1 );      // number of seconds in fast mode, tiempo rápido
 	//
