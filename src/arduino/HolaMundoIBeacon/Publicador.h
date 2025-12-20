@@ -89,7 +89,7 @@ public:
 	//
 	// 2. esperamos el tiempo que nos digan
 	//
-	esperar( tiempoEspera );
+	delay( tiempoEspera );
 
 	//
 	// 3. paramos anuncio
@@ -108,7 +108,7 @@ public:
 											valorTemperatura, // minor
 											(*this).RSSI // rssi
 									);
-	esperar( tiempoEspera );
+	delay( tiempoEspera );
 
 	(*this).laEmisora.detenerAnuncio();
   } // ()

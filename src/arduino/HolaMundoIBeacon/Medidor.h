@@ -4,6 +4,14 @@
 #ifndef MEDIDOR_H_INCLUIDO
 #define MEDIDOR_H_INCLUIDO
 
+/**
+ * @details Se modificó el código para la autonomía de la batería.
+ * Se comentaron un par de prints.
+ * @author Modificado por Alan Guevara Martínez
+ * @date 20/12/2025
+ */
+
+
 // ------------------------------------------------------
 // ------------------------------------------------------
 class Medidor {
@@ -65,9 +73,9 @@ public:
     // El sensor da valores negativos: usar valor absoluto ('fabs')
     int ppm = (int)(fabs(Cx_corregido) * 1000); // Escalado x1000, ya que beacon no admite decimales, luego lo dividimos por 1000.
 
-    Serial.print("Vgas: "); Serial.print(Vgas, 4);
-    Serial.print("  Vref: "); Serial.print(Vref, 4);
-    Serial.print("  ΔV: "); Serial.print(deltaV, 6);
+    //Serial.print("Vgas: "); Serial.print(Vgas, 4);
+    //Serial.print("  Vref: "); Serial.print(Vref, 4);
+    //Serial.print("  ΔV: "); Serial.print(deltaV, 6);
     Serial.print("  ppm: "); Serial.println(ppm);
 
   return ppm;
