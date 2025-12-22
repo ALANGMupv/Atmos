@@ -387,18 +387,19 @@ public class MapasActivity extends FuncionesBaseActivity {
      * @brief Comprueba si todos los permisos necesarios para BLE están concedidos.
      */
     private boolean permisosBLEOK() {
-
-        // Android 12+ (S)
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-
-            /* Pèrmisos con los q funciona, antes habían otros mas y no funcionaba bien la detección */
+        // Android 13+ (Tiramisu) requiere POST_NOTIFICATIONS
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
             return checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-                    checkSelfPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+                    checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED &&
+                    checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED &&
+                    checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED; // AÑADIDO
+        }
+        // Android 12
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            return checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
                     checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED &&
                     checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED;
         }
-
-        // Android 6–11
         return checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
     }
 
@@ -409,20 +410,18 @@ public class MapasActivity extends FuncionesBaseActivity {
      * Si los permisos no están concedidos, se solicitan al usuario.
      */
     private void verificarPermisosYArrancarServicio() {
-
         if (!permisosBLEOK()) {
+            List<String> listaPermisos = new ArrayList<>();
+            listaPermisos.add(Manifest.permission.ACCESS_FINE_LOCATION);
+            listaPermisos.add(Manifest.permission.BLUETOOTH_SCAN);
+            listaPermisos.add(Manifest.permission.BLUETOOTH_CONNECT);
 
-            /**
-             * @note En Android 12+ es obligatorio solicitar permisos BLE
-             *       en tiempo de ejecución antes de iniciar un servicio que escanee beacons.
-             */
-            requestPermissions(new String[]{
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.BLUETOOTH_SCAN,
-                    Manifest.permission.BLUETOOTH_CONNECT
-            }, CODIGO_PERMISOS_BLE);
+            // Si es Android 13 o superior, añadimos el permiso de notificaciones a la solicitud
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                listaPermisos.add(Manifest.permission.POST_NOTIFICATIONS);
+            }
 
-
+            requestPermissions(listaPermisos.toArray(new String[0]), CODIGO_PERMISOS_BLE);
         } else {
             iniciarServicioBeacons();
         }
@@ -560,8 +559,8 @@ public class MapasActivity extends FuncionesBaseActivity {
 
         // Configuración de inicio
         mapa.setMinZoomLevel(4.0);
-        mapa.getController().setZoom(14.0);
-        mapa.getController().setCenter(new GeoPoint(38.995, -0.160));
+        mapa.getController().setZoom(16.0);
+        mapa.getController().setCenter(new GeoPoint(38.99636, -0.16604));
 
         // ---------------------------------------------------------
         // EVITAR REPETICIÓN INFINITA DEL MAPA (WORLD WRAP)
@@ -587,7 +586,7 @@ public class MapasActivity extends FuncionesBaseActivity {
         findViewById(R.id.btnMiUbicacion).setOnClickListener(v -> pedirUbicacion(mapa));
 
         // Dibujamos el puntito de ubicación del usuario al abrir el mapa
-        pedirUbicacion(mapa);
+        //pedirUbicacion(mapa);
 
         // Escuchar ubicación en tiempo real (solución definitiva)
         iniciarActualizacionUbicacion(mapa);

@@ -16,17 +16,25 @@ Repositorio del proyecto de **Biometría y Medio Ambiente**. Incluye código, di
 
 ---
 
-## 🛠️ Diseños  
+## 🛠️ Diseños UI
 
+- [🎨 Interfaz (app Android y web)](https://www.figma.com/design/dDloWEZQrU3LrIBNy56Oc7/Dise%C3%B1os-de-interfaz?node-id=0-1&t=D21VZ2V1FLjUPcVW-1)  
+
+---
+
+## 🛠️ Diseños Código 
+
+- [🎨 Lógica de negocio](https://www.figma.com/design/PFX4TlyGjSa525csbkYxta/Dise%C3%B1oCodigoLogica?node-id=0-1&t=HE8Vt1fw16XM9iU3-1)  
 - [🎨 Java (Ingeniería inversa)](https://www.figma.com/board/5gclkZaVUzniiwrtNu5U6k/Ingenier%C3%ADa-Inversa-Java--Dise%C3%B1o-?node-id=0-1&t=2sPA1xDThr6iYJ2P-1)  
 - [🎨 C++ (Ingeniería inversa)](https://www.figma.com/board/M5GoSHtcgihRU9eOloRw9p/Ingenier%C3%ADa-Inversa-C----Dise%C3%B1o-?node-id=0-1&t=fQN68Fkj8KLjSxMq-1)  
-- [🎨 Backend y Frontend](https://www.figma.com/board/OhXGiBzKXEmR9dCqy3RwvB/Dise%C3%B1o-Backend-y-Frontend?node-id=0-1&t=462ogik28GMpr2IN-1)  
+- [🎨 Backend Sprint 0](https://www.figma.com/board/OhXGiBzKXEmR9dCqy3RwvB/Dise%C3%B1o-Backend-y-Frontend?node-id=0-1&t=462ogik28GMpr2IN-1)  
 
 ---
 
 ## 🚀 Tecnologías  
 
-- **Java / Android Studio** – app móvil para escaneo BLE  
+- **Java / Android Studio** – app móvil
+- **HTTML5 / CSS** – página web
 - **C++ / Arduino IDE** – sensores y emisión de datos  
 - **Node.js + Express** – servidor API REST  
 - **MySQL (Plesk)** – base de datos para persistencia de medidas  
@@ -56,7 +64,8 @@ El proyecto está desplegado en **Plesk (UPV)**:
 
 ## 🧪 Ejecución de Tests
 
-Los tests están desarrollados con **Mocha + Request** y verifican:
+Los tests están desarrollados con **Mocha + Request**.
+Estos son algunos de los test como ejemplo, que verifican:
 
 - `guardarMedida()` → Inserta una nueva medida y devuelve el registro insertado.  
 - `listarMedidas()` → Lista las últimas medidas con límite configurable.  

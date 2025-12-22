@@ -119,6 +119,9 @@ public class ServicioDeteccionBeacons extends Service {
     public void onCreate() {
         super.onCreate();
 
+        // LOG - No va en xiaomi Alan, sí en tablet
+        Log.d(TAG, "SERVICIO CREADO - El proceso está vivo");
+
         crearCanalNotificaciones();
         iniciarComoServicioEnPrimerPlano();
 
@@ -144,7 +147,7 @@ public class ServicioDeteccionBeacons extends Service {
             NotificationChannel canal = new NotificationChannel(
                     CANAL_ID,
                     "Detección de Beacons Atmos",
-                    NotificationManager.IMPORTANCE_LOW
+                    NotificationManager.IMPORTANCE_DEFAULT
             );
             NotificationManager nm = getSystemService(NotificationManager.class);
             nm.createNotificationChannel(canal);
@@ -160,9 +163,11 @@ public class ServicioDeteccionBeacons extends Service {
      */
     private void iniciarComoServicioEnPrimerPlano() {
         Notification notif = new NotificationCompat.Builder(this, CANAL_ID)
-                .setContentTitle("Atmos - Servicio en primer plano")
-                .setContentText("Monitorizando el entorno...")
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle("Atmos - Escaneo BLE activo")
+                .setContentText("Monitorizando el entorno…")
+                .setSmallIcon(R.drawable.escaneobtle)
+                .setOngoing(true)
+                .setCategory(NotificationCompat.CATEGORY_SERVICE)
                 .build();
 
         startForeground(1, notif);
