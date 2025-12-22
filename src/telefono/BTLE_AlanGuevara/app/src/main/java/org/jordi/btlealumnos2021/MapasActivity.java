@@ -559,8 +559,8 @@ public class MapasActivity extends FuncionesBaseActivity {
 
         // Configuración de inicio
         mapa.setMinZoomLevel(4.0);
-        mapa.getController().setZoom(14.0);
-        mapa.getController().setCenter(new GeoPoint(38.995, -0.160));
+        mapa.getController().setZoom(16.0);
+        mapa.getController().setCenter(new GeoPoint(38.99636, -0.16604));
 
         // ---------------------------------------------------------
         // EVITAR REPETICIÓN INFINITA DEL MAPA (WORLD WRAP)
@@ -586,7 +586,7 @@ public class MapasActivity extends FuncionesBaseActivity {
         findViewById(R.id.btnMiUbicacion).setOnClickListener(v -> pedirUbicacion(mapa));
 
         // Dibujamos el puntito de ubicación del usuario al abrir el mapa
-        pedirUbicacion(mapa);
+        //pedirUbicacion(mapa);
 
         // Escuchar ubicación en tiempo real (solución definitiva)
         iniciarActualizacionUbicacion(mapa);

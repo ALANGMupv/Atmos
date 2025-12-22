@@ -269,7 +269,7 @@ public class ServicioDeteccionBeacons extends Service {
                 }
                 escanerBLE.stopScan(callbackBLE);
             } catch (Exception ignored) { }
-            
+
             escanerBLE.startScan(null, scanSettings, callbackBLE);
             Log.d(TAG, "Escaneo BLE iniciado");
 

@@ -142,7 +142,7 @@ public class ServicioRecorridoGPS extends Service {
         LocationRequest request = LocationRequest.create()
                 .setInterval(2000)
                 .setFastestInterval(1000)
-                .setSmallestDisplacement(0.6f) // Antes 1 metros mínimo para que Google decida enviar algo
+                .setSmallestDisplacement(0.8f) // Antes 1 metros mínimo para que Google decida enviar algo
                 .setPriority(Priority.PRIORITY_HIGH_ACCURACY);
 
 
@@ -197,7 +197,7 @@ public class ServicioRecorridoGPS extends Service {
         //    Si la precisión es peor de 15 metros, se descarta la lectura
         //    porque puede generar saltos falsos en la distancia.
         // ------------------------------------------------------------------
-        if (nueva.getAccuracy() > 20) {
+        if (nueva.getAccuracy() > 20) { // Original 15
             Log.w(TAG,
                     "Localización descartada por baja precisión: "
                             + nueva.getAccuracy());
@@ -227,7 +227,7 @@ public class ServicioRecorridoGPS extends Service {
         //    Incrementos demasiado pequeños (< 0.8 m) suelen ser ruido
         //    del GPS cuando el usuario está parado o se mueve muy poco.
         // ------------------------------------------------------------------
-        if (incremento < 0.6) { // Antes 0.8
+        if (incremento < 0.8) { // Original 0.8
             Log.d(TAG,
                     "Incremento demasiado pequeño descartado: "
                             + incremento + " m");
@@ -239,12 +239,22 @@ public class ServicioRecorridoGPS extends Service {
         //    Incrementos grandes (> 8 m) en poco tiempo suelen indicar
         //    errores del GPS (rebotes o cambios bruscos de señal).
         // ------------------------------------------------------------------
-        if (incremento > 10) { // Antes 8
+        if (incremento > 8) { // Original 8
             Log.w(TAG,
                     "Salto GPS descartado: "
                             + incremento + " m");
             return;
         }
+
+        // Filtro de velocidad (nuevo)
+        float velocidad = nueva.getSpeed(); // m/s
+
+        // Si la velocidad es muy baja, probablemente está parado
+        if (velocidad < 0.4f) { // < 1.4 km/h
+            Log.d(TAG, "Descartado por velocidad baja: " + velocidad);
+            return;
+        }
+
 
         // ------------------------------------------------------------------
         // Incremento válido
