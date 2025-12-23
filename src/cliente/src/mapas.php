@@ -16,6 +16,7 @@
 
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="stylesheet" href="css/mapaUserNoLogueado.css">
+    <link rel="stylesheet" href="css/popupContaminantes.css">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -56,7 +57,7 @@ include __DIR__ . '/partials/header.php';
 
                 <div class="contaminantes-header">
                     <h3>Contaminantes</h3>
-                    <button class="info-btn-contaminantes">
+                    <button class="info-btn-contaminantes" data-popup="popupContaminantes">
                         <img src="img/informacionIcon.svg" alt="">
                     </button>
                 </div>
@@ -167,6 +168,8 @@ include __DIR__ . '/partials/header.php';
 <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
 
 <script src="js/mapaUserNoLogueado.js" defer></script>
+
+<?php include __DIR__ . '/popupContaminantes.php'; ?>
 
 </body>
 </html>
