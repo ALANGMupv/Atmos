@@ -1351,26 +1351,26 @@ public class MapasActivity extends FuncionesBaseActivity {
 
         // Sin datos reales
         if (nivel <= 0.0) {
-            return Color.parseColor("#9CA3AF"); // Gris neutro
+            return Color.parseColor("#9CA3AF"); // Gris
         }
 
         // Verde (0.00 – 0.10) — verde apagado
         if (nivel <= 0.10) {
-            return Color.parseColor("#4CAF50"); // Verde suave
+            return Color.parseColor("#059669"); // Verde
         }
 
         // Amarillo (0.10 – 0.45) — mostaza suave
         if (nivel <= 0.45) {
-            return Color.parseColor("#FBC02D"); // Amarillo apagado
+            return Color.parseColor("#FBC02D"); // Amarillo
         }
 
         // Naranja (0.45 – 0.75) — naranja terroso
         if (nivel <= 0.75) {
-            return Color.parseColor("#FB8C00"); // Naranja suave
+            return Color.parseColor("#FB8C00"); // Naranja
         }
 
         // Rojo (> 0.75) — rojo oscuro no chillón
-        return Color.parseColor("#E53935");     // Rojo apagado
+        return Color.parseColor("#DC2626");     // Rojo
     }
 
 
