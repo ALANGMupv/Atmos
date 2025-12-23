@@ -426,9 +426,6 @@ main{
     box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.25);
 }
 
-
-
-
 @media (max-width: 904px) {
 
     .mapa-indice-container{
@@ -447,10 +444,16 @@ main{
 
 }
 
+/* Borra lo anterior y deja solo esto */
+.estacion-marker svg path {
+    fill: inherit !important;
+    stroke: inherit !important;
+}
 
-
-
-
+.estacion-marker {
+    background: none !important;
+    border: none !important;
+}
 
 
 

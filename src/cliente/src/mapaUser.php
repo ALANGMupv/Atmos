@@ -102,16 +102,41 @@ include __DIR__ . '/partials/headerLogueado.php'; ?>
 
             </div>
 
-            <!-- índices de Contaminación -->
+            <!-- Indice de Contaminantes -->
+
             <div class="mapa-indice-container">
                 <h4>Índice de Calidad</h4>
+
                 <div class="leyendas_indices-container">
-                    <div class="fila-indice"><span class="color-buena"></span> <span class="texto-indice">Buena</span> <span class="porcentaje-buena">0%</span></div>
-                    <div class="fila-indice"><span class="color-moderada"></span> <span class="texto-indice">Moderada</span> <span class="porcentaje-moderada">0%</span></div>
-                    <div class="fila-indice"><span class="color-insalubre"></span> <span class="texto-indice">Insalubre</span> <span class="porcentaje-insalubre">0%</span></div>
-                    <div class="fila-indice"><span class="color-mala"></span> <span class="texto-indice">Mala</span> <span class="porcentaje-mala">0%</span></div>
+
+                    <div class="fila-indice">
+                        <span class="color-buena"></span>
+                        <span class="texto-indice">Buena</span>
+                        <span class="porcentaje-buena">0%</span>
+                    </div>
+
+                    <div class="fila-indice">
+                        <span class="color-moderada"></span>
+                        <span class="texto-indice">Moderada</span>
+                        <span class="porcentaje-moderada">0%</span>
+                    </div>
+
+                    <div class="fila-indice">
+                        <span class="color-insalubre"></span>
+                        <span class="texto-indice">Insalubre</span>
+                        <span class="porcentaje-insalubre">0%</span>
+                    </div>
+
+                    <div class="fila-indice">
+                        <span class="color-mala"></span>
+                        <span class="texto-indice">Mala</span>
+                        <span class="porcentaje-mala">0%</span>
+                    </div>
+
                 </div>
             </div>
+
+
 
             <!-- Botones de Zoom -->
             <div class="map-zoom-controls">
@@ -178,6 +203,9 @@ include __DIR__ . '/partials/headerLogueado.php'; ?>
 
 <!-- Turf.js (para interpolaciones si las necesitas) -->
 <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+
+<!-- Lógica de estaciones oficiales (define cargarEstacionesOficiales) -->
+<script src="js/estacionesOficiales.js"></script>
 
 <!-- Tu script del mapa -->
 <script src="js/mapaUser.js"></script>
