@@ -20,6 +20,7 @@
     <!-- CSS -->
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="stylesheet" href="css/mapaUser.css">
+    <link rel="stylesheet" href="css/popupContaminantes.css">
 
     <!-- Fuente -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -66,7 +67,7 @@ include __DIR__ . '/partials/headerLogueado.php'; ?>
 
                 <div class="contaminantes-header">
                     <h3>Contaminantes</h3>
-                    <button class="info-btn-contaminantes">
+                    <button class="info-btn-contaminantes" data-popup="popupContaminantes">
                         <img src="img/informacionIcon.svg" alt="">
                     </button>
                 </div>
@@ -209,6 +210,8 @@ include __DIR__ . '/partials/headerLogueado.php'; ?>
 
 <!-- Tu script del mapa -->
 <script src="js/mapaUser.js"></script>
+
+<?php include __DIR__ . '/popupContaminantes.php'; ?>
 
 </body>
 </html>
