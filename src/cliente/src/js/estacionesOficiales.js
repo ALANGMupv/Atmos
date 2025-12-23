@@ -3,20 +3,18 @@
  * @brief Carga y dibuja estaciones oficiales OpenAQ en Leaflet.
  *
  * Procedimiento:
- *  - Llama al backend PHP
- *  - Convierte unidades
- *  - Calcula peor contaminante
- *  - Pinta marcadores independientes del IDW
+ * - Llama al backend PHP
+ * - Convierte unidades
+ * - Calcula peor contaminante
+ * - Pinta marcadores independientes del IDW
  *
- *  @author Alan Guevara Martínez
- *  @date 23/12/2025
+ * @author Alan Guevara Martínez
+ * @date 23/12/2025
  */
 
-/**
- * =========================================================
+/* =========================================================
  * CONVERSIONES A ppm
- * =========================================================
- */
+ * ========================================================= */
 
 /**
  * Convierte NO₂ a ppm si la unidad está en µg/m³.
@@ -62,11 +60,9 @@ function convCO(v, u) {
     return u?.includes("µg") ? v / 1145 : v;
 }
 
-/**
- * =========================================================
+/* =========================================================
  * NORMALIZACIÓN (MISMO CRITERIO QUE ANDROID)
- * =========================================================
- */
+ * ========================================================= */
 
 /**
  * Normaliza un valor de contaminante a un nivel de riesgo
@@ -81,7 +77,6 @@ function convCO(v, u) {
  * @returns {number} Nivel normalizado (0, 0.1, 0.45, 0.75 o 1).
  */
 function normal(tipo, valor) {
-
     if (valor == null) return 0;
 
     switch (tipo) {
@@ -113,11 +108,9 @@ function normal(tipo, valor) {
     return 0;
 }
 
-/**
- * =========================================================
+/* =========================================================
  * CARGA PRINCIPAL DE ESTACIONES OFICIALES
- * =========================================================
- */
+ * ========================================================= */
 
 /**
  * Carga las estaciones oficiales desde el backend,
@@ -129,43 +122,50 @@ function normal(tipo, valor) {
  * @returns {Promise<void>}
  */
 async function cargarEstacionesOficiales(mapa) {
-
     const res = await fetch("/servidor/estacionesOficiales.php");
     const json = await res.json();
 
     if (json.status !== "ok") return;
 
     json.estaciones.forEach(e => {
-
         let peor = 0;
 
-        if (e.no2 != null)
+        if (e.no2 != null) {
             peor = Math.max(peor, normal(11, convNO2(e.no2, e.u_no2)));
-        if (e.o3 != null)
+        }
+        if (e.o3 != null) {
             peor = Math.max(peor, normal(13, convO3(e.o3, e.u_o3)));
-        if (e.so2 != null)
+        }
+        if (e.so2 != null) {
             peor = Math.max(peor, normal(14, convSO2(e.so2, e.u_so2)));
-        if (e.co != null)
+        }
+        if (e.co != null) {
             peor = Math.max(peor, normal(12, convCO(e.co, e.u_co)));
+        }
 
         let color;
         if (peor <= 0) {
-            // Definimos el gris oscuro para estaciones sin datos
+            // Gris oscuro para estaciones sin datos
             color = "#6B7280";
         } else {
-            // Llamamos a la función global de mapaUser.js
+            // Función global definida en mapaUser.js
             color = colorPorNivel(peor);
         }
-        const colorCSS = Array.isArray(color) ? `rgb(${color.join(',')})` : color;
 
-        // Quitamos stroke (borde) y usamos los nuevos colores oscuros
+        const colorCSS = Array.isArray(color)
+            ? `rgb(${color.join(",")})`
+            : color;
+
+        // Icono SVG sin borde (stroke)
         const iconHTML = `
-<svg width="28" height="28" viewBox="0 0 24 24" style="display:block" xmlns="http://www.w3.org/2000/svg">
-  <path
-    d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7z"
-    style="fill: ${colorCSS} !important; stroke: none !important;"
-  />
-  <circle cx="12" cy="9" r="3" style="fill: #ffffff !important;" />
+<svg width="28" height="28" viewBox="0 0 24 24"
+     xmlns="http://www.w3.org/2000/svg" style="display:block">
+    <path
+        d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7z"
+        style="fill: ${colorCSS} !important; stroke: none !important;"
+    />
+    <circle cx="12" cy="9" r="3"
+            style="fill: #ffffff !important;" />
 </svg>`;
 
         const marker = L.marker([e.lat, e.lon], {
@@ -179,13 +179,13 @@ async function cargarEstacionesOficiales(mapa) {
             })
         });
 
-        marker.bindPopup(
-            `<strong>${e.nombre}</strong><br>
-             NO₂: ${e.no2 ?? "—"} ${e.u_no2 ?? ""}<br>
-             O₃: ${e.o3 ?? "—"} ${e.u_o3 ?? ""}<br>
-             CO: ${e.co ?? "—"} ${e.u_co ?? ""}<br>
-             SO₂: ${e.so2 ?? "—"} ${e.u_so2 ?? ""}`
-        );
+        marker.bindPopup(`
+            <strong>${e.nombre}</strong><br>
+            NO₂: ${e.no2 ?? "—"} ${e.u_no2 ?? ""}<br>
+            O₃: ${e.o3 ?? "—"} ${e.u_o3 ?? ""}<br>
+            CO: ${e.co ?? "—"} ${e.u_co ?? ""}<br>
+            SO₂: ${e.so2 ?? "—"} ${e.u_so2 ?? ""}
+        `);
 
         marker.addTo(mapa);
     });
