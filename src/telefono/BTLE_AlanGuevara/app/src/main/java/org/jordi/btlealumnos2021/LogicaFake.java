@@ -44,6 +44,7 @@ public class LogicaFake {
     private static final String URL_VINCULAR = "https://nagufor.upv.edu.es/vincular";
     private static final String URL_DESVINCULAR = "https://nagufor.upv.edu.es/desvincular";
     private static final String URL_RECORRIDO = "https://nagufor.upv.edu.es/recorrido";
+    private static final String URL_INCIDENCIA = "https://nagufor.upv.edu.es/incidencia";
 
     /**
      * @brief Envía al backend una medición (ahora también permite valores promediados).
@@ -1253,4 +1254,174 @@ public class LogicaFake {
         queue.add(req);
     }
     /* ------------------- FIN DISTANCIA RECORRIDA ------------------- */
+
+    /**
+     * @brief Envía una incidencia al backend.
+     *
+     * Llama al endpoint POST /incidencia enviando los datos de la incidencia
+     * introducidos por el usuario.
+     *
+     * @param idUsuario ID del usuario
+     * @param asunto    Asunto o título de la incidencia
+     * @param mensaje   Texto descriptivo de la incidencia
+     * @param idPlaca   Identificador de la placa (puede ser null)
+     * @param queue     Cola Volley
+     * @param callback  Callback con el resultado de la operación
+     *
+     * @author Nerea Aguilar Forés
+     * @date 17/12/2025
+     */
+    public static void enviarIncidencia(
+            int idUsuario,
+            String asunto,
+            String mensaje,
+            String idPlaca,
+            RequestQueue queue,
+            EnviarIncidenciaCallback callback
+    ) {
+
+        try {
+
+            JSONObject body = new JSONObject();
+            body.put("id_usuario", idUsuario);
+            body.put("asunto", asunto);
+            body.put("mensaje_enviado", mensaje);
+
+            if (idPlaca != null) {
+                body.put("id_placa", idPlaca);
+            }
+
+            JsonObjectRequest request = new JsonObjectRequest(
+                    Request.Method.POST,
+                    URL_INCIDENCIA,
+                    body,
+                    response -> {
+                        if ("ok".equals(response.optString("status"))) {
+                            callback.onOk(response.optInt("id_incidencia"));
+                        } else {
+                            callback.onErrorServidor();
+                        }
+                    },
+                    error -> callback.onErrorServidor()
+            );
+
+            queue.add(request);
+
+        } catch (Exception e) {
+            callback.onErrorInesperado();
+        }
+    }
+
+    /**
+     * Nombre Interfaz: EnviarIncidenciaCallback
+     * Descripción:
+     *   Define los posibles resultados del envío de una incidencia al servidor.
+     *
+     * Autora: Nerea Aguilar Forés
+     * Fecha: 17/12/2025
+     */
+    public interface EnviarIncidenciaCallback {
+        void onOk(int idIncidencia);   // Incidencia creada correctamente
+        void onErrorServidor();        // Error HTTP / servidor
+        void onErrorInesperado();      // Excepción no controlada
+    }
+
+    /**
+     * Nombre Método: listarIncidenciasUsuario
+     * Descripción:
+     *   Llama al endpoint GET /incidencias para obtener todas las
+     *   incidencias asociadas a un usuario.
+     *
+     * Entradas:
+     *   - idUsuario : ID del usuario
+     *   - queue     : Cola Volley
+     *   - callback  : Callback con el resultado
+     *
+     * Salidas:
+     *   - No retorna nada; notifica por callback
+     *
+     * Autora: Nerea Aguilar Forés
+     * Fecha: 17/12/2025
+     */
+    public static void listarIncidenciasUsuario(
+            int idUsuario,
+            RequestQueue queue,
+            ListarIncidenciasCallback callback
+    ) {
+
+        String url = "https://nagufor.upv.edu.es/incidencias?id_usuario=" + idUsuario;
+
+        JsonObjectRequest request = new JsonObjectRequest(
+                Request.Method.GET,
+                url,
+                null,
+                response -> {
+                    try {
+                        if ("ok".equals(response.optString("status"))) {
+                            JSONArray incidencias = response.getJSONArray("incidencias");
+                            callback.onIncidenciasOk(incidencias);
+                        } else {
+                            callback.onErrorServidor();
+                        }
+                    } catch (Exception e) {
+                        callback.onErrorInesperado();
+                    }
+                },
+                error -> callback.onErrorServidor()
+        );
+
+        queue.add(request);
+    }
+
+    /**
+     * Nombre Interfaz: ListarIncidenciasCallback
+     * Descripción:
+     *   Define los posibles resultados de la petición que obtiene
+     *   todas las incidencias de un usuario.
+     *
+     * Autora: Nerea Aguilar Forés
+     * Fecha: 17/12/2025
+     */
+    public interface ListarIncidenciasCallback {
+        void onIncidenciasOk(JSONArray incidencias);
+        void onErrorServidor();
+        void onErrorInesperado();
+    }
+
+    /**
+     * @brief Marca una incidencia como leída por el usuario.
+     *
+     * Llama al endpoint POST /incidencia/leida.
+     *
+     * @param idIncidencia ID de la incidencia
+     * @param queue Cola Volley
+     *
+     * @author Nerea Aguilar Forés
+     */
+    public static void marcarIncidenciaLeida(
+            int idIncidencia,
+            RequestQueue queue
+    ) {
+        try {
+            JSONObject body = new JSONObject();
+            body.put("id_incidencia", idIncidencia);
+
+            JsonObjectRequest request = new JsonObjectRequest(
+                    Request.Method.POST,
+                    "https://nagufor.upv.edu.es/incidencia/leida",
+                    body,
+                    response -> {
+                        // No hacemos nada en UI
+                    },
+                    error -> {
+                        // No bloqueamos la UI si falla
+                    }
+            );
+
+            queue.add(request);
+
+        } catch (Exception e) {
+            // Silencioso: no afecta a la experiencia
+        }
+    }
 }

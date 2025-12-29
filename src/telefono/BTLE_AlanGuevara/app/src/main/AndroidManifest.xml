@@ -131,6 +131,9 @@
             android:name=".RecorridoStopReceiver"
             android:exported="false" />
 
+        <activity android:name=".IncidenciasActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>
