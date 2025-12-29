@@ -1,5 +1,6 @@
 package org.jordi.btlealumnos2021;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -102,14 +103,12 @@ public class MenuActivity extends FuncionesBaseActivity {
 
         // Tarjeta "Incidencias"
         if (cardIncidencias != null) {
-            cardIncidencias.setOnClickListener(v ->
-                    Toast.makeText(
-                            MenuActivity.this,
-                            "Funcionalidad no activa de momento",
-                            Toast.LENGTH_SHORT
-                    ).show()
-            );
+            cardIncidencias.setOnClickListener(v -> {
+                Intent intent = new Intent(MenuActivity.this, IncidenciasActivity.class);
+                startActivity(intent);
+            });
         }
+
 
         // Tarjeta "Desvincular sensor"
         if (cardDesvincularSensor != null) {
