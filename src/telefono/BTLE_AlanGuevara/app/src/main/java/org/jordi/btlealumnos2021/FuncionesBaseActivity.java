@@ -1,5 +1,7 @@
 package org.jordi.btlealumnos2021;
 
+import static androidx.core.content.ContextCompat.startActivity;
+
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;

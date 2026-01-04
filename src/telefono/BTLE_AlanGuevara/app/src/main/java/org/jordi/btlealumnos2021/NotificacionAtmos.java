@@ -24,6 +24,7 @@ public class NotificacionAtmos {
     private String titulo;
     private String texto;
     private String hora;     // "18:20", "08:05", etc.
+    private long timestamp;  // Para ordenar por fecha (Hoy, Ayer, etc.)
     private boolean leida;
 
     public NotificacionAtmos(int idNotificacion,
@@ -31,12 +32,14 @@ public class NotificacionAtmos {
                              String titulo,
                              String texto,
                              String hora,
+                             long timestamp,
                              boolean leida) {
         this.idNotificacion = idNotificacion;
         this.tipo = tipo;
         this.titulo = titulo;
         this.texto = texto;
         this.hora = hora;
+        this.timestamp = timestamp;
         this.leida = leida;
     }
 
@@ -47,6 +50,7 @@ public class NotificacionAtmos {
     public String getTitulo() { return titulo; }
     public String getTexto() { return texto; }
     public String getHora() { return hora; }
+    public long getTimestamp() { return timestamp; }
     public boolean isLeida() { return leida; }
 
     public void setLeida(boolean leida) { this.leida = leida; }

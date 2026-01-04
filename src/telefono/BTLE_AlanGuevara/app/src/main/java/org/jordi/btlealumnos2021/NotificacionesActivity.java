@@ -1,12 +1,18 @@
 package org.jordi.btlealumnos2021;
 
 import android.content.SharedPreferences;
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.ImageView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -14,6 +20,11 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class NotificacionesActivity extends AppCompatActivity {
 
@@ -37,6 +48,12 @@ public class NotificacionesActivity extends AppCompatActivity {
         }
     };
 
+    // Lanzador para solicitar permiso
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                // Si acepta, genial. Si no, no insistimos (política amigable).
+            });
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,78 +70,98 @@ public class NotificacionesActivity extends AppCompatActivity {
 
         cargarLeidasDePrefs();
 
-        adapter = new NotificacionAdapter(
-                listaNuevas,
-                listaLeidas,
-                new NotificacionAdapter.OnItemClickListener() {
-
-                    @Override
-                    public void onNotificacionClick(boolean esNueva, int index) {
-                        if (esNueva && index >= 0 && index < listaNuevas.size()) {
-
-                            NotificacionAtmos n = listaNuevas.remove(index);
-                            n.setLeida(true);
-
-                            listaLeidas.add(0, n);
-
-                            // marcar como leída en backend
-                            NotificacionesManager.getInstance(NotificacionesActivity.this)
-                                    .marcarNotificacionComoLeida(
-                                            NotificacionesActivity.this,
-                                            idUsuario,
-                                            n.getIdNotificacion()
-                                    );
-
-                            guardarLeidasEnPrefs();
-                            adapter.notifyDataSetChanged();
+        adapter = new NotificacionAdapter(new NotificacionAdapter.OnItemClickListener() {
+            @Override
+            public void onNotificacionClick(boolean esNueva, int idNotificacion) {
+                if (esNueva) {
+                    // Buscar en listaNuevas por ID
+                    NotificacionAtmos target = null;
+                    for (NotificacionAtmos n : listaNuevas) {
+                        if (n.getIdNotificacion() == idNotificacion) {
+                            target = n;
+                            break;
                         }
                     }
 
-                    @Override
-                    public void onDeleteClick(boolean esNueva, int index) {
+                    if (target != null) {
+                        listaNuevas.remove(target);
+                        target.setLeida(true);
+                        listaLeidas.add(0, target);
 
-                        NotificacionAtmos n;
-
-                        if (esNueva) {
-                            if (index < 0 || index >= listaNuevas.size()) return;
-                            n = listaNuevas.remove(index);
-                        } else {
-                            if (index < 0 || index >= listaLeidas.size()) return;
-                            n = listaLeidas.remove(index);
-                        }
-
-                        // 🛑 Agregar a lista negra → no vuelve JAMÁS esta sesión
-                        listaNegraBorrados.add(n.getIdNotificacion());
-
-                        // Borrar en backend
+                        // Marcar en backend
                         NotificacionesManager.getInstance(NotificacionesActivity.this)
-                                .borrarNotificacionBackend(
+                                .marcarNotificacionComoLeida(
                                         NotificacionesActivity.this,
                                         idUsuario,
-                                        n.getIdNotificacion(),
-                                        () -> {
-                                            // NO limpiamos la lista negra
-                                        }
+                                        target.getIdNotificacion()
                                 );
 
-                        adapter.notifyDataSetChanged();
+                        guardarLeidasEnPrefs();
+                        adapter.updateData(listaNuevas, listaLeidas);
                     }
                 }
-        );
+            }
+
+            @Override
+            public void onDeleteClick(boolean esNueva, int idNotificacion) {
+                // Borrar de la lista correspondiente
+                List<NotificacionAtmos> lista = esNueva ? listaNuevas : listaLeidas;
+                NotificacionAtmos target = null;
+                for (NotificacionAtmos n : lista) {
+                     if (n.getIdNotificacion() == idNotificacion) {
+                         target = n;
+                         break;
+                     }
+                }
+
+                if (target != null) {
+                    lista.remove(target);
+                    // 🛑 Agregar a lista negra
+                    listaNegraBorrados.add(idNotificacion);
+
+                    NotificacionesManager.getInstance(NotificacionesActivity.this)
+                            .borrarNotificacionBackend(
+                                    NotificacionesActivity.this,
+                                    idUsuario,
+                                    idNotificacion,
+                                    null
+                            );
+                    
+                    adapter.updateData(listaNuevas, listaLeidas);
+                }
+            }
+        });
 
         recyclerNotificaciones.setAdapter(adapter);
 
         ImageView btnBorrarTodas = findViewById(R.id.btnBorrarTodas);
         btnBorrarTodas.setOnClickListener(v -> borrarTodasNotificaciones());
 
-        cargarNotificacionesDesdeServidor();
+        pedirPermisosNotificaciones();
+    }
+
+    private void pedirPermisosNotificaciones() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this, Manifest.permission.POST_NOTIFICATIONS) !=
+                    PackageManager.PERMISSION_GRANTED) {
+                
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        handler.post(refrescoPeriodico);
+        cargarNotificacionesDesdeServidor();
+        // Iniciar polling (refresco automático cada 5s)
+        handler.postDelayed(refrescoPeriodico, 5000);
     }
+
+
+
+
 
     @Override
     protected void onPause() {
@@ -172,7 +209,7 @@ public class NotificacionesActivity extends AppCompatActivity {
                                     if (!yaLeida) listaNuevas.add(n);
                                 }
 
-                                adapter.notifyDataSetChanged();
+                                adapter.updateData(listaNuevas, listaLeidas);
                             }
 
                             @Override
@@ -195,7 +232,7 @@ public class NotificacionesActivity extends AppCompatActivity {
                     listaNegraBorrados.clear();
 
                     guardarLeidasEnPrefs();
-                    adapter.notifyDataSetChanged();
+                    adapter.updateData(listaNuevas, listaLeidas);
                 });
     }
 
@@ -216,6 +253,7 @@ public class NotificacionesActivity extends AppCompatActivity {
                 obj.put("tipo", n.getTipo());
                 obj.put("texto", n.getTexto());
                 obj.put("hora", n.getHora());
+                obj.put("timestamp", n.getTimestamp());
                 arr.put(obj);
             } catch (Exception ignored) {}
         }
@@ -240,9 +278,10 @@ public class NotificacionesActivity extends AppCompatActivity {
                         new NotificacionAtmos(
                                 o.optInt("id", -1),
                                 o.optString("tipo", ""),
-                                o.optString("texto", ""),
+                                o.optString("titulo", ""), // Fix: Load title if possible, or empty
                                 o.optString("texto", ""),
                                 o.optString("hora", ""),
+                                o.optLong("timestamp", 0L),
                                 true
                         )
                 );

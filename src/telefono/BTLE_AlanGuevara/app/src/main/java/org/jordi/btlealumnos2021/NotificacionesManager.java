@@ -16,6 +16,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Intent;
+import android.media.RingtoneManager;
+import android.net.Uri;
+import android.os.Build;
+import androidx.core.app.NotificationCompat;
+
 public class NotificacionesManager {
 
     private static NotificacionesManager instancia;
@@ -39,6 +48,7 @@ public class NotificacionesManager {
 
     private NotificacionesManager(Context ctx) {
         queue = Volley.newRequestQueue(ctx.getApplicationContext());
+        crearCanalNotificaciones(ctx);
     }
 
     public static synchronized NotificacionesManager getInstance(Context ctx) {
@@ -105,10 +115,11 @@ public class NotificacionesManager {
 
                                 // ✔ conversión REAL UTC → hora local
                                 String horaLocal = convertirUtcALocal(fechaUtc);
+                                long timestamp = parsearTimestamp(fechaUtc);
 
                                 nuevaLista.add(
                                         new NotificacionAtmos(
-                                                id, tipo, titulo, texto, horaLocal, leido
+                                                id, tipo, titulo, texto, horaLocal, timestamp, leido
                                         )
                                 );
                             }
@@ -116,6 +127,11 @@ public class NotificacionesManager {
 
                         boolean hayNuevas = hayNovedades(nuevaLista, ultimaLista);
                         ultimaLista = nuevaLista;
+
+                        if (hayNuevas && !nuevaLista.isEmpty()) {
+                             // Si hay nuevas (y la lista no está vacía), lanzar alerta de sistema
+                             mostrarNotificacionSistema(ctx, nuevaLista.get(0));
+                        }
 
                         if (listener != null) listener.onResultado(nuevaLista, hayNuevas);
 
@@ -224,5 +240,66 @@ public class NotificacionesManager {
 
     public List<NotificacionAtmos> getUltimaLista() {
         return ultimaLista;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //   System Notification Logic
+    // ─────────────────────────────────────────────────────────────
+
+    private long parsearTimestamp(String fechaUtc) {
+        try {
+            SimpleDateFormat formatoUtc =
+                    new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+            formatoUtc.setTimeZone(TimeZone.getTimeZone("UTC"));
+            Date date = formatoUtc.parse(fechaUtc);
+            return date != null ? date.getTime() : 0L;
+        } catch (Exception e) {
+            return 0L;
+        }
+    }
+
+    private void crearCanalNotificaciones(Context ctx) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            String channelId = "atmos_channel_id";
+            CharSequence name = "Notificaciones Atmos";
+            String description = "Alertas de calidad del aire";
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(channelId, name, importance);
+            channel.setDescription(description);
+
+            NotificationManager nm = ctx.getSystemService(NotificationManager.class);
+            if (nm != null) {
+                nm.createNotificationChannel(channel);
+            }
+        }
+    }
+
+    private void mostrarNotificacionSistema(Context ctx, NotificacionAtmos noti) {
+        try {
+            String channelId = "atmos_channel_id";
+            Uri soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+
+            Intent intent = new Intent(ctx, NotificacionesActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            
+            PendingIntent pendingIntent = PendingIntent.getActivity(
+                    ctx, 0, intent,
+                    PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE
+            );
+
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(ctx, channelId)
+                    .setSmallIcon(android.R.drawable.ic_dialog_info) // Usa icono default si no hay uno específico
+                    .setContentTitle(noti.getTitulo())
+                    .setContentText(noti.getTexto())
+                    .setAutoCancel(true)
+                    .setSound(soundUri)
+                    .setContentIntent(pendingIntent);
+
+            NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (nm != null) {
+                nm.notify(noti.getIdNotificacion(), builder.build());
+            }
+
+        } catch (Exception ignored) {}
     }
 }
