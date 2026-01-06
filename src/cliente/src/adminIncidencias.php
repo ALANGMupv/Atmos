@@ -197,6 +197,9 @@ $usuario = $_SESSION['usuario'] ?? ['nombre' => 'Administrador', 'id_usuario' =>
             alert("Respuesta enviada y estado actualizado (Simulación Frontend).");
         });
     </script>
+    <script>
+        window.ID_USUARIO = <?= json_encode($usuario['id_usuario']); ?>;
+    </script>
     <script src="js/adminIncidencias.js"></script>
 
 </body>
