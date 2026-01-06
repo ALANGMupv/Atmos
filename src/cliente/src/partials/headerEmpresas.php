@@ -32,6 +32,12 @@ if (!isset($active))  { $active = null; }
             <!-- Menú -->
             <div class="nav-right">
 
+                <a href="adminIncidencias.php"
+                   class="nav-link <?php echo $active === 'incidencias' ? 'is-active' : ''; ?>"
+                    <?php echo $active === 'incidencias' ? 'aria-current="page"' : ''; ?>>
+                    INCIDENCIAS
+                </a>
+
                 <a href="informe_nodos.php"
                    class="nav-link <?php echo $active === 'nodos' ? 'is-active' : ''; ?>"
                     <?php echo $active === 'nodos' ? 'aria-current="page"' : ''; ?>>

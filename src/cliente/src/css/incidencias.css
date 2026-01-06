@@ -414,3 +414,54 @@ textarea.form-control {
     /* Standard flex behavior */
     height: 100% !important;
 }
+
+/* ====== RESPONSIVE ====== */
+
+/* Tablet (Reduce left column width) */
+@media (max-width: 1200px) {
+    .incidencias-grid {
+        grid-template-columns: 350px 1fr;
+    }
+}
+
+/* Mobile / Small Tablet (Stack columns) */
+@media (max-width: 900px) {
+    body {
+        height: auto;
+        overflow: auto;
+        /* Enable scroll */
+    }
+
+    .incidencias-wrap {
+        height: auto;
+        padding: 20px 15px;
+    }
+
+    .incidencias-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+        height: auto;
+    }
+
+    /* Left column: Fixed height for list or auto? 
+       Let's make it a fixed height scrollable area so it doesn't take forever to scroll past */
+    .col-left {
+        height: 600px;
+        flex: none;
+    }
+
+    .col-right {
+        height: auto;
+        min-height: 600px;
+    }
+
+    /* Adjust text sizes for mobile */
+    .detail-title-text {
+        font-size: 22px;
+    }
+
+    .status-title {
+        font-size: 20px;
+    }
+}
