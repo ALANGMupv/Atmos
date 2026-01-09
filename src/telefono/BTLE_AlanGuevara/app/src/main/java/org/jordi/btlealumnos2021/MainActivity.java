@@ -29,11 +29,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-// ------------------------------------------------------------------
-// AQUI AHORA MISMO SOBRA CASI TODO O TODO
-// MainActivity.java: clase principal de la app Android que gestiona el escaneo BLE,
-// muestra información de dispositivos o busca uno concreto, parsea tramas iBeacon con datos de CO₂ y los envía al servidor, además de manejar permisos y botones de la interfaz.
-// ------------------------------------------------------------------
+/// ------------------------------------------------------------------
+/// MainActivity.java: clase principal de la app Android que gestiona el escaneo BLE,
+/// muestra información de dispositivos o busca uno concreto, parsea tramas iBeacon con datos de CO₂ y los envía al servidor, además de manejar permisos y botones de la interfaz.
+/// ------------------------------------------------------------------
 
 public class MainActivity extends AppCompatActivity {
 
@@ -43,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
     private void pedirPermisosBluetooth() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            // ANDROID 12+
+            /// ANDROID 12+
             String[] permisos = {
                     Manifest.permission.BLUETOOTH_SCAN,
                     Manifest.permission.BLUETOOTH_CONNECT
@@ -51,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
             requestPermissions(permisos, CODIGO_PERMISOS_BT);
 
         } else {
-            // ANDROID 6–11
+            /// ANDROID 6–11
             String[] permisos = {
                     Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.ACCESS_COARSE_LOCATION
@@ -84,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     // --------------------------------------------------------------
-    // → buscarTodosLosDispositivosBTLE() →
+    /// → buscarTodosLosDispositivosBTLE() →
     private void buscarTodosLosDispositivosBTLE() {
         Log.d(ETIQUETA_LOG, " buscarTodosLosDispositivosBTL(): empieza ");
 
@@ -125,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
     } // ()
 
     // --------------------------------------------------------------
-    // resultado: ScanResult → mostrarInformacionDispositivoBTLE()
+    /// resultado: ScanResult → mostrarInformacionDispositivoBTLE()
     private void mostrarInformacionDispositivoBTLE( ScanResult resultado ) {
 
         BluetoothDevice bluetoothDevice = resultado.getDevice();
@@ -173,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
     } // ()
 
     // --------------------------------------------------------------
-    // dispositivoBuscado: Texto → buscarEsteDispositivoBTLE() →
+    /// dispositivoBuscado: Texto → buscarEsteDispositivoBTLE() →
     private void buscarEsteDispositivoBTLE(final String dispositivoBuscado ) {
         Log.d(ETIQUETA_LOG, " buscarEsteDispositivoBTLE(): empieza ");
 
@@ -308,7 +307,7 @@ public class MainActivity extends AppCompatActivity {
     } // ()
 
     // --------------------------------------------------------------
-    // → detenerBusquedaDispositivosBTLE() →
+    /// → detenerBusquedaDispositivosBTLE() →
     private void detenerBusquedaDispositivosBTLE() {
 
         if ( this.callbackDelEscaneo == null ) {
@@ -321,7 +320,7 @@ public class MainActivity extends AppCompatActivity {
     } // ()
 
     // --------------------------------------------------------------
-    // inicializarBlueTooth() →
+    /// inicializarBlueTooth() →
     private void inicializarBlueTooth() {
         Log.d(ETIQUETA_LOG, " inicializarBlueTooth(): obtenemos adaptador BT ");
 
@@ -379,7 +378,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     // --------------------------------------------------------------
-    // (savedInstanceState: Bundle) → onCreate()
+    /// (savedInstanceState: Bundle) → onCreate()
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -442,7 +441,7 @@ public class MainActivity extends AppCompatActivity {
     } // onCreate()
 
     // --------------------------------------------------------------
-    // (requestCode: Z, permissions: Texto[], grantResults: Z[])
+    /// (requestCode: Z, permissions: Texto[], grantResults: Z[])
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
                                            int[] grantResults) {
         super.onRequestPermissionsResult( requestCode, permissions, grantResults);

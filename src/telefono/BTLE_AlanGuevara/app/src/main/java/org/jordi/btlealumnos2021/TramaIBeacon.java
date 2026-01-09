@@ -5,11 +5,11 @@ import java.util.Arrays;
 import android.annotation.SuppressLint;
 
 
-// -----------------------------------------------------------------------------------
-// @author: Jordi Bataller i Mascarell
-// TramaIBeacon.java: clase que interpreta los bytes crudos de un anuncio iBeacon dividiéndolos en sus partes (prefijo, UUID, major, minor y txPower),
-// además de campos auxiliares como advFlags, companyID o iBeaconType, para facilitar el acceso estructurado a la trama recibida.
-// -----------------------------------------------------------------------------------
+/// -----------------------------------------------------------------------------------
+/// @author: Jordi Bataller i Mascarell
+/// TramaIBeacon.java: clase que interpreta los bytes crudos de un anuncio iBeacon dividiéndolos en sus partes (prefijo, UUID, major, minor y txPower),
+/// además de campos auxiliares como advFlags, companyID o iBeaconType, para facilitar el acceso estructurado a la trama recibida.
+/// -----------------------------------------------------------------------------------
 
 public class TramaIBeacon {
     private byte[] prefijo = null; // 9 bytes

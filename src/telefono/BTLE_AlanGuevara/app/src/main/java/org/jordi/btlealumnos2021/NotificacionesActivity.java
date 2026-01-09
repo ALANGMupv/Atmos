@@ -143,9 +143,9 @@ public class NotificacionesActivity extends AppCompatActivity {
         guardarLeidasEnPrefs();
     }
 
-    // -------------------------------------------------------------------------
-    // Carga de notificaciones desde el backend
-    // -------------------------------------------------------------------------
+    /// -------------------------------------------------------------------------
+    /// Carga de notificaciones desde el backend
+    /// -------------------------------------------------------------------------
     private void cargarNotificacionesDesdeServidor() {
 
         int idUsuarioParaPruebas = 23; // 👈 user fijo que dijiste
@@ -191,9 +191,9 @@ public class NotificacionesActivity extends AppCompatActivity {
                 );
     }
 
-    // -------------------------------------------------------------------------
-    // Persistencia simple de NOTIFICACIONES LEÍDAS en SharedPreferences
-    // -------------------------------------------------------------------------
+    /// -------------------------------------------------------------------------
+    /// Persistencia simple de NOTIFICACIONES LEÍDAS en SharedPreferences
+    /// -------------------------------------------------------------------------
 
     /**
      * Guarda la lista de notificaciones leídas en SharedPreferences

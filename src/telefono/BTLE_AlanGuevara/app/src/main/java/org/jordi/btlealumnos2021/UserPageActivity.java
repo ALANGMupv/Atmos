@@ -80,9 +80,9 @@ public class UserPageActivity extends FuncionesBaseActivity {
 
         nombre = SesionManager.obtenerNombre(this);
 
-        // ---------------------------------------------------------------
-        // REFERENCIAS A LA TARJETA DE PROMEDIO Y ULTIMA
-        // ---------------------------------------------------------------
+        /// ---------------------------------------------------------------
+        /// REFERENCIAS A LA TARJETA DE PROMEDIO Y ULTIMA
+        /// ---------------------------------------------------------------
         txtUltimaFecha = findViewById(R.id.tv_ultima_fecha);
         txtPromedioFecha = findViewById(R.id.tv_promedio_fecha);
 
@@ -112,11 +112,11 @@ public class UserPageActivity extends FuncionesBaseActivity {
                 tvRecorridoHoy,
                 tvRecorridoAyer
         );
-        /* ------------ FIN - Distancia recorrida ------------ */
+        /** ------------ FIN - Distancia recorrida ------------ */
 
-        // ---------------------------------------------------------------
-        // REFERENCIAS DE LA TARJETA DE LA GRÁFICA
-        // ---------------------------------------------------------------
+        /// ---------------------------------------------------------------
+        /// REFERENCIAS DE LA TARJETA DE LA GRÁFICA
+        /// ---------------------------------------------------------------
         com.github.mikephil.charting.charts.BarChart barChart = findViewById(R.id.barChartCalidadAire);
         TextView txtRangoFechasGrafica = findViewById(R.id.txtRangoFechasGrafica);
         TextView txtEstadoCalidad = findViewById(R.id.txtEstadoCalidad);
@@ -124,9 +124,9 @@ public class UserPageActivity extends FuncionesBaseActivity {
         TextView btnModoDia = findViewById(R.id.btnModoDia);
         TextView btnModoHora = findViewById(R.id.btnModoHora);
 
-    // ---------------------------------------------------------------
-    // CREAR HELPER DE GRÁFICA
-    // ---------------------------------------------------------------
+    /// ---------------------------------------------------------------
+    /// CREAR HELPER DE GRÁFICA
+    /// ---------------------------------------------------------------
         graficaHelper = new GraficaHelper(
                 this,
                 barChart,
@@ -216,9 +216,9 @@ public class UserPageActivity extends FuncionesBaseActivity {
             }
         });
 
-        // ---------------------------------------------------------------
-        // POPUP
-        // ---------------------------------------------------------------
+        /// ---------------------------------------------------------------
+        /// POPUP información
+        /// ---------------------------------------------------------------
         ImageView iconoInfo = findViewById(R.id.iconoInfo);
 
         iconoInfo.setOnClickListener(v -> {
@@ -226,17 +226,17 @@ public class UserPageActivity extends FuncionesBaseActivity {
             startActivity(intent);
         });
 
-        // ---------------------------------------------------------------
-        // MOSTRAR ¡HOLA, USUARIO!
-        // ---------------------------------------------------------------
+        /// ---------------------------------------------------------------
+        /// MOSTRAR ¡HOLA, USUARIO!
+        /// ---------------------------------------------------------------
         txtHolaUsuario = findViewById(R.id.textBienvenida);
         txtHolaUsuario.setText("¡Hola, " + nombre + "!");
 
-        // ---------------------------------------------------------------
-        // OBTENER REFERENCIAS A LOS DOS LAYOUTS:
-        // - layoutSinSensor → la vista "Ups..."
-        // - layoutConSensor → los datos reales del sensor
-        // ---------------------------------------------------------------
+        /// ---------------------------------------------------------------
+        /// OBTENER REFERENCIAS A LOS DOS LAYOUTS:
+        /// - layoutSinSensor → la vista "Ups..."
+        /// - layoutConSensor → los datos reales del sensor
+        /// ---------------------------------------------------------------
         layoutSinSensor = findViewById(R.id.layoutSinSensor);
         layoutConSensor = findViewById(R.id.layoutConSensor);
 
@@ -369,18 +369,18 @@ public class UserPageActivity extends FuncionesBaseActivity {
                 queue,
                 new LogicaFake.ResumenUsuarioCallback() {
 
-                    // ----------------------------------------------------
-                    // CASO 1: EL USUARIO NO TIENE PLACA
-                    // ----------------------------------------------------
+                    /// ----------------------------------------------------
+                    /// CASO 1: EL USUARIO NO TIENE PLACA
+                    /// ----------------------------------------------------
                     @Override
                     public void onSinPlaca() {
                         layoutConSensor.setVisibility(View.GONE);
                         layoutSinSensor.setVisibility(View.VISIBLE);
                     }
 
-                    // ----------------------------------------------------
-                    // CASO 2: EL USUARIO TIENE PLACA ASIGNADA
-                    // ----------------------------------------------------
+                    /// ----------------------------------------------------
+                    /// CASO 2: EL USUARIO TIENE PLACA ASIGNADA
+                    /// ----------------------------------------------------
                     @Override
                     public void onConPlaca(String placa, double ultimaValor, String ultimaFecha, double promedio) {
 
@@ -399,9 +399,9 @@ public class UserPageActivity extends FuncionesBaseActivity {
                         txtEstadoUltima.setText(simbolo + "\nppm");
                         txtEstadoPromedio.setText(simbolo + "\nppm");
 
-                        // ----------------------------------------------------
-                        // ACTUALIZAR ESTADO DE CALIDAD EN LAS TARJETAS
-                        // ----------------------------------------------------
+                        /// ----------------------------------------------------
+                        /// ACTUALIZAR ESTADO DE CALIDAD EN LAS TARJETAS
+                        /// ----------------------------------------------------
                         //
                         // Última medición
                         String textoCalidadUltima = obtenerTextoCalidad(ultimaValor, tipoSeleccionado);
@@ -427,18 +427,18 @@ public class UserPageActivity extends FuncionesBaseActivity {
 
                     }
 
-                    // ----------------------------------------------------
-                    // CASO 3: ERROR CONTROLADO
-                    // ----------------------------------------------------
+                    /// ----------------------------------------------------
+                    /// CASO 3: ERROR CONTROLADO
+                    /// ----------------------------------------------------
                     @Override
                     public void onErrorServidor() {
                         Toast.makeText(UserPageActivity.this,
                                 "Error en el servidor", Toast.LENGTH_SHORT).show();
                     }
 
-                    // ----------------------------------------------------
-                    // CASO 4: ERROR INESPERADO
-                    // ----------------------------------------------------
+                    /// ----------------------------------------------------
+                    /// CASO 4: ERROR INESPERADO
+                    /// ----------------------------------------------------
                     @Override
                     public void onErrorInesperado() {
                         Toast.makeText(UserPageActivity.this,

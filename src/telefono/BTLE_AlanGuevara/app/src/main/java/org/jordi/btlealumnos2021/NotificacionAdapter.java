@@ -50,7 +50,7 @@ public class NotificacionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         this.listener = listener;
     }
 
-    // ------------------- Helpers para mapear posición → sección -------------------
+    /// ------------------- Helpers para mapear posición → sección -------------------
 
     private static class PosInfo {
         int viewType;
@@ -106,7 +106,7 @@ public class NotificacionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         return p;
     }
 
-    // ------------------- Métodos obligatorios del adapter -------------------
+    /// ------------------- Métodos obligatorios del adapter -------------------
 
     @Override
     public int getItemViewType(int position) {
@@ -180,7 +180,7 @@ public class NotificacionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         }
     }
 
-    // ------------------- ViewHolders -------------------
+    /// ------------------- ViewHolders -------------------
 
     static class HeaderViewHolder extends RecyclerView.ViewHolder {
         TextView tvTituloSeccion;

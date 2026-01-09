@@ -75,10 +75,10 @@ public class EstacionesMedidaAPI {
         // Se utilizará para devolver el resultado al mapa de forma segura.
         Handler mainHandler = new Handler(Looper.getMainLooper());
 
-        // ---------------------------------------------------------
-        // USO DE CACHE (si es reciente)
-        // Si se veulve a MapasActivity en menos de 1 minuto - NO hay ninguna llamada de red - Resultado inmediato y consistente
-        // ---------------------------------------------------------
+        /// ---------------------------------------------------------
+        /// USO DE CACHE (si es reciente)
+        /// Si se veulve a MapasActivity en menos de 1 minuto - NO hay ninguna llamada de red - Resultado inmediato y consistente
+        /// ---------------------------------------------------------
         long ahora = System.currentTimeMillis();
 
         if (cacheEstaciones != null && (ahora - cacheTimestampMs) < CACHE_TTL_MS) {
@@ -89,22 +89,22 @@ public class EstacionesMedidaAPI {
         }
 
 
-        // Se lanza un hilo secundario para evitar bloquear el hilo principal
-        // durante las múltiples operaciones de red.
+        /// Se lanza un hilo secundario para evitar bloquear el hilo principal
+        /// durante las múltiples operaciones de red.
         new Thread(() -> {
             try {
 
-                // Usamos varios hilos para descargar los sensores y que no tarde tanto
+                /// Usamos varios hilos para descargar los sensores y que no tarde tanto
                 ExecutorService pool = Executors.newFixedThreadPool(6);
 
-                // Lista de tareas para poder esperar a que todas terminen
+                /// Lista de tareas para poder esperar a que todas terminen
                 List<Future<?>> tareas = new ArrayList<>();
 
-                // -----------------------------------------------------------
-                // PASO 1: Descarga de la lista de estaciones (locations)
-                // -----------------------------------------------------------
-                // Se limita el número de estaciones a 40 para evitar realizar
-                // demasiadas peticiones individuales en el siguiente paso.
+                /// -----------------------------------------------------------
+                /// PASO 1: Descarga de la lista de estaciones (locations)
+                /// -----------------------------------------------------------
+                /// Se limita el número de estaciones a 40 para evitar realizar
+                /// demasiadas peticiones individuales en el siguiente paso.
                 String urlLoc = "https://api.openaq.org/v3/locations"
                         + "?bbox=-2.0,37.7,0.8,40.8"
                         + "&limit=40";
@@ -131,11 +131,11 @@ public class EstacionesMedidaAPI {
                         "Estaciones encontradas: " + resultsLoc.length() + ". Bajando detalles..."
                 );
 
-                // -----------------------------------------------------------
-                // PASO 2: Descarga del detalle de cada estación (sensores)
-                // -----------------------------------------------------------
-                // Para cada estación, se consulta su endpoint específico
-                // /locations/{id}/sensors para obtener los contaminantes disponibles
+                /// -----------------------------------------------------------
+                /// PASO 2: Descarga del detalle de cada estación (sensores)
+                /// -----------------------------------------------------------
+                /// Para cada estación, se consulta su endpoint específico
+                /// /locations/{id}/sensors para obtener los contaminantes disponibles
                 for (int i = 0; i < resultsLoc.length(); i++) {
 
                     JSONObject e = resultsLoc.getJSONObject(i);
@@ -154,11 +154,11 @@ public class EstacionesMedidaAPI {
                     est.lat = coords.getDouble("latitude");
                     est.lon = coords.getDouble("longitude");
 
-                    // -------------------------------------------------------
-                    // DESCARGA DEL DETALLE DE SENSORES DE ESTA ESTACIÓN
-                    // -------------------------------------------------------
+                    /// -------------------------------------------------------
+                    /// DESCARGA DEL DETALLE DE SENSORES DE ESTA ESTACIÓN
+                    /// -------------------------------------------------------
 
-                    // Cada estación se descarga en un hilo independiente
+                    /// Cada estación se descarga en un hilo independiente
                     Future<?> tarea = pool.submit(() -> {
                         try {
 
@@ -236,9 +236,9 @@ public class EstacionesMedidaAPI {
                     // listaEstaciones.add(est);
                 }
 
-                // -----------------------------------------------------------
-                // ESPERAR A QUE TODAS LAS DESCARGAS TERMINEN
-                // -----------------------------------------------------------
+                /// -----------------------------------------------------------
+                /// ESPERAR A QUE TODAS LAS DESCARGAS TERMINEN
+                /// -----------------------------------------------------------
                 for (Future<?> f : tareas) {
                     try {
                         // Bloquea hasta que la tarea termina
@@ -251,9 +251,9 @@ public class EstacionesMedidaAPI {
                 pool.shutdown();
 
 
-                // -----------------------------------------------------------
-                // PASO 3: Envío del resultado al hilo principal
-                // -----------------------------------------------------------
+                /// -----------------------------------------------------------
+                /// PASO 3: Envío del resultado al hilo principal
+                /// -----------------------------------------------------------
                 Log.d(
                         "OPENAQ",
                         "Proceso terminado. Enviando "
@@ -261,9 +261,9 @@ public class EstacionesMedidaAPI {
                                 + " estaciones."
                 );
 
-                // ---------------------------------------------------------
-                // GUARDAR CACHE Y DEVOLVER RESULTADO
-                // ---------------------------------------------------------
+                /// ---------------------------------------------------------
+                /// GUARDAR CACHE Y DEVOLVER RESULTADO
+                /// ---------------------------------------------------------
 
                 // Clonamos la lista para evitar modificaciones externas
                 cacheEstaciones = new ArrayList<>(listaEstaciones);
