@@ -1,6 +1,38 @@
 <!doctype html>
 <html lang="es">
 <head>
+    <!--
+    /**
+     * @file mapaUserNoLogueado.php
+     * @brief Vista pública del mapa de calidad del aire (usuarios no logueados).
+     *
+     * Esta página muestra una versión limitada del mapa de calidad del aire:
+     *  - Visualización global de contaminantes (modo ALL).
+     *  - Búsqueda geográfica mediante Nominatim.
+     *  - Geolocalización del usuario.
+     *  - Capa IDW renderizada en canvas.
+     *
+     * Restricciones para usuarios no autenticados:
+     *  - Selector de contaminantes individuales bloqueado.
+     *  - Índice de calidad visible pero sin datos.
+     *  - Timeline deshabilitada.
+     *
+     * Tecnologías utilizadas:
+     *  - Leaflet.js
+     *  - CanvasOverlay personalizado
+     *  - OpenStreetMap
+     *  - Turf.js
+     *
+     * Dependencias:
+     *  - js/mapaUserNoLogueado.js
+     *  - partials/header.php
+     *  - popupContaminantes.php
+     *
+     * @author Equipo ATMOS
+     * @version 1.0
+     */
+    -->
+
     <meta charset="UTF-8">
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -8,16 +40,33 @@
 
     <title>Mapa de Calidad de Aire - Atmos</title>
 
-    <!-- Leaflet CSS -->
+    <!--
+    /**
+     * @section Estilos Leaflet
+     * @brief Estilos necesarios para el renderizado del mapa.
+     */
+    -->
     <link rel="stylesheet"
           href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
           crossorigin=""
     />
 
+    <!--
+    /**
+     * @section Estilos propios
+     * @brief Estilos globales y específicos del mapa público.
+     */
+    -->
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="stylesheet" href="css/mapaUserNoLogueado.css">
     <link rel="stylesheet" href="css/popupContaminantes.css">
 
+    <!--
+    /**
+     * @section Tipografía
+     * @brief Fuente Roboto utilizada en la interfaz del mapa.
+     */
+    -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -26,51 +75,88 @@
 <body>
 
 <?php
+/**
+ * @brief Inclusión del header público.
+ *
+ * Activa la sección "mapas" como elemento activo del menú.
+ */
 $active = 'mapas';
 include __DIR__ . '/partials/header.php';
 ?>
 
 <main>
 
+    <!--
+    /**
+     * @section Contenedor principal del mapa
+     * @brief Estructura base de la vista del mapa.
+     */
+    -->
     <section class="main-container">
 
+        <!-- Título -->
         <section class="titulo-container">
             <h2>Mapa de calidad del aire</h2>
         </section>
 
         <section class="mapa-main-container">
 
-            <!-- Mapa -->
+            <!--
+            /**
+             * @section Mapa Leaflet
+             * @brief Contenedor del mapa interactivo.
+             */
+            -->
             <div id="map" class="mapa"></div>
 
-            <!-- Barra de búsqueda -->
+            <!--
+            /**
+             * @section Barra de búsqueda
+             * @brief Autocompletado de ubicaciones mediante Nominatim.
+             */
+            -->
             <div class="search-bar">
-                <span class="search-icon"><img src="img/busquedaIcono.svg" alt=""></span>
-                <input type="text" id="search-input" placeholder="Buscar ubicación..." autocomplete="off">
+                <span class="search-icon">
+                    <img src="img/busquedaIcono.svg" alt="">
+                </span>
+                <input type="text"
+                       id="search-input"
+                       placeholder="Buscar ubicación..."
+                       autocomplete="off">
             </div>
 
             <div id="search-suggestions" class="search-suggestions"></div>
 
-
-            <!-- Panel contaminantes (modo no logueado → bloqueado) -->
+            <!--
+            /**
+             * @section Panel de contaminantes
+             * @brief Selector de contaminantes (modo bloqueado).
+             *
+             * En modo no logueado solo está activo:
+             *  - ALL (todos los contaminantes).
+             */
+            -->
             <div class="contaminantes-panel">
 
                 <div class="contaminantes-header">
                     <h3>Contaminantes</h3>
-                    <button class="info-btn-contaminantes" data-popup="popupContaminantes">
+                    <button class="info-btn-contaminantes"
+                            data-popup="popupContaminantes">
                         <img src="img/informacionIcon.svg" alt="">
                     </button>
                 </div>
 
                 <div class="contaminantes-selector">
 
-                    <!-- SOLO ESTO ESTÁ ACTIVO -->
-                    <div class="contaminante-option active" data-tipo="ALL" id="TodosOpcionSelector">
+                    <!-- Opción activa -->
+                    <div class="contaminante-option active"
+                         data-tipo="ALL"
+                         id="TodosOpcionSelector">
                         <img src="img/TODOSIcono.svg" alt="Todos">
                         <span>Todos</span>
                     </div>
 
-                    <!-- LOS DEMÁS ESTÁN BLOQUEADOS -->
+                    <!-- Opciones bloqueadas -->
                     <div class="contaminante-option disabled" data-tipo="11">
                         <img src="img/NO2icono.svg" alt="NO2">
                         <span>NO₂</span>
@@ -94,8 +180,12 @@ include __DIR__ . '/partials/header.php';
                 </div>
             </div>
 
-
-            <!-- Índice de Calidad → versión limitada -->
+            <!--
+            /**
+             * @section Índice de calidad del aire
+             * @brief Versión informativa sin datos reales.
+             */
+            -->
             <div class="mapa-indice-container">
                 <h4>Índice de Calidad</h4>
 
@@ -104,7 +194,6 @@ include __DIR__ . '/partials/header.php';
                 </p>
 
                 <div class="leyendas_indices-container">
-
                     <div class="fila-indice">
                         <span class="color-buena"></span>
                         <span class="texto-indice">Buena</span>
@@ -128,23 +217,21 @@ include __DIR__ . '/partials/header.php';
                         <span class="texto-indice">Mala</span>
                         <span class="porcentaje-mala">–</span>
                     </div>
-
                 </div>
             </div>
 
-
-            <!-- Zoom -->
+            <!-- Controles de zoom -->
             <div class="map-zoom-controls">
                 <button id="zoom-in"><img src="img/acercarIcono.svg" alt=""></button>
                 <button id="zoom-out"><img src="img/alejarIcono.svg" alt=""></button>
             </div>
 
-            <!-- Mi ubicación -->
+            <!-- Botón geolocalización -->
             <button id="btn-geoloc" class="map-location-btn">
                 <img src="img/ubicacionIcono.svg" alt="">
             </button>
 
-            <!-- Timeline (opcional bloquear) -->
+            <!-- Timeline (bloqueada) -->
             <div class="timeline-box">
                 <div class="timeline-controls">
                     <button id="tl-back"><img src="img/atrasarIcono.svg" alt=""></button>
@@ -153,7 +240,11 @@ include __DIR__ . '/partials/header.php';
                     <button id="tl-forward"><img src="img/avanzarIcono.svg" alt=""></button>
                 </div>
 
-                <input type="range" id="timeline-slider" min="0" max="12" value="12">
+                <input type="range"
+                       id="timeline-slider"
+                       min="0"
+                       max="12"
+                       value="12">
 
                 <div class="timeline-labels" id="timeline-labels"></div>
             </div>
@@ -163,13 +254,30 @@ include __DIR__ . '/partials/header.php';
 
 </main>
 
+<!--
+/**
+ * @section Librerías externas
+ * @brief Dependencias JS para el mapa.
+ */
+-->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
 <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
 
+<!--
+/**
+ * @section Script principal
+ * @brief Lógica del mapa público (modo no logueado).
+ */
+-->
 <script src="js/mapaUserNoLogueado.js" defer></script>
 
-<?php include __DIR__ . '/popupContaminantes.php'; ?>
+<?php
+/**
+ * @brief Popup informativo de contaminantes.
+ */
+include __DIR__ . '/popupContaminantes.php';
+?>
 
 </body>
 </html>

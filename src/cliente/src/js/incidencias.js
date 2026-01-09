@@ -1,16 +1,38 @@
+/**
+ * @file incidencias_usuario.js
+ * @brief Gestión de incidencias del usuario.
+ *
+ * Este script se encarga de:
+ * - Cargar las incidencias asociadas al usuario desde el backend.
+ * - Renderizar la lista de incidencias en la interfaz.
+ * - Mostrar el detalle de una incidencia seleccionada.
+ * - Enviar nuevas incidencias al sistema.
+ * - Marcar incidencias como leídas.
+ *
+ * La comunicación con el backend se realiza mediante peticiones HTTP
+ * al API REST autenticado.
+ */
 
 const API_BASE_URL = "https://nagufor.upv.edu.es";
 
+/**
+ * @brief Inicialización al cargar el DOM.
+ *
+ * Carga las incidencias existentes y configura el envío
+ * del formulario de nuevas incidencias.
+ */
 document.addEventListener('DOMContentLoaded', () => {
     cargarIncidencias();
 
-    // Event listener para el formulario
     document.getElementById('formEnviar').addEventListener('submit', (e) => {
         e.preventDefault();
         enviarIncidencia();
     });
 });
 
+/**
+ * @brief Carga las incidencias del usuario desde el backend.
+ */
 async function cargarIncidencias() {
     const contenedor = document.getElementById('incidenceList');
 
@@ -23,34 +45,39 @@ async function cargarIncidencias() {
             renderizarLista(data.incidencias);
         } else {
             console.error("Error al cargar incidencias:", data);
-            contenedor.innerHTML = `<div style="padding:20px; text-align:center;">Error al cargar datos.</div>`;
+            contenedor.innerHTML =
+                `<div style="padding:20px; text-align:center;">Error al cargar datos.</div>`;
         }
 
     } catch (error) {
         console.error("Error de red:", error);
-        contenedor.innerHTML = `<div style="padding:20px; text-align:center;">Error de conexión.</div>`;
+        contenedor.innerHTML =
+            `<div style="padding:20px; text-align:center;">Error de conexión.</div>`;
     }
 }
 
+/**
+ * @brief Renderiza la lista de incidencias en la interfaz.
+ *
+ * @param {Array<Object>} incidencias Lista de incidencias del usuario.
+ */
 function renderizarLista(incidencias) {
     const contenedor = document.getElementById('incidenceList');
     contenedor.innerHTML = '';
 
     if (incidencias.length === 0) {
-        contenedor.innerHTML = `<div style="padding:20px; text-align:center; color:#888;">No tienes incidencias registradas.</div>`;
+        contenedor.innerHTML =
+            `<div style="padding:20px; text-align:center; color:#888;">
+                No tienes incidencias registradas.
+             </div>`;
         return;
     }
 
-    // Ordenar por fecha descendente (la más nueva arriba)
-    // El formato de fecha suele venir ISO: 2025-12-29 00:15:59
+    // Ordenar por fecha descendente (más reciente primero)
     incidencias.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
     incidencias.forEach(inc => {
-        // Mapear estado
-        // 1: Solicitada (Pendiente)
-        // 2: En proceso (Pendiente)
-        // 3: Resuelta
-        // 4: Rechazada
+
         let estadoUI = 'pending';
         let claseDot = 'yellow';
         let textoEstado = 'Pendiente';
@@ -69,7 +96,7 @@ function renderizarLista(incidencias) {
         const item = document.createElement('div');
         item.className = 'incidence-item';
 
-        // Guardamos datos en el objeto del DOM para usarlos al hacer click
+        // Guardar datos completos para su uso al hacer click
         item.dataset.json = JSON.stringify(inc);
 
         item.innerHTML = `
@@ -88,45 +115,53 @@ function renderizarLista(incidencias) {
     });
 }
 
+/**
+ * @brief Selecciona una incidencia y muestra su detalle.
+ *
+ * @param {HTMLElement} element Elemento DOM seleccionado.
+ * @param {Object} data Datos de la incidencia.
+ */
 function selectIncidencia(element, data) {
-    // 1. Gestionar clases active
-    document.querySelectorAll('.incidence-item').forEach(i => i.classList.remove('active'));
+
+    document.querySelectorAll('.incidence-item')
+        .forEach(i => i.classList.remove('active'));
     element.classList.add('active');
 
-    // 2. Mostrar contenedor de detalle y ocultar empty state
     document.getElementById('emptyStateDetail').style.display = 'none';
     document.getElementById('contentDetailWrapper').style.display = 'block';
 
-    // 3. Rellenar datos
     document.getElementById('detailTitle').textContent = data.asunto;
-    document.getElementById('detailDesc').innerText = data.mensaje_enviado; // innerText respeta saltos de línea basicos
+    document.getElementById('detailDesc').innerText = data.mensaje_enviado;
 
-    // 4. Actualizar Estado (Status Hero)
     const resContainer = document.getElementById('resolutionContent');
     const idEstado = parseInt(data.id_estado);
     const respuestaAdmin = data.respuesta;
 
-    if (idEstado === 3) { // RESUELTA
+    if (idEstado === 3) {
         resContainer.innerHTML = `
             <div class="status-hero resolved">
                 <div class="status-icon-large">
                     <i class="fa-solid fa-check"></i>
                 </div>
                 <h4 class="status-title">Incidencia Resuelta</h4>
-                <p class="status-desc">${respuestaAdmin ? escapeHtml(respuestaAdmin) : 'Tu incidencia ha sido resuelta.'}</p>
+                <p class="status-desc">
+                    ${respuestaAdmin ? escapeHtml(respuestaAdmin) : 'Tu incidencia ha sido resuelta.'}
+                </p>
             </div>
         `;
-    } else if (idEstado === 4) { // RECHAZADA
+    } else if (idEstado === 4) {
         resContainer.innerHTML = `
             <div class="status-hero rejected" style="border-color: #FECACA;">
                 <div class="status-icon-large" style="background: #FEF2F2; color: #EF4444;">
                     <i class="fa-solid fa-xmark"></i>
                 </div>
                 <h4 class="status-title" style="color: #EF4444;">Incidencia Rechazada</h4>
-                <p class="status-desc">${respuestaAdmin ? escapeHtml(respuestaAdmin) : 'La incidencia no procede o ha sido desestimada.'}</p>
+                <p class="status-desc">
+                    ${respuestaAdmin ? escapeHtml(respuestaAdmin) : 'La incidencia no procede o ha sido desestimada.'}
+                </p>
             </div>
         `;
-    } else { // PENDIENTE O EN PROCESO
+    } else {
         resContainer.innerHTML = `
             <div class="status-hero pending">
                 <div class="status-icon-large">
@@ -141,16 +176,16 @@ function selectIncidencia(element, data) {
         `;
     }
 
-    // 5. Marcar como leída si no lo estaba
-    // El campo puede venir como string "0" o int 0
     if (data.leida_usuario == 0 && data.respuesta) {
         marcarComoLeida(data.id_incidencia);
-        // Actualizamos localmente para no llamar otra vez
         data.leida_usuario = 1;
         element.dataset.json = JSON.stringify(data);
     }
 }
 
+/**
+ * @brief Envía una nueva incidencia al backend.
+ */
 async function enviarIncidencia() {
     const asunto = document.getElementById('asuntoInput').value.trim();
     const mensaje = document.getElementById('mensajeInput').value.trim();
@@ -169,7 +204,6 @@ async function enviarIncidencia() {
             id_usuario: window.ID_USUARIO,
             asunto: asunto,
             mensaje_enviado: mensaje
-            // id_placa: null (opcional, no lo tenemos en este form simplificado)
         };
 
         const response = await fetch(`${API_BASE_URL}/incidencia`, {
@@ -181,10 +215,8 @@ async function enviarIncidencia() {
         const data = await response.json();
 
         if (data.status === 'ok') {
-            // Limpiar form
             document.getElementById('asuntoInput').value = '';
             document.getElementById('mensajeInput').value = '';
-            // Recargar lista
             cargarIncidencias();
             alert("Incidencia enviada correctamente.");
         } else {
@@ -200,6 +232,11 @@ async function enviarIncidencia() {
     }
 }
 
+/**
+ * @brief Marca una incidencia como leída por el usuario.
+ *
+ * @param {number} idIncidencia Identificador de la incidencia.
+ */
 function marcarComoLeida(idIncidencia) {
     fetch(`${API_BASE_URL}/incidencia/leida`, {
         method: 'POST',
@@ -208,13 +245,17 @@ function marcarComoLeida(idIncidencia) {
     }).catch(err => console.error("Error marcando leída", err));
 }
 
+/**
+ * @brief Formatea una fecha a formato legible.
+ *
+ * @param {string} fechaString Fecha en formato ISO o YYYY-MM-DD HH:mm:ss.
+ * @return {string} Fecha formateada.
+ */
 function formatearFecha(fechaString) {
     if (!fechaString) return '';
-    // fechaString suele ser "YYYY-MM-DD HH:mm:ss" o ISO
     const d = new Date(fechaString);
     if (isNaN(d.getTime())) return fechaString;
 
-    // Formato: HH:mm - DD/MM/YYYY
     const hours = d.getHours().toString().padStart(2, '0');
     const mins = d.getMinutes().toString().padStart(2, '0');
     const day = d.getDate().toString().padStart(2, '0');
@@ -224,6 +265,12 @@ function formatearFecha(fechaString) {
     return `${hours}:${mins} - ${day}/${month}/${year}`;
 }
 
+/**
+ * @brief Escapa caracteres HTML para evitar XSS.
+ *
+ * @param {string} text Texto a escapar.
+ * @return {string} Texto escapado.
+ */
 function escapeHtml(text) {
     if (!text) return '';
     return text
