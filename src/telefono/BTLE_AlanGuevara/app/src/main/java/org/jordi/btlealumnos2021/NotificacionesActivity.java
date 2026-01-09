@@ -20,11 +20,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 public class NotificacionesActivity extends AppCompatActivity {
 
@@ -97,7 +93,7 @@ public class NotificacionesActivity extends AppCompatActivity {
                                 );
 
                         guardarLeidasEnPrefs();
-                        adapter.updateData(listaNuevas, listaLeidas);
+                        adapter.setNotificaciones(listaNuevas, listaLeidas);
                     }
                 }
             }
@@ -108,10 +104,10 @@ public class NotificacionesActivity extends AppCompatActivity {
                 List<NotificacionAtmos> lista = esNueva ? listaNuevas : listaLeidas;
                 NotificacionAtmos target = null;
                 for (NotificacionAtmos n : lista) {
-                     if (n.getIdNotificacion() == idNotificacion) {
-                         target = n;
-                         break;
-                     }
+                    if (n.getIdNotificacion() == idNotificacion) {
+                        target = n;
+                        break;
+                    }
                 }
 
                 if (target != null) {
@@ -126,8 +122,8 @@ public class NotificacionesActivity extends AppCompatActivity {
                                     idNotificacion,
                                     null
                             );
-                    
-                    adapter.updateData(listaNuevas, listaLeidas);
+
+                    adapter.setNotificaciones(listaNuevas, listaLeidas);
                 }
             }
         });
@@ -145,7 +141,7 @@ public class NotificacionesActivity extends AppCompatActivity {
             if (ContextCompat.checkSelfPermission(
                     this, Manifest.permission.POST_NOTIFICATIONS) !=
                     PackageManager.PERMISSION_GRANTED) {
-                
+
                 requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
             }
         }
@@ -158,10 +154,6 @@ public class NotificacionesActivity extends AppCompatActivity {
         // Iniciar polling (refresco automático cada 5s)
         handler.postDelayed(refrescoPeriodico, 5000);
     }
-
-
-
-
 
     @Override
     protected void onPause() {
@@ -184,7 +176,7 @@ public class NotificacionesActivity extends AppCompatActivity {
 
                             @Override
                             public void onResultado(
-                                    java.util.List<NotificacionAtmos> nuevas,
+                                    List<NotificacionAtmos> nuevas,
                                     boolean hayAlgoNuevo
                             ) {
 
@@ -209,7 +201,7 @@ public class NotificacionesActivity extends AppCompatActivity {
                                     if (!yaLeida) listaNuevas.add(n);
                                 }
 
-                                adapter.updateData(listaNuevas, listaLeidas);
+                                adapter.setNotificaciones(listaNuevas, listaLeidas);
                             }
 
                             @Override
@@ -260,7 +252,7 @@ public class NotificacionesActivity extends AppCompatActivity {
                         new NotificacionAtmos(
                                 o.optInt("id", -1),
                                 o.optString("tipo", ""),
-                                o.optString("titulo", ""), // Fix: Load title if possible, or empty
+                                o.optString("titulo", ""),
                                 o.optString("texto", ""),
                                 o.optString("hora", ""),
                                 o.optLong("timestamp", 0L),
@@ -269,5 +261,16 @@ public class NotificacionesActivity extends AppCompatActivity {
                 );
             }
         } catch (Exception ignored) {}
+    }
+
+    // ------------------------------------------------------------
+    // Borrar TODAS las notificaciones (nuevas + leídas)
+    // ------------------------------------------------------------
+
+    private void borrarTodasNotificaciones() {
+        listaNuevas.clear();
+        listaLeidas.clear();
+        listaNegraBorrados.clear();
+        adapter.setNotificaciones(listaNuevas, listaLeidas);
     }
 }
