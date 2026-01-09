@@ -657,7 +657,7 @@ class Logica {
             conn.release();
         }
     }
-
+    
     // --------------------------------------------------------------------------
     // Método: obtenerPromedios7Dias()
     // --------------------------------------------------------------------------
@@ -683,7 +683,7 @@ class Logica {
             // Convertimos resultado a un mapa: { "2025-11-15": 0.08, ... }
             const mapa = {};
             rows.forEach(r => {
-                mapa[r.fecha.toISOString().substring(0, 10)] = Number(r.promedio);
+                mapa[r.fecha.toISOString().substring(0,10)] = Number(r.promedio);
             });
 
             // Construimos salida en orden cronológico
@@ -696,8 +696,8 @@ class Logica {
 
                 // Convertir fecha a AAAA-MM-DD en zona local (no UTC)
                 const clave = d.getFullYear() + "-" +
-                    String(d.getMonth() + 1).padStart(2, "0") + "-" +
-                    String(d.getDate()).padStart(2, "0");
+                  String(d.getMonth() + 1).padStart(2, "0") + "-" +
+                  String(d.getDate()).padStart(2, "0");
 
 
                 valores.push(mapa[clave] ? mapa[clave] : 0);
@@ -710,7 +710,7 @@ class Logica {
         }
     }
 
-
+    
     // --------------------------------------------------------------------------
     // Método: obtenerPromedios8HorasPorGas()
     // --------------------------------------------------------------------------
@@ -779,85 +779,85 @@ class Logica {
         }
     }
 
-    // --------------------------------------------------------------------------
-    // Autor: Alan Guevara Martínez
-    // Fecha: 20/11/2025
-    // Método: guardarMedidaYActualizarDistancia()
-    // --------------------------------------------------------------------------
-    // Descripción:
-    //   Inserta una nueva medida en la tabla "medida" (como guardarMedida),
-    //   y además actualiza el campo "distancia" de la tabla "placa"
-    //   usando el RSSI recibido (ahora se guarda el valor crudo).
-    //
-    // Parámetros:
-    //   - id_placa {string} : identificador de la placa.
-    //   - tipo     {number} : tipo de gas.
-    //   - valor    {number} : valor medido.
-    //   - latitud  {number} : latitud registrada (opcional).
-    //   - longitud {number} : longitud registrada (opcional).
-    //   - rssi     {number} : intensidad de señal del beacon.
-    //
-    // Devuelve:
-    //   - {Promise<Object>} : fila insertada en "medida".
-    // --------------------------------------------------------------------------
-    async guardarMedidaYActualizarDistancia(
-        id_placa,
-        tipo,
-        valor,
-        latitud = 0,
-        longitud = 0,
-        rssi
-    ) {
-        const conn = await this.pool.getConnection();
-        try {
-            // Iniciamos transacción
-            await conn.beginTransaction();
+   // --------------------------------------------------------------------------
+// Autor: Alan Guevara Martínez
+// Fecha: 20/11/2025
+// Método: guardarMedidaYActualizarDistancia()
+// --------------------------------------------------------------------------
+// Descripción:
+//   Inserta una nueva medida en la tabla "medida" (como guardarMedida),
+//   y además actualiza el campo "distancia" de la tabla "placa"
+//   usando el RSSI recibido (ahora se guarda el valor crudo).
+//
+// Parámetros:
+//   - id_placa {string} : identificador de la placa.
+//   - tipo     {number} : tipo de gas.
+//   - valor    {number} : valor medido.
+//   - latitud  {number} : latitud registrada (opcional).
+//   - longitud {number} : longitud registrada (opcional).
+//   - rssi     {number} : intensidad de señal del beacon.
+//
+// Devuelve:
+//   - {Promise<Object>} : fila insertada en "medida".
+// --------------------------------------------------------------------------
+async guardarMedidaYActualizarDistancia(
+    id_placa,
+    tipo,
+    valor,
+    latitud = 0,
+    longitud = 0,
+    rssi
+) {
+    const conn = await this.pool.getConnection();
+    try {
+        // Iniciamos transacción
+        await conn.beginTransaction();
 
-            // 1) Insertar la medida
-            const sqlInsert = `
+        // 1) Insertar la medida
+        const sqlInsert = `
             INSERT INTO medida (id_placa, tipo, valor, latitud, longitud, fecha_hora)
             VALUES (?, ?, ?, ?, ?, NOW())
         `;
-            const [resultado] = await conn.execute(sqlInsert, [
-                id_placa,
-                tipo,
-                valor,
-                latitud,
-                longitud
-            ]);
+        const [resultado] = await conn.execute(sqlInsert, [
+            id_placa,
+            tipo,
+            valor,
+            latitud,
+            longitud
+        ]);
 
-            const sqlSelect = `SELECT * FROM medida WHERE id_medida = ?`;
-            const [filas] = await conn.execute(sqlSelect, [resultado.insertId]);
-            const medidaInsertada = filas[0];
+        const sqlSelect = `SELECT * FROM medida WHERE id_medida = ?`;
+        const [filas] = await conn.execute(sqlSelect, [resultado.insertId]);
+        const medidaInsertada = filas[0];
 
-            // 2) Guardar directamente el RSSI en placa.distancia
-            const sqlUpdatePlaca = `
+        // 2) Guardar directamente el RSSI en placa.distancia
+        const sqlUpdatePlaca = `
             UPDATE placa
             SET distancia = ?
             WHERE id_placa = ?
         `;
-            await conn.execute(sqlUpdatePlaca, [rssi, id_placa]);
+        await conn.execute(sqlUpdatePlaca, [rssi, id_placa]);
 
-            // 3) Commit
-            await conn.commit();
+        // 3) Commit
+        await conn.commit();
 
-            return medidaInsertada;
+        return medidaInsertada;
 
-        } catch (err) {
-            // Rollback si falla
-            try {
-                await conn.rollback();
-            } catch (e) {
-                console.error("Error en rollback de guardarMedidaYActualizarDistancia:", e);
-            }
-            console.error("Error en guardarMedidaYActualizarDistancia:", err);
-            throw err;
-
-        } finally {
-            conn.release();
+    } catch (err) {
+        // Rollback si falla
+        try {
+            await conn.rollback();
+        } catch (e) {
+            console.error("Error en rollback de guardarMedidaYActualizarDistancia:", e);
         }
-    }
+        console.error("Error en guardarMedidaYActualizarDistancia:", err);
+        throw err;
 
+    } finally {
+        conn.release();
+    }
+}
+    
     // --------------------------------------------------------------------------
     // Método: actualizarEstadoPlaca
     // Autor: Alan Guevara Martínez
@@ -892,7 +892,7 @@ class Logica {
             conn.release();
         }
     }
-
+    
     // -----------------------------------------------------------------------------
     // Método: obtenerEstadoPlaca()
     // -----------------------------------------------------------------------------
@@ -937,7 +937,7 @@ class Logica {
             conn.release();
         }
     }
-
+    
     // ==========================================================================
     // Método: obtenerEstadoSenal( idUsuario )
     // --------------------------------------------------------------------------
@@ -985,7 +985,7 @@ class Logica {
             // 2) Clasificar señal según rangos
             let nivel = "sin_datos";
 
-            if (rssi <= -40 && rssi >= -55) {
+            if (rssi <= -20 && rssi >= -55) {
                 nivel = "fuerte";
             } else if (rssi <= -56 && rssi >= -70) {
                 nivel = "media";
@@ -1001,9 +1001,9 @@ class Logica {
             conn.release();
         }
     }
-
+    
     //A partir de aqui agrego notificaciones --alex
-
+    
     /* --------------------------------------------------------------------------
      * Método: obtenerUltimaMedidaPlaca()
      * --------------------------------------------------------------------------
@@ -1040,10 +1040,10 @@ class Logica {
  * Descripción:
  *   Devuelve la última medida de tipo O₃ (tipo = 13) para una placa.
  * -------------------------------------------------------------------------- */
-    async obtenerUltimaMedidaO3(id_placa) {
-        const TIPO_O3 = 13;
-        return this.obtenerUltimaMedidaPorGas(id_placa, TIPO_O3);
-    }
+async obtenerUltimaMedidaO3(id_placa) {
+    const TIPO_O3 = 13;
+    return this.obtenerUltimaMedidaPorGas(id_placa, TIPO_O3);
+}
 
     /* --------------------------------------------------------------------------
      * Método: obtenerMinutosDesdeUltimaMedida()
@@ -1248,24 +1248,24 @@ class Logica {
             conn.release();
         }
     }
+    
+    // --------------------------------------------------------------------------
+// Método: obtenerUltimasMedidasGlobalTodasLasPlacas()
+// Autor: Santiago Fuenmayor Ruiz
+// Fecha: 05/12/2025 (revisado)
+// --------------------------------------------------------------------------
+// Descripción:
+//   Devuelve, para CADA placa que tenga mediciones en la tabla "medida",
+//   las últimas coordenadas y el último valor de cada gas (11,12,13,14)
+//   en UNA única fila por placa.
+//
+//   Solo salen placas que tengan al menos una medida y lat/long no nulas.
+// --------------------------------------------------------------------------
+async obtenerUltimasMedidasGlobalTodasLasPlacas() {
+    const conn = await this.pool.getConnection();
+    try {
 
-    // --------------------------------------------------------------------------
-    // Método: obtenerUltimasMedidasGlobalTodasLasPlacas()
-    // Autor: Santiago Fuenmayor Ruiz
-    // Fecha: 05/12/2025 (revisado)
-    // --------------------------------------------------------------------------
-    // Descripción:
-    //   Devuelve, para CADA placa que tenga mediciones en la tabla "medida",
-    //   las últimas coordenadas y el último valor de cada gas (11,12,13,14)
-    //   en UNA única fila por placa.
-    //
-    //   Solo salen placas que tengan al menos una medida y lat/long no nulas.
-    // --------------------------------------------------------------------------
-    async obtenerUltimasMedidasGlobalTodasLasPlacas() {
-        const conn = await this.pool.getConnection();
-        try {
-
-            const sql = `
+        const sql = `
             SELECT *
             FROM (
                 SELECT 
@@ -1335,13 +1335,13 @@ class Logica {
               AND t.longitud IS NOT NULL;
         `;
 
-            const [rows] = await conn.query(sql);
-            return rows;
+        const [rows] = await conn.query(sql);
+        return rows;
 
-        } finally {
-            conn.release();
-        }
+    } finally {
+        conn.release();
     }
+}
 
 
 
@@ -1421,17 +1421,37 @@ class Logica {
             conn.release();
         }
     }
-    //* --------------------------------------------------------------------------
-    //* NOTIFICACIONES
-    //* --------------------------------------------------------------------------
-    /* --------------------------------------------------------------------------
-     * Método: obtenerNotificacionesUsuarioDesdeBD()
-     * Lee las notificaciones reales desde la tabla `notificacion`
-     * -------------------------------------------------------------------------- */
-    async obtenerNotificacionesUsuarioDesdeBD(id_usuario) {
-        const conn = await this.pool.getConnection();
-        try {
-            const sql = `
+/**
+ * Devuelve todos los usuarios que tengan una placa vinculada.
+ * Resultado típico:
+ * [
+ *   { id_usuario: 23, id_placa: 'PLACAPRUEBA-SANTI' },
+ *   { id_usuario: 51, id_placa: 'VALENCIA-001' }
+ * ]
+ */
+async listarUsuariosConPlaca() {
+    const sql = `
+        SELECT u.id_usuario, p.id_placa
+        FROM usuario u
+        JOIN placa p ON p.id_usuario = u.id_usuario
+        WHERE p.id_placa IS NOT NULL
+    `;
+    
+    const [rows] = await this.pool.query(sql);
+    return rows;
+}
+	
+//* --------------------------------------------------------------------------
+//* NOTIFICACIONES
+//* --------------------------------------------------------------------------
+/* --------------------------------------------------------------------------
+ * Método: obtenerNotificacionesUsuarioDesdeBD()
+ * Lee las notificaciones reales desde la tabla `notificacion`
+ * -------------------------------------------------------------------------- */
+async obtenerNotificacionesUsuarioDesdeBD(id_usuario) {
+    const conn = await this.pool.getConnection();
+    try {
+        const sql = `
             SELECT
                 id_notificacion,
                 tipo,
@@ -1445,34 +1465,34 @@ class Logica {
             ORDER BY fecha_creacion DESC
             LIMIT 100
         `;
-            const [rows] = await conn.query(sql, [id_usuario]);
+        const [rows] = await conn.query(sql, [id_usuario]);
 
-            // Adaptamos al formato que Android ya maneja
-            return rows.map(row => ({
-                id_notificacion: row.id_notificacion,
-                tipo: row.tipo,
-                titulo: row.titulo,
-                texto: row.mensaje,
-                icono: row.icono,
-                fecha_hora: row.fecha_creacion,
-                leido: row.estado === 1
-            }));
+        // Adaptamos al formato que Android ya maneja
+        return rows.map(row => ({
+            id_notificacion: row.id_notificacion,
+            tipo: row.tipo,
+            titulo: row.titulo,
+            texto: row.mensaje,
+            icono: row.icono,
+            fecha_hora: row.fecha_creacion,
+            leido: row.estado === 1
+        }));
 
-        } finally {
-            conn.release();
-        }
+    } finally {
+        conn.release();
     }
-    /* --------------------------------------------------------------------------
-     * Método: obtenerNotificacionesUsuario()
-     * --------------------------------------------------------------------------
-     *
-     * Simplemente devuelve las notificaciones persistidas en la tabla `notificacion`
-     * para ese usuario.
-     * -------------------------------------------------------------------------- */
-    async obtenerNotificacionesUsuario(id_usuario) {
-        // Delegamos en el método que lee directamente de la BBDD
-        return await this.obtenerNotificacionesUsuarioDesdeBD(id_usuario);
-    }
+}
+/* --------------------------------------------------------------------------
+ * Método: obtenerNotificacionesUsuario()
+ * --------------------------------------------------------------------------
+ *
+ * Simplemente devuelve las notificaciones persistidas en la tabla `notificacion`
+ * para ese usuario.
+ * -------------------------------------------------------------------------- */
+async obtenerNotificacionesUsuario(id_usuario) {
+    // Delegamos en el método que lee directamente de la BBDD
+    return await this.obtenerNotificacionesUsuarioDesdeBD(id_usuario);
+}
     /* --------------------------------------------------------------------------
      * Método: insertarNotificacion()
      * --------------------------------------------------------------------------
@@ -1488,38 +1508,57 @@ class Logica {
      *  - icono      {string|null} (p.ej. 'alerta', 'desconexion')
      * -------------------------------------------------------------------------- */
     async insertarNotificacion({
-        id_usuario,
-        id_placa = null,
-        tipo,
-        titulo,
-        mensaje,
-        nivel = "info",
-        icono = null,
-        estado = 0
-    }) {
-        const conn = await this.pool.getConnection();
-        try {
-            const sql = `
-                INSERT INTO notificacion
-                (id_usuario, id_placa, tipo, titulo, mensaje, nivel, icono, estado, fecha_creacion)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
-            `;
-            const [result] = await conn.execute(sql, [
-                id_usuario,
-                id_placa,
-                tipo,
-                titulo,
-                mensaje,
-                nivel,
-                icono,
-                estado
-            ]);
+    id_usuario,
+    id_placa = null,
+    tipo,
+    titulo,
+    mensaje,
+    nivel = "info",
+    icono = null,
+    estado = 0
+}) {
+    const conn = await this.pool.getConnection();
+    try {
+        // 1) Verificar que el usuario existe de verdad en la tabla `usuario`
+        const [rowsUsuario] = await conn.query(
+            "SELECT id_usuario FROM usuario WHERE id_usuario = ? LIMIT 1",
+            [id_usuario]
+        );
 
-            return result.insertId; // por si lo quieres usar
-        } finally {
-            conn.release();
+        if (!rowsUsuario.length) {
+            console.warn(
+                "[NOTIFICACION] Usuario no existe, se omite inserción. id_usuario =",
+                id_usuario
+            );
+            // No reventamos el cron, simplemente no creamos la notificación
+            return null;
         }
+
+        // 2) Insertar la notificación con total tranquilidad
+        const sql = `
+            INSERT INTO notificacion
+            (id_usuario, id_placa, tipo, titulo, mensaje, nivel, icono, estado, fecha_creacion)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+        `;
+
+        const [result] = await conn.execute(sql, [
+            id_usuario,
+            id_placa,
+            tipo,
+            titulo,
+            mensaje,
+            nivel,
+            icono,
+            estado
+        ]);
+
+        return result.insertId;
+
+    } finally {
+        conn.release();
     }
+}
+
     /* --------------------------------------------------------------------------
      * Método: obtenerNotificacionesUsuarioDesdeBD()
      * --------------------------------------------------------------------------
@@ -1622,94 +1661,118 @@ class Logica {
             conn.release();
         }
     }
+/* --------------------------------------------------------------------------
+ * Método: obtenerTodasLasPlacas()
+ * --------------------------------------------------------------------------
+ * Descripción:
+ *   Devuelve TODAS las pares (id_usuario, id_placa) que existan en la tabla
+ *   usuarioplaca. Es necesario para el cron que genera notificaciones.
+ *
+ * Devuelve:
+ *   [
+ *     { id_usuario: 23, id_placa: "PLACAPRUEBA-SANTI" },
+ *     { id_usuario: 10, id_placa: "PLACAXYZ" },
+ *     ...
+ *   ]
+ * -------------------------------------------------------------------------- */
+async obtenerTodasLasPlacas() {
+    const conn = await this.pool.getConnection();
+    try {
 
-    /**
-     * @brief Guarda o acumula la distancia diaria de un usuario.
-     *
-     * Inserta un nuevo registro de recorrido diario para el usuario
-     * o, si ya existe un registro para la misma fecha, acumula
-     * la distancia sumando los metros recorridos.
-     *
-     * Se utiliza principalmente al finalizar un recorrido.
-     *
-     * @param {number} id_usuario   Identificador del usuario.
-     * @param {number} distancia_m  Distancia recorrida en metros.
-     * @param {string|null} fecha   Fecha del recorrido (YYYY-MM-DD).
-     *                              Si es null, se utiliza la fecha actual.
-     *
-     * @author Alan Guevara Martínez
-     * @date   2025-12-17
-     */
-    async guardarRecorridoDiario(id_usuario, distancia_m, fecha = null) {
+        const sql = `
+            SELECT 
+                up.id_usuario,
+                up.id_placa
+            FROM usuarioplaca up
+        `;
 
-        // 1. Obtener una conexión del pool
-        const conn = await this.pool.getConnection();
+        const [rows] = await conn.query(sql);
 
-        try {
+        return rows;
 
-            /* -- VALUES define los valores a insertar:
-            -- 1er ?  → id_usuario (lo pasas desde el código)
-            -- 2º ?  → fecha (opcional)
-            -- COALESCE(?, CURDATE()):
-            --    - si el parámetro fecha NO es NULL → usa esa fecha
-            --    - si es NULL → usa la fecha actual del sistema (CURDATE())
-            -- 3er ? → distancia_m
-            -- En caso de duplicado:
-            -- - no se crea una nueva fila
-            -- - se actualiza la existente
-            -- - suma la distancia nueva a la ya almacenada*/
+    } finally {
+        conn.release();
+    }
+}
 
-            const sql = `
+/**
+ * @brief Guarda o acumula la distancia diaria de un usuario.
+ *
+ * Inserta un nuevo registro de recorrido diario para el usuario
+ * o, si ya existe un registro para la misma fecha, acumula
+ * la distancia sumando los metros recorridos.
+ *
+ * Se utiliza principalmente al finalizar un recorrido.
+ *
+ * @param {number} id_usuario   Identificador del usuario.
+ * @param {number} distancia_m  Distancia recorrida en metros.
+ * @param {string|null} fecha   Fecha del recorrido (YYYY-MM-DD).
+ *                              Si es null, se utiliza la fecha actual.
+ *
+ * @author Alan Guevara Martínez
+ * @date   2025-12-17
+ */
+async guardarRecorridoDiario(id_usuario, distancia_m, fecha = null) {
+
+    // 1. Obtener una conexión del pool
+    const conn = await this.pool.getConnection();
+
+    try {
+
+        // 2. SQL de inserción / actualización
+        //
+        // - Inserta un nuevo recorrido diario
+        // - Si ya existe (id_usuario + fecha):
+        //   acumula la distancia recorrida
+        const sql = `
             INSERT INTO recorrido_diario (id_usuario, fecha, distancia_m)
             VALUES (?, COALESCE(?, CURDATE()), ?)
             ON DUPLICATE KEY UPDATE
                 distancia_m = distancia_m + VALUES(distancia_m)
         `;
 
-            // 3. Ejecutar la consulta con parámetros
-            await conn.execute(sql, [
-                id_usuario,
-                fecha,
-                distancia_m
-            ]);
+        // 3. Ejecutar la consulta con parámetros
+        await conn.execute(sql, [
+            id_usuario,
+            fecha,
+            distancia_m
+        ]);
 
-        } finally {
+    } finally {
 
-            // 4. Liberar la conexión
-            conn.release();
-        }
+        // 4. Liberar la conexión (siempre)
+        conn.release();
     }
+}
+	
+/**
+ * @brief Obtiene la distancia recorrida por un usuario hoy y ayer.
+ *
+ * Consulta la tabla de recorridos diarios y devuelve los metros
+ * recorridos en el día actual y en el día anterior.
+ *
+ * Si no existen registros para alguno de los días,
+ * el valor correspondiente será null.
+ *
+ * @param {number} id_usuario Identificador del usuario.
+ *
+ * @returns {Object} Objeto con las distancias:
+ *                   { hoy: number|null, ayer: number|null }
+ *
+ * @author Alan Guevara Martínez
+ * @date   2025-12-17
+ */
+async obtenerRecorridoHoyYAyer(id_usuario) {
 
-    /**
-     * @brief Obtiene la distancia recorrida por un usuario hoy y ayer.
-     *
-     * Consulta la tabla de recorridos diarios y devuelve los metros
-     * recorridos en el día actual y en el día anterior.
-     *
-     * Si no existen registros para alguno de los días,
-     * el valor correspondiente será null.
-     *
-     * @param {number} id_usuario Identificador del usuario.
-     *
-     * @returns {Object} Objeto con las distancias:
-     *                   { hoy: number|null, ayer: number|null }
-     *
-     * @author Alan Guevara Martínez
-     * @date   2025-12-17
-     */
-    async obtenerRecorridoHoyYAyer(id_usuario) {
+    // 1. Obtener conexión del pool
+    const conn = await this.pool.getConnection();
 
-        // 1. Obtener conexión del pool
-        const conn = await this.pool.getConnection();
+    try {
 
-        try {
-
-            /*   -- Suma la distancia SOLO de las filas cuya fecha sea hoy
-                -- Si la fecha no es hoy, aporta 0 a la suma
-                -- El resultado se devuelve con el alias "hoy"
-                --Lo mimso para ayer, el ? se le pasa desde el código (id_usuario)*/
-
-            const sql = `
+        // 2. Consulta SQL
+        //    - Recupera el recorrido de hoy y ayer
+        //    - Usa CURDATE() para trabajar con fechas del servidor
+        const sql = `
             SELECT
                 SUM(CASE WHEN fecha = CURDATE() THEN distancia_m ELSE 0 END) AS hoy,
                 SUM(CASE WHEN fecha = CURDATE() - INTERVAL 1 DAY THEN distancia_m ELSE 0 END) AS ayer
@@ -1717,24 +1780,139 @@ class Logica {
             WHERE id_usuario = ?
         `;
 
-            // 3. Ejecutar la consulta
-            const [rows] = await conn.execute(sql, [id_usuario]);
+        // 3. Ejecutar la consulta
+        const [rows] = await conn.execute(sql, [id_usuario]);
 
-            // 4. Devolver resultados normalizados
-            return {
-                hoy: rows[0]?.hoy ?? null,
-                ayer: rows[0]?.ayer ?? null
-            };
+        // 4. Devolver resultados normalizados
+        return {
+            hoy: rows[0]?.hoy ?? null,
+            ayer: rows[0]?.ayer ?? null
+        };
 
-        } finally {
+    } finally {
 
-            // 5. Liberar la conexión
-            conn.release();
-        }
+        // 5. Liberar la conexión
+        conn.release();
     }
-
-    // --------------------------------------------------------------------------
 }
+	
+// --------------------------------------------------------------------------
+// MÉTODOS DE INCIDENCIAS
+// --------------------------------------------------------------------------
+/**
+ * @brief Crea una nueva incidencia asociada a un usuario.
+ *
+ * Inserta una incidencia en la base de datos con los valores iniciales:
+ * - respuesta = NULL
+ * - fecha = NOW()
+ * - id_estado = 1 (estado inicial)
+ *
+ * @param {number} id_usuario Identificador del usuario.
+ * @param {string} asunto Asunto o título de la incidencia.
+ * @param {string} mensaje_enviado Descripción del problema.
+ * @param {string|null} id_placa Identificador de la placa (opcional).
+ *
+ * @return {Promise<number>} Identificador de la incidencia creada.
+ *
+ * @author Nerea Aguilar Forés
+ */
+async crearIncidencia(id_usuario, asunto, mensaje_enviado, id_placa = null) {
+    const conn = await this.pool.getConnection();
+    try {
+        const sql = `
+            INSERT INTO incidencia
+            (asunto, mensaje_enviado, respuesta, fecha, id_usuario, id_placa, id_estado, leida_usuario)
+            VALUES (?, ?, NULL, NOW(), ?, ?, 1, 0)
+        `;
+        const [result] = await conn.execute(sql, [
+            asunto,
+            mensaje_enviado,
+            id_usuario,
+            id_placa
+        ]);
+        return result.insertId;
+    } finally {
+        conn.release();
+    }
+}
+
+/**
+ * @brief Obtiene todas las incidencias de un usuario.
+ *
+ * Devuelve las incidencias ordenadas por fecha descendente.
+ *
+ * @param {number} id_usuario Identificador del usuario.
+ *
+ * @return {Promise<Array>} Lista de incidencias del usuario.
+ *
+ * @author Nerea Aguilar Forés
+ */
+async listarIncidenciasUsuario(id_usuario) {
+    const conn = await this.pool.getConnection();
+    try {
+        const sql = `
+            SELECT id_incidencia, asunto, mensaje_enviado, respuesta, fecha, id_estado, leida_usuario
+            FROM incidencia
+            WHERE id_usuario = ?
+            ORDER BY fecha DESC, id_incidencia DESC
+        `;
+        const [rows] = await conn.execute(sql, [id_usuario]);
+        return rows;
+    } finally {
+        conn.release();
+    }
+}
+
+/**
+ * @brief Obtiene el detalle de una incidencia concreta.
+ *
+ * @param {number} id_incidencia Identificador de la incidencia.
+ *
+ * @return {Promise<Object|null>} Incidencia encontrada o null si no existe.
+ *
+ * @author Nerea Aguilar Forés
+ */
+async obtenerIncidenciaPorId(id_incidencia) {
+    const conn = await this.pool.getConnection();
+    try {
+        const sql = `
+            SELECT id_incidencia, asunto, mensaje_enviado, respuesta,
+                   fecha, id_usuario, id_placa, id_estado, leida_usuario
+            FROM incidencia
+            WHERE id_incidencia = ?
+            LIMIT 1
+        `;
+        const [rows] = await conn.execute(sql, [id_incidencia]);
+        return rows[0] || null;
+    } finally {
+        conn.release();
+    }
+}
+
+/**
+ * @brief Marca una incidencia como leída por el usuario.
+ *
+ * @param {number} id_incidencia Identificador de la incidencia.
+ *
+ * @author Nerea Aguilar Forés
+ */
+async marcarIncidenciaLeida(id_incidencia) {
+    const conn = await this.pool.getConnection();
+    try {
+        const sql = `
+            UPDATE incidencia
+            SET leida_usuario = 1
+            WHERE id_incidencia = ?
+        `;
+        await conn.execute(sql, [id_incidencia]);
+    } finally {
+        conn.release();
+    }
+}
+
+
+// --------------------------------------------------------------------------
+} 
 // --------------------------------------------------------------------------
 // Exportación de la clase
 // --------------------------------------------------------------------------

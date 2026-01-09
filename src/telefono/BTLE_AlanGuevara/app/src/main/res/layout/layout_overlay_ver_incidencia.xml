@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#80000000">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="350dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="24dp"
+        android:layout_gravity="center"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="6dp"
+        app:cardBackgroundColor="@android:color/white">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <!-- CABECERA: título + cerrar -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <!-- Título -->
+                <TextView
+                    android:id="@+id/txtTituloGrande"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="Título de la incidencia"
+                    android:textColor="@android:color/black"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toStartOf="@id/btnCerrar"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <!-- Botón cerrar -->
+                <ImageView
+                    android:id="@+id/btnCerrar"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:contentDescription="Cerrar"
+                    android:padding="6dp"
+                    android:src="@drawable/ic_close"
+                    app:layout_constraintBottom_toBottomOf="@id/txtTituloGrande"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/txtTituloGrande" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- Punto rojo -->
+
+            <!-- Descripción (scrollable) -->
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_marginTop="12dp"
+                android:fillViewport="true">
+
+                <TextView
+                    android:id="@+id/txtDescripcionGrande"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Lorem ipsum dolor sit amet consectetur adipiscing elit..."
+                    android:textColor="#555555"
+                    android:textSize="14sp"
+                    android:lineSpacingExtra="4dp"/>
+            </ScrollView>
+
+            <!-- Bloque resolución -->
+            <LinearLayout
+                android:id="@+id/bloqueResolucion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="vertical"
+                android:background="#F4FBF9"
+                android:padding="12dp">
+
+                <!-- Título resolución -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Resolución"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:textColor="@color/verde_principal"/>
+
+                <ScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:layout_marginTop="12dp"
+                    android:fillViewport="true">
+
+                <!-- Texto respuesta admin -->
+                    <TextView
+                        android:id="@+id/txtRespuestaAdmin"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="Respuesta del administrador"
+                        android:textSize="14sp"
+                        android:textColor="#555555"/>
+                </ScrollView>
+            </LinearLayout>
+
+            <!-- Fila Estado + Fecha -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp">
+
+                <!-- Estado (izquierda) -->
+                <TextView
+                    android:id="@+id/txtEstado"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Pendiente"
+                    android:textStyle="bold"
+                    android:textColor="@color/verde_principal"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+
+                <!-- Fecha (derecha) -->
+                <TextView
+                    android:id="@+id/txtFechaGrande"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="9:41 - 08/09/2025"
+                    android:textColor="#999999"
+                    android:textSize="12sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+</FrameLayout>

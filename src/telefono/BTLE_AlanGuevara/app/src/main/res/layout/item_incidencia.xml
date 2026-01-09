@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="#F2F2F2">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="12dp">
+
+        <!-- Título de la incidencia -->
+        <TextView
+            android:id="@+id/txtTitulo"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Título de la incidencia"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:textColor="@android:color/black"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/txtFecha"/>
+
+        <!-- Fecha y hora -->
+        <TextView
+            android:id="@+id/txtFecha"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="9:41 - 08/09/2025"
+            android:textColor="#777777"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toStartOf="@id/puntoRojo"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Punto rojo (estado) -->
+        <View
+            android:id="@+id/puntoRojo"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:layout_marginStart="6dp"
+            android:background="@drawable/bg_punto_rojo"
+            app:layout_constraintTop_toTopOf="@id/txtFecha"
+            app:layout_constraintBottom_toBottomOf="@id/txtFecha"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <!-- Descripción -->
+        <TextView
+            android:id="@+id/txtDescripcion"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do eiusmod tempor."
+            android:textSize="13sp"
+            android:textColor="#555555"
+            android:maxLines="3"
+            android:ellipsize="end"
+            app:layout_constraintTop_toBottomOf="@id/txtTitulo"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <!-- Estado de la incidencia -->
+        <TextView
+            android:id="@+id/txtEstado"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="Estado"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="@color/verde_principal"
+            app:layout_constraintTop_toBottomOf="@id/txtDescripcion"
+            app:layout_constraintStart_toStartOf="parent"/>
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.cardview.widget.CardView>

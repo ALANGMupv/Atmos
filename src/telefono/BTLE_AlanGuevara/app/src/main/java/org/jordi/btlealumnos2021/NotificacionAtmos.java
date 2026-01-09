@@ -16,25 +16,41 @@ package org.jordi.btlealumnos2021;
 
 public class NotificacionAtmos {
 
-    private String tipo;     // CO2_CRITICO, SENSOR_INACTIVO, etc.
+    // Identificador único de la notificación en la BBDD
+    private int idNotificacion;
+
+    // Campos lógicos de la notificación
+    private String tipo;     // O3_CRITICO, SENSOR_INACTIVO, etc.
     private String titulo;
     private String texto;
     private String hora;     // "18:20", "08:05", etc.
+    private long timestamp;  // Para ordenar por fecha (Hoy, Ayer, etc.)
     private boolean leida;
 
-    public NotificacionAtmos(String tipo, String titulo, String texto, String hora, boolean leida)
-    {
+    public NotificacionAtmos(int idNotificacion,
+                             String tipo,
+                             String titulo,
+                             String texto,
+                             String hora,
+                             long timestamp,
+                             boolean leida) {
+        this.idNotificacion = idNotificacion;
         this.tipo = tipo;
         this.titulo = titulo;
         this.texto = texto;
         this.hora = hora;
+        this.timestamp = timestamp;
         this.leida = leida;
     }
+
+    public int getIdNotificacion() { return idNotificacion; }
+    public void setIdNotificacion(int idNotificacion) { this.idNotificacion = idNotificacion; }
 
     public String getTipo() { return tipo; }
     public String getTitulo() { return titulo; }
     public String getTexto() { return texto; }
     public String getHora() { return hora; }
+    public long getTimestamp() { return timestamp; }
     public boolean isLeida() { return leida; }
 
     public void setLeida(boolean leida) { this.leida = leida; }

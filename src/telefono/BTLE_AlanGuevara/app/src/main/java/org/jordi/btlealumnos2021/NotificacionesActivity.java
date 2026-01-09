@@ -1,28 +1,18 @@
-/**
- * Nombre Fichero: NotificacionesActivity.java
- * Descripción: Pantalla encargada de mostrar el listado de
- *              notificaciones generadas por la plataforma ATMOS.
- *              Aquí se cargan y renderizan las notificaciones
- *              dentro de un RecyclerView utilizando su adapter.
- *
- *              Las notificaciones incluyen título, descripción,
- *              hora y un indicador visual de “sin leer”.
- *              Al pulsar sobre una notificación, ésta se marca
- *              automáticamente como leída y se mueve a la sección
- *              de "Notificaciones leídas".
- *
- * Autor: Alejandro Vazquez
- * Fecha: 20/11/2025
- */
 package org.jordi.btlealumnos2021;
 
 import android.content.SharedPreferences;
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.ImageView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -30,38 +20,47 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class NotificacionesActivity extends AppCompatActivity {
 
     private RecyclerView recyclerNotificaciones;
     private NotificacionAdapter adapter;
 
-    // Nuevas (con puntito) y leídas (sin puntito, en sección aparte)
     private ArrayList<NotificacionAtmos> listaNuevas;
     private ArrayList<NotificacionAtmos> listaLeidas;
 
-    // 🔁 Handler para refrescar periódicamente
+    // 🛑 Lista negra PERMANENTE durante la sesión
+    private final ArrayList<Integer> listaNegraBorrados = new ArrayList<>();
+
+    private int idUsuario = 23;
+
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable refrescoPeriodico = new Runnable() {
         @Override
         public void run() {
             cargarNotificacionesDesdeServidor();
-            // vuelve a programarse en X milisegundos (ahora 5 seg para pruebas)
-            handler.postDelayed(this, 5_000);
+            handler.postDelayed(this, 5000);
         }
     };
+
+    // Lanzador para solicitar permiso
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                // Si acepta, genial. Si no, no insistimos (política amigable).
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notificaciones);
 
-        // Flecha atrás en el header
         ImageView btnBack = findViewById(R.id.btnBackNotificaciones);
-        if (btnBack != null) {
-            btnBack.setOnClickListener(v -> finish());
-        }
+        btnBack.setOnClickListener(v -> finish());
 
         recyclerNotificaciones = findViewById(R.id.recyclerNotificaciones);
         recyclerNotificaciones.setLayoutManager(new LinearLayoutManager(this));
@@ -69,124 +68,152 @@ public class NotificacionesActivity extends AppCompatActivity {
         listaNuevas = new ArrayList<>();
         listaLeidas = new ArrayList<>();
 
-        // 🔄 Recuperar notificaciones leídas guardadas en el móvil
         cargarLeidasDePrefs();
 
-        adapter = new NotificacionAdapter(
-                listaNuevas,
-                listaLeidas,
-                new NotificacionAdapter.OnItemClickListener() {
-                    @Override
-                    public void onNotificacionClick(boolean esNueva, int indexEnLista) {
-                        // Pulsar una NUEVA → pasa a LEÍDAS y pierde el punto
-                        if (esNueva) {
-                            if (indexEnLista >= 0 && indexEnLista < listaNuevas.size()) {
-                                NotificacionAtmos n = listaNuevas.remove(indexEnLista);
-                                n.setLeida(true);
-                                listaLeidas.add(0, n); // la más reciente al principio
-                                adapter.notifyDataSetChanged();
-                                guardarLeidasEnPrefs();
-                            }
-                        } else {
-                            // Por ahora, tocar una leída no hace nada extra
+        adapter = new NotificacionAdapter(new NotificacionAdapter.OnItemClickListener() {
+            @Override
+            public void onNotificacionClick(boolean esNueva, int idNotificacion) {
+                if (esNueva) {
+                    // Buscar en listaNuevas por ID
+                    NotificacionAtmos target = null;
+                    for (NotificacionAtmos n : listaNuevas) {
+                        if (n.getIdNotificacion() == idNotificacion) {
+                            target = n;
+                            break;
                         }
                     }
 
-                    @Override
-                    public void onDeleteClick(boolean esNueva, int indexEnLista) {
-                        if (esNueva) {
-                            if (indexEnLista >= 0 && indexEnLista < listaNuevas.size()) {
-                                listaNuevas.remove(indexEnLista);
-                            }
-                        } else {
-                            if (indexEnLista >= 0 && indexEnLista < listaLeidas.size()) {
-                                listaLeidas.remove(indexEnLista);
-                                guardarLeidasEnPrefs();
-                            }
-                        }
-                        adapter.notifyDataSetChanged();
+                    if (target != null) {
+                        listaNuevas.remove(target);
+                        target.setLeida(true);
+                        listaLeidas.add(0, target);
+
+                        // Marcar en backend
+                        NotificacionesManager.getInstance(NotificacionesActivity.this)
+                                .marcarNotificacionComoLeida(
+                                        NotificacionesActivity.this,
+                                        idUsuario,
+                                        target.getIdNotificacion()
+                                );
+
+                        guardarLeidasEnPrefs();
+                        adapter.updateData(listaNuevas, listaLeidas);
                     }
                 }
-        );
+            }
+
+            @Override
+            public void onDeleteClick(boolean esNueva, int idNotificacion) {
+                // Borrar de la lista correspondiente
+                List<NotificacionAtmos> lista = esNueva ? listaNuevas : listaLeidas;
+                NotificacionAtmos target = null;
+                for (NotificacionAtmos n : lista) {
+                     if (n.getIdNotificacion() == idNotificacion) {
+                         target = n;
+                         break;
+                     }
+                }
+
+                if (target != null) {
+                    lista.remove(target);
+                    // 🛑 Agregar a lista negra
+                    listaNegraBorrados.add(idNotificacion);
+
+                    NotificacionesManager.getInstance(NotificacionesActivity.this)
+                            .borrarNotificacionBackend(
+                                    NotificacionesActivity.this,
+                                    idUsuario,
+                                    idNotificacion,
+                                    null
+                            );
+                    
+                    adapter.updateData(listaNuevas, listaLeidas);
+                }
+            }
+        });
 
         recyclerNotificaciones.setAdapter(adapter);
 
-        // Botón "Eliminar todas" (solo limpia nuevas en local)
         ImageView btnBorrarTodas = findViewById(R.id.btnBorrarTodas);
-        if (btnBorrarTodas != null) {
-            btnBorrarTodas.setOnClickListener(v -> {
-                listaNuevas.clear();
-                // Si quisieras vaciar también las leídas, descomenta:
-                // listaLeidas.clear();
-                // guardarLeidasEnPrefs();
-                adapter.notifyDataSetChanged();
-            });
-        }
+        btnBorrarTodas.setOnClickListener(v -> borrarTodasNotificaciones());
 
-        // Primera carga inmediata
-        cargarNotificacionesDesdeServidor();
+        pedirPermisosNotificaciones();
+    }
+
+    private void pedirPermisosNotificaciones() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this, Manifest.permission.POST_NOTIFICATIONS) !=
+                    PackageManager.PERMISSION_GRANTED) {
+                
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        // Empieza el refresco periódico al entrar a la pantalla
-        handler.post(refrescoPeriodico);
+        cargarNotificacionesDesdeServidor();
+        // Iniciar polling (refresco automático cada 5s)
+        handler.postDelayed(refrescoPeriodico, 5000);
     }
+
+
+
+
 
     @Override
     protected void onPause() {
         super.onPause();
-        // Paramos el refresco cuando sales de la pantalla
         handler.removeCallbacks(refrescoPeriodico);
-        // Por si acaso, guardamos el estado actual de leídas
         guardarLeidasEnPrefs();
     }
 
-    /// -------------------------------------------------------------------------
-    /// Carga de notificaciones desde el backend
-    /// -------------------------------------------------------------------------
+    // ─────────────────────────────────────────────
+    //     Cargar desde backend con lista negra
+    // ─────────────────────────────────────────────
+
     private void cargarNotificacionesDesdeServidor() {
 
-        int idUsuarioParaPruebas = 23; // 👈 user fijo que dijiste
-
-        NotificacionesManager
-                .getInstance(this)
+        NotificacionesManager.getInstance(this)
                 .refrescarNotificaciones(
                         this,
-                        idUsuarioParaPruebas,
+                        idUsuario,
                         new NotificacionesManager.Listener() {
-                            @Override
-                            public void onResultado(List<NotificacionAtmos> nuevas, boolean hayAlgoNuevo) {
 
-                                // Solo tocamos la lista de NUEVAS
+                            @Override
+                            public void onResultado(
+                                    java.util.List<NotificacionAtmos> nuevas,
+                                    boolean hayAlgoNuevo
+                            ) {
+
                                 listaNuevas.clear();
 
                                 for (NotificacionAtmos n : nuevas) {
-                                    // Evitar duplicar notis que ya están en leídas
+
+                                    // 🛑 Si está en lista negra → no aparece JAMÁS
+                                    if (listaNegraBorrados.contains(n.getIdNotificacion())) {
+                                        continue;
+                                    }
+
                                     boolean yaLeida = false;
+
                                     for (NotificacionAtmos l : listaLeidas) {
-                                        String hashN = n.getTipo() + "|" + n.getTexto() + "|" + n.getHora();
-                                        String hashL = l.getTipo() + "|" + l.getTexto() + "|" + l.getHora();
-                                        if (hashN.equals(hashL)) {
+                                        if (l.getIdNotificacion() == n.getIdNotificacion()) {
                                             yaLeida = true;
                                             break;
                                         }
                                     }
-                                    if (!yaLeida) {
-                                        n.setLeida(false);
-                                        listaNuevas.add(n);
-                                    }
+
+                                    if (!yaLeida) listaNuevas.add(n);
                                 }
 
-                                adapter.notifyDataSetChanged();
+                                adapter.updateData(listaNuevas, listaLeidas);
                             }
 
                             @Override
-                            public void onError(String mensaje) {
-                                // Aquí puedes meter un Toast si quieres debug visual
-                                // Toast.makeText(NotificacionesActivity.this, mensaje, Toast.LENGTH_SHORT).show();
-                            }
+                            public void onError(String msg) { }
                         }
                 );
     }
@@ -195,21 +222,20 @@ public class NotificacionesActivity extends AppCompatActivity {
     /// Persistencia simple de NOTIFICACIONES LEÍDAS en SharedPreferences
     /// -------------------------------------------------------------------------
 
-    /**
-     * Guarda la lista de notificaciones leídas en SharedPreferences
-     * para conservarlas incluso si cambias de vista o cierras la app.
-     */
     private void guardarLeidasEnPrefs() {
         SharedPreferences prefs = getSharedPreferences("notis", MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
 
         JSONArray arr = new JSONArray();
+
         for (NotificacionAtmos n : listaLeidas) {
             try {
                 JSONObject obj = new JSONObject();
+                obj.put("id", n.getIdNotificacion());
                 obj.put("tipo", n.getTipo());
                 obj.put("texto", n.getTexto());
                 obj.put("hora", n.getHora());
+                obj.put("timestamp", n.getTimestamp());
                 arr.put(obj);
             } catch (Exception ignored) {}
         }
@@ -218,10 +244,6 @@ public class NotificacionesActivity extends AppCompatActivity {
         editor.apply();
     }
 
-    /**
-     * Recupera de SharedPreferences la lista de notificaciones leídas
-     * guardadas en ejecuciones anteriores.
-     */
     private void cargarLeidasDePrefs() {
         SharedPreferences prefs = getSharedPreferences("notis", MODE_PRIVATE);
         String json = prefs.getString("leidas_json", "[]");
@@ -230,16 +252,19 @@ public class NotificacionesActivity extends AppCompatActivity {
 
         try {
             JSONArray arr = new JSONArray(json);
+
             for (int i = 0; i < arr.length(); i++) {
                 JSONObject o = arr.getJSONObject(i);
 
                 listaLeidas.add(
                         new NotificacionAtmos(
+                                o.optInt("id", -1),
                                 o.optString("tipo", ""),
-                                "", // título no lo usamos en la sección de leídas
+                                o.optString("titulo", ""), // Fix: Load title if possible, or empty
                                 o.optString("texto", ""),
                                 o.optString("hora", ""),
-                                true // ya viene leída
+                                o.optLong("timestamp", 0L),
+                                true
                         )
                 );
             }
