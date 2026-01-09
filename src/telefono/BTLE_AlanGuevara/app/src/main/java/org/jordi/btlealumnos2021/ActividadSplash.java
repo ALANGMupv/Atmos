@@ -26,21 +26,21 @@ public class ActividadSplash extends AppCompatActivity {
 
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
 
-            // 1️ Si hay sesión → ir a la pantalla de login (que mostrará la huella)
+            /// 1️ Si hay sesión → ir a la pantalla de login (que mostrará la huella)
             if (SesionManager.haySesionActiva(this)) {
                 startActivity(new Intent(ActividadSplash.this, InicioSesionActivity.class));
                 finish();
                 return;
             }
 
-            // 2️ Si es la primera vez → mostrar onboarding
+            /// 2️ Si es la primera vez → mostrar onboarding
             if (preferencias.esPrimeraVez()) {
                 startActivity(new Intent(ActividadSplash.this, ActividadInicio.class));
                 finish();
                 return;
             }
 
-            // 3️ Si NO es primera vez → mostrar LOGIN (NO registro)
+            /// 3️ Si NO es primera vez → mostrar LOGIN (NO registro)
             startActivity(new Intent(ActividadSplash.this, InicioSesionActivity.class));
             finish();
 

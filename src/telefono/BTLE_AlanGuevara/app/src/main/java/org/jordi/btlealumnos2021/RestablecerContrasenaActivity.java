@@ -74,9 +74,9 @@ public class RestablecerContrasenaActivity extends AppCompatActivity {
     }
 
 
-    // --------------------------------------------------------------
-    // MÉTODO PRINCIPAL → enviarCorreoRestablecer()
-    // --------------------------------------------------------------
+    /// --------------------------------------------------------------
+    /// MÉTODO PRINCIPAL → enviarCorreoRestablecer()
+    /// --------------------------------------------------------------
     private void enviarCorreoRestablecer() {
 
         String correo = campoCorreo.getText().toString().trim();

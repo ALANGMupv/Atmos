@@ -218,27 +218,9 @@ public class NotificacionesActivity extends AppCompatActivity {
                 );
     }
 
-    // ─────────────────────────────────────────────
-    //              Borrar TODAS
-    // ─────────────────────────────────────────────
-
-    private void borrarTodasNotificaciones() {
-
-        NotificacionesManager.getInstance(this)
-                .borrarTodasBackend(idUsuario, () -> {
-
-                    listaNuevas.clear();
-                    listaLeidas.clear();
-                    listaNegraBorrados.clear();
-
-                    guardarLeidasEnPrefs();
-                    adapter.updateData(listaNuevas, listaLeidas);
-                });
-    }
-
-    // ─────────────────────────────────────────────
-    //        Persistencia local de leídas
-    // ─────────────────────────────────────────────
+    /// -------------------------------------------------------------------------
+    /// Persistencia simple de NOTIFICACIONES LEÍDAS en SharedPreferences
+    /// -------------------------------------------------------------------------
 
     private void guardarLeidasEnPrefs() {
         SharedPreferences prefs = getSharedPreferences("notis", MODE_PRIVATE);

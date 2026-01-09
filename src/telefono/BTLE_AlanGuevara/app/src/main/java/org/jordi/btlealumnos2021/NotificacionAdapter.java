@@ -40,9 +40,13 @@ public class NotificacionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         this.listener = listener;
     }
 
-    // Método principal para actualizar datos y reconstruir la vista
-    public void updateData(List<NotificacionAtmos> nuevas, List<NotificacionAtmos> leidas) {
-        rows.clear();
+    /// ------------------- Helpers para mapear posición → sección -------------------
+
+    private static class PosInfo {
+        int viewType;
+        boolean esNueva; // solo tiene sentido en items
+        int index;       // índice dentro de listaNuevas / listaLeidas, -1 si header
+    }
 
         // 1. SECCIÓN: NUEVAS
         if (!nuevas.isEmpty()) {

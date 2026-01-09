@@ -29,13 +29,13 @@ import com.journeyapps.barcodescanner.DecoratedBarcodeView;
  */
 public class EscanearQrActivity extends AppCompatActivity {
 
-    // Vista especializada de ZXing que muestra la cámara y detecta códigos
+    /// Vista especializada de ZXing que muestra la cámara y detecta códigos
     private DecoratedBarcodeView scannerView;
 
-    // Botón para volver atrás sin leer ningún QR
+    /// Botón para volver atrás sin leer ningún QR
     private ImageView btnBackQr;
 
-    // Código interno para identificar la petición del permiso de cámara
+    /// Código interno para identificar la petición del permiso de cámara
     private static final int CAMERA_REQUEST_CODE = 1001;
 
     @Override
@@ -88,7 +88,7 @@ public class EscanearQrActivity extends AppCompatActivity {
      */
     private void iniciarEscaneo() {
 
-        // Establece un callback que se ejecutará cada vez que ZXing detecte algo
+        /// Establece un callback que se ejecutará cada vez que ZXing detecte algo
         scannerView.decodeContinuous(new BarcodeCallback() {
             @Override
             public void barcodeResult(BarcodeResult result) {
@@ -114,7 +114,7 @@ public class EscanearQrActivity extends AppCompatActivity {
             }
         });
 
-        // Encender cámara y comenzar escaneo
+        /// Encender cámara y comenzar escaneo
         scannerView.resume();
     }
 

@@ -21,8 +21,8 @@ public class AtmosApp extends Application {
             @Override
             public void onActivityStarted(Activity activity) {
 
-                // Si no había actividades en foreground,
-                // esto significa que la app vuelve desde background.
+                /// Si no había actividades en foreground,
+                /// esto significa que la app vuelve desde background.
                 if (actividadesEnForeground == 0) {
                     AppLifecycleTracker.appFueCerrada = false;
                 }
@@ -34,14 +34,14 @@ public class AtmosApp extends Application {
             public void onActivityStopped(Activity activity) {
                 actividadesEnForeground--;
 
-                // Si ninguna actividad está visible,
-                // la app se va al background → se considera "cerrada".
+                /// Si ninguna actividad está visible,
+                /// la app se va al background → se considera "cerrada".
                 if (actividadesEnForeground == 0) {
                     AppLifecycleTracker.appFueCerrada = true;
                 }
             }
 
-            // Métodos que no necesitas implementar
+            /// Métodos que no necesitas implementar
             @Override public void onActivityCreated(Activity a, Bundle b) {}
             @Override public void onActivityResumed(Activity a) {}
             @Override public void onActivityPaused(Activity a) {}

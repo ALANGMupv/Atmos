@@ -7,10 +7,10 @@ import java.util.UUID;
 import android.annotation.SuppressLint;
 
 
-// -----------------------------------------------------------------------------------
-// @author: Jordi Bataller i Mascarell
-// Utilidades.java: clase con funciones auxiliares para convertir entre cadenas, bytes, enteros y UUIDs, además de mostrar datos en formato texto o hexadecimal.
-// -----------------------------------------------------------------------------------
+/// -----------------------------------------------------------------------------------
+/// @author: Jordi Bataller i Mascarell
+/// Utilidades.java: clase con funciones auxiliares para convertir entre cadenas, bytes, enteros y UUIDs, además de mostrar datos en formato texto o hexadecimal.
+/// -----------------------------------------------------------------------------------
 public class Utilidades {
 
     // -------------------------------------------------------------------------------

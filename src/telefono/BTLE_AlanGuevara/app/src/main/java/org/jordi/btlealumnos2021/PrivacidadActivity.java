@@ -5,6 +5,14 @@ import android.widget.ImageView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+/**
+ *
+ * Pantalla de privacidad de la aplicación.
+ *
+ * Muestra la información relacionada con la política de privacidad
+ *
+ */
+
 public class PrivacidadActivity extends AppCompatActivity {
 
     @Override
