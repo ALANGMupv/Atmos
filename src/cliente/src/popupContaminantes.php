@@ -1,16 +1,65 @@
+<!--
+/**
+ * @file popupContaminantes.php
+ * @brief Popup informativo sobre contaminantes atmosféricos.
+ *
+ * Este componente muestra información educativa sobre los principales
+ * contaminantes monitorizados por ATMOS:
+ *  - CO (Monóxido de carbono)
+ *  - NO₂ (Dióxido de nitrógeno)
+ *  - O₃ (Ozono troposférico)
+ *  - SO₂ (Dióxido de azufre)
+ *
+ * Incluye:
+ *  - Tabla de rangos de calidad del aire (ppm).
+ *  - Información descriptiva de cada contaminante.
+ *  - Consejos de salud.
+ *
+ * Se utiliza como popup reutilizable en:
+ *  - Mapa público
+ *  - Mapa de usuarios registrados
+ *
+ * Controlado por:
+ *  - JS de popups (data-popup / cerrar-popup)
+ *
+ * @author Equipo ATMOS
+ * @version 1.0
+ */
+-->
 <section id="popupContaminantes" class="popup-info-container">
 
   <div class="popup-container">
 
-    <!-- CERRAR -->
+    <!--
+    /**
+     * @brief Botón de cierre del popup.
+     *
+     * Al pulsar, elimina la clase `activo` del contenedor padre.
+     */
+    -->
     <button class="cerrar-popup">
       <img src="img/cerrarIcono.svg" alt="Cerrar">
     </button>
 
-    <!-- TÍTULO -->
+    <!--
+    /**
+     * @brief Título principal del popup.
+     */
+    -->
     <h2 class="popup-titulo">Información de contaminantes</h2>
 
-    <!-- ================= TABLA DE RANGOS ================= -->
+    <!--
+    /**
+     * @section Tabla de rangos
+     * @brief Tabla con los rangos oficiales de calidad del aire en ppm.
+     *
+     * Los colores representan niveles de riesgo:
+     *  - Verde: Bueno
+     *  - Amarillo: Moderado
+     *  - Naranja: Insalubre
+     *  - Rojo: Malo
+     */
+    -->
     <div class="popup-tabla">
 
       <h3>Rangos de calidad del aire (ppm)</h3>
@@ -58,10 +107,25 @@
       </table>
     </div>
 
-    <!-- ================= SCROLL INFO ================= -->
+    <!--
+    /**
+     * @section Información detallada
+     * @brief Descripción individual de cada contaminante.
+     *
+     * Cada bloque incluye:
+     *  - Origen principal
+     *  - Efectos sobre la salud
+     *  - Recomendación preventiva
+     */
+    -->
     <div class="popup-scroll">
 
-      <!-- NO2 -->
+      <!--
+      /**
+       * @subsection NO2
+       * @brief Información sobre el dióxido de nitrógeno (NO₂).
+       */
+      -->
       <div class="contaminante-info">
         <h4>NO₂ – Dióxido de nitrógeno</h4>
         <p><strong>Origen:</strong> Tráfico rodado, motores diésel y procesos industriales.</p>
@@ -71,7 +135,12 @@
         <img src="img/car.svg" alt="Tráfico y vehículos" class="contaminante-icono">
       </div>
 
-      <!-- CO -->
+      <!--
+      /**
+       * @subsection CO
+       * @brief Información sobre el monóxido de carbono (CO).
+       */
+      -->
       <div class="contaminante-info">
         <h4>CO – Monóxido de carbono</h4>
         <p><strong>Origen:</strong> Combustión incompleta en vehículos y sistemas de calefacción.</p>
@@ -81,7 +150,12 @@
         <img src="img/oil.svg" alt="Combustión" class="contaminante-icono">
       </div>
 
-      <!-- O3 -->
+      <!--
+      /**
+       * @subsection O3
+       * @brief Información sobre el ozono troposférico (O₃).
+       */
+      -->
       <div class="contaminante-info">
         <h4>O₃ – Ozono troposférico</h4>
         <p><strong>Origen:</strong> Reacciones fotoquímicas entre NOx, COV y radiación solar.</p>
@@ -91,7 +165,12 @@
         <img src="img/sun.svg" alt="Radiación solar" class="contaminante-icono">
       </div>
 
-      <!-- SO2 -->
+      <!--
+      /**
+       * @subsection SO2
+       * @brief Información sobre el dióxido de azufre (SO₂).
+       */
+      -->
       <div class="contaminante-info">
         <h4>SO₂ – Dióxido de azufre</h4>
         <p><strong>Origen:</strong> Procesos industriales y combustión de carbón.</p>

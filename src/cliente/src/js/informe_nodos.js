@@ -1,21 +1,49 @@
-// js/informe_nodos.js
+/**
+ * @file informe_nodos.js
+ * @brief Generación del informe de estado de nodos.
+ *
+ * Este script se encarga de:
+ * - Consultar el estado de los nodos desde la API.
+ * - Mostrar resúmenes (total, inactivos, errores).
+ * - Aplicar filtros por tipo de estado.
+ * - Ordenar los resultados según distintos criterios.
+ * - Renderizar la tabla del informe de nodos.
+ */
 
 const API_ESTADO_NODOS = "https://nagufor.upv.edu.es/estadoNodos";
 
+/**
+ * @brief Inicialización del informe al cargar el DOM.
+ */
 document.addEventListener("DOMContentLoaded", () => {
-    const filtroTipo       = document.getElementById("filtroTipo");       // todos / inactivo / error
-    const ordenarPor       = document.getElementById("ordenarPor");       // ultima_medida / tiempo_problema / id_placa
-    const selectLongitud   = document.getElementById("selectLongitud");   // 5 / 15 / 20 / 100
-    const btnActualizar    = document.getElementById("btnActualizarInforme");
-    const tbody            = document.getElementById("tbodyNodos");
 
-    const resumenTotal     = document.getElementById("resumenTotal");
+    /** Selector de filtro por tipo de nodo */
+    const filtroTipo = document.getElementById("filtroTipo");
+
+    /** Selector de criterio de ordenación */
+    const ordenarPor = document.getElementById("ordenarPor");
+
+    /** Selector del número máximo de nodos a cargar */
+    const selectLongitud = document.getElementById("selectLongitud");
+
+    /** Botón para actualizar manualmente el informe */
+    const btnActualizar = document.getElementById("btnActualizarInforme");
+
+    /** <tbody> de la tabla de nodos */
+    const tbody = document.getElementById("tbodyNodos");
+
+    /** Contadores de resumen */
+    const resumenTotal = document.getElementById("resumenTotal");
     const resumenInactivos = document.getElementById("resumenInactivos");
-    const resumenErrores   = document.getElementById("resumenErrores");
+    const resumenErrores = document.getElementById("resumenErrores");
 
-    let nodosData = []; // datos crudos venidos de la API
+    /** Datos crudos de nodos recibidos desde la API */
+    let nodosData = [];
 
-    // --- Eventos ---
+    // ======================================================
+    // EVENTOS
+    // ======================================================
+
     if (btnActualizar) {
         btnActualizar.addEventListener("click", cargarInforme);
     }
@@ -29,17 +57,20 @@ document.addEventListener("DOMContentLoaded", () => {
         ordenarPor.addEventListener("change", actualizarVista);
     }
 
-    // Cargar la primera vez al entrar
+    // Carga inicial al entrar en la página
     cargarInforme();
 
-    // ---------------------------
-    // 1) Llamada a la API
-    // ---------------------------
+    // ======================================================
+    // 1) LLAMADA A LA API
+    // ======================================================
+
+    /**
+     * @brief Carga el informe de nodos desde la API.
+     */
     function cargarInforme() {
         const limit = selectLongitud ? selectLongitud.value : 15;
-        const url   = `${API_ESTADO_NODOS}?limit=${encodeURIComponent(limit)}`;
+        const url = `${API_ESTADO_NODOS}?limit=${encodeURIComponent(limit)}`;
 
-        // Opcional: podrías mostrar algún "cargando..." aquí
         fetch(url)
             .then(resp => resp.json())
             .then(data => {
@@ -61,87 +92,85 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     }
 
-    // ---------------------------
-    // 2) Resúmenes (tarjetas)
-    // ---------------------------
-    function actualizarResumenes() {
-        const total      = nodosData.length;
-        const inactivos  = nodosData.filter(n => n.estado === "inactivo").length;
-        const errores    = nodosData.filter(n => n.estado === "error").length;
+    // ======================================================
+    // 2) RESÚMENES (TARJETAS)
+    // ======================================================
 
-        if (resumenTotal)     resumenTotal.textContent     = total;
+    /**
+     * @brief Actualiza los contadores de resumen de nodos.
+     */
+    function actualizarResumenes() {
+        const total = nodosData.length;
+        const inactivos = nodosData.filter(n => n.estado === "inactivo").length;
+        const errores = nodosData.filter(n => n.estado === "error").length;
+
+        if (resumenTotal) resumenTotal.textContent = total;
         if (resumenInactivos) resumenInactivos.textContent = inactivos;
-        if (resumenErrores)   resumenErrores.textContent   = errores;
+        if (resumenErrores) resumenErrores.textContent = errores;
     }
 
-    // ---------------------------
-    // 3) Aplicar filtros + orden
-    // ---------------------------
+    // ======================================================
+    // 3) FILTROS Y ORDENACIÓN
+    // ======================================================
+
+    /**
+     * @brief Aplica filtros y ordenación y renderiza la tabla.
+     */
     function actualizarVista() {
         if (!tbody) return;
 
         let lista = Array.isArray(nodosData) ? [...nodosData] : [];
 
-        const tipoSeleccionado  = filtroTipo ? filtroTipo.value : "todos";
-        const criterioOrden     = ordenarPor ? ordenarPor.value : "ultima_medida";
+        const tipoSeleccionado = filtroTipo ? filtroTipo.value : "todos";
+        const criterioOrden = ordenarPor ? ordenarPor.value : "ultima_medida";
 
-        // Filtro por tipo (estado)
         if (tipoSeleccionado === "inactivo") {
             lista = lista.filter(n => n.estado === "inactivo");
         } else if (tipoSeleccionado === "error") {
             lista = lista.filter(n => n.estado === "error");
         }
 
-        // Ordenación
         lista.sort((a, b) => {
+
             if (criterioOrden === "id_placa") {
-                // Orden alfabético por id_placa
                 return (a.id_placa || "").localeCompare(b.id_placa || "");
             }
 
             if (criterioOrden === "tiempo_problema") {
-                // Queremos primero los que más problema tienen (descendente)
                 const va = a.tiempo_problema_min != null ? a.tiempo_problema_min : -1;
                 const vb = b.tiempo_problema_min != null ? b.tiempo_problema_min : -1;
                 return vb - va;
             }
 
-            // Por defecto: ultima_medida (los más recientes arriba)
             const da = a.ultima_medida ? new Date(a.ultima_medida) : new Date(0);
             const db = b.ultima_medida ? new Date(b.ultima_medida) : new Date(0);
             return db - da;
         });
 
-        // Pintar tabla
         tbody.innerHTML = "";
         lista.forEach(n => {
             const tr = document.createElement("tr");
 
-            // Id nodo
             const tdId = document.createElement("td");
             tdId.textContent = n.id_placa || "-";
             tr.appendChild(tdId);
 
-            // Ubicación (por ahora no viene de la API → dejamos "-")
             const tdUbic = document.createElement("td");
-            const ubicacion = n.ubicacion || "-";
-            tdUbic.textContent = ubicacion;
+            tdUbic.textContent = n.ubicacion || "-";
             tr.appendChild(tdUbic);
 
-            // Última medida
             const tdUltima = document.createElement("td");
             tdUltima.textContent = n.ultima_medida
                 ? formatearFechaHora(n.ultima_medida)
                 : "Sin datos";
             tr.appendChild(tdUltima);
 
-            // Estado
             const tdEstado = document.createElement("td");
             const { textoEstado, claseEstado } = obtenerEtiquetaEstado(n.estado);
-            tdEstado.innerHTML = `<span class="badge-estado ${claseEstado}">${textoEstado}</span>`;
+            tdEstado.innerHTML =
+                `<span class="badge-estado ${claseEstado}">${textoEstado}</span>`;
             tr.appendChild(tdEstado);
 
-            // Tiempo con problema
             const tdTiempo = document.createElement("td");
             tdTiempo.textContent = n.tiempo_problema_min != null
                 ? formatearMinutos(n.tiempo_problema_min)
@@ -152,10 +181,16 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ---------------------------
-    // 4) Helpers
-    // ---------------------------
+    // ======================================================
+    // 4) FUNCIONES AUXILIARES
+    // ======================================================
 
+    /**
+     * @brief Formatea una fecha y hora en formato legible.
+     *
+     * @param {string} valor Fecha en formato ISO o compatible.
+     * @return {string} Fecha y hora formateadas.
+     */
     function formatearFechaHora(valor) {
         try {
             const d = new Date(valor);
@@ -172,6 +207,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    /**
+     * @brief Convierte minutos a un formato legible (h/min).
+     *
+     * @param {number} min Minutos totales.
+     * @return {string} Tiempo formateado.
+     */
     function formatearMinutos(min) {
         if (min == null) return "–";
         const minutos = Number(min);
@@ -180,14 +221,20 @@ document.addEventListener("DOMContentLoaded", () => {
         if (minutos < 60) {
             return `${minutos} min`;
         }
-        const horas  = Math.floor(minutos / 60);
-        const resto  = minutos % 60;
+        const horas = Math.floor(minutos / 60);
+        const resto = minutos % 60;
         if (resto === 0) {
             return `${horas} h`;
         }
         return `${horas} h ${resto} min`;
     }
 
+    /**
+     * @brief Obtiene la etiqueta visual del estado del nodo.
+     *
+     * @param {string} estado Estado del nodo.
+     * @return {{textoEstado: string, claseEstado: string}} Etiqueta y clase CSS.
+     */
     function obtenerEtiquetaEstado(estado) {
         let texto = "Activo";
         let clase = "badge-activo";

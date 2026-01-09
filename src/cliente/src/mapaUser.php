@@ -1,6 +1,40 @@
 <!doctype html>
 <html lang="es">
 <head>
+    <!--
+    /**
+     * @file mapaUser.php
+     * @brief Vista del mapa de calidad del aire para usuarios autenticados.
+     *
+     * Esta página muestra el mapa completo de calidad del aire con todas
+     * las funcionalidades habilitadas:
+     *  - Selección individual de contaminantes (NO₂, CO, O₃, SO₂).
+     *  - Índice de calidad del aire dinámico.
+     *  - Interpolación IDW en canvas.
+     *  - Timeline temporal de medidas.
+     *  - Geolocalización.
+     *  - Estaciones oficiales superpuestas.
+     *
+     * Diferencias respecto a la versión pública:
+     *  - No hay restricciones de acceso.
+     *  - El índice de calidad se calcula y actualiza.
+     *  - Timeline funcional.
+     *
+     * Tecnologías utilizadas:
+     *  - Leaflet.js
+     *  - CanvasOverlay personalizado
+     *  - Turf.js
+     *  - OpenStreetMap
+     *
+     * Scripts asociados:
+     *  - js/mapaUser.js
+     *  - js/estacionesOficiales.js
+     *
+     * @author Equipo ATMOS
+     * @version 1.0
+     */
+    -->
+
     <meta charset="UTF-8">
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -8,7 +42,12 @@
 
     <title>Mapa de Calidad de Aire - Atmos</title>
 
-    <!-- Leaflet CSS -->
+    <!--
+    /**
+     * @section Estilos Leaflet
+     * @brief Hojas de estilo necesarias para Leaflet.
+     */
+    -->
     <link
             rel="stylesheet"
             href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -16,13 +55,22 @@
             crossorigin=""
     />
 
-
-    <!-- CSS -->
+    <!--
+    /**
+     * @section Estilos propios
+     * @brief Estilos globales y específicos del mapa para usuarios logueados.
+     */
+    -->
     <link rel="stylesheet" href="css/estilos.css">
     <link rel="stylesheet" href="css/mapaUser.css">
     <link rel="stylesheet" href="css/popupContaminantes.css">
 
-    <!-- Fuente -->
+    <!--
+    /**
+     * @section Tipografía
+     * @brief Fuente principal de la interfaz.
+     */
+    -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -31,25 +79,49 @@
 <body>
 
 <?php
+/**
+ * @brief Inclusión del header para usuarios autenticados.
+ *
+ * Marca la sección "mapas" como activa.
+ */
 $active = 'mapas';
 include __DIR__ . '/partials/headerLogueado.php'; ?>
 
 <main>
 
+    <!--
+    /**
+     * @section Contenedor principal del mapa
+     * @brief Estructura general de la vista.
+     */
+    -->
     <section class="main-container">
-        <!-- Titulo -->
+
+        <!-- Título -->
         <section class="titulo-container">
             <h2>Mapa de calidad del aire</h2>
         </section>
 
         <section class="mapa-main-container">
 
-            <!-- Contenedor del Mapa -->
+            <!--
+            /**
+             * @section Mapa Leaflet
+             * @brief Contenedor del mapa interactivo.
+             */
+            -->
             <div id="map" class="mapa"></div>
 
-            <!-- Barra de búsqueda -->
+            <!--
+            /**
+             * @section Barra de búsqueda
+             * @brief Autocompletado geográfico con Nominatim.
+             */
+            -->
             <div class="search-bar">
-                <span class="search-icon"> <img src="img/busquedaIcono.svg" alt=""></span>
+                <span class="search-icon">
+                    <img src="img/busquedaIcono.svg" alt="">
+                </span>
                 <input
                         type="text"
                         id="search-input"
@@ -58,11 +130,15 @@ include __DIR__ . '/partials/headerLogueado.php'; ?>
                 >
             </div>
 
-            <!-- Contenedor de sugerencias (se muestra dinámicamente con JS) -->
+            <!-- Contenedor dinámico de sugerencias -->
             <div id="search-suggestions" class="search-suggestions"></div>
 
-
-            <!-- Selector de Gases -->
+            <!--
+            /**
+             * @section Selector de contaminantes
+             * @brief Permite seleccionar gas específico o vista global.
+             */
+            -->
             <div class="contaminantes-panel">
 
                 <div class="contaminantes-header">
@@ -74,7 +150,10 @@ include __DIR__ . '/partials/headerLogueado.php'; ?>
 
                 <div class="contaminantes-selector">
 
-                    <div class="contaminante-option active" data-gas="ALL" data-tipo="ALL" id="TodosOpcionSelector">
+                    <div class="contaminante-option active"
+                         data-gas="ALL"
+                         data-tipo="ALL"
+                         id="TodosOpcionSelector">
                         <img src="img/TODOSIcono.svg" alt="Todos">
                         <span>Todos</span>
                     </div>
@@ -103,8 +182,12 @@ include __DIR__ . '/partials/headerLogueado.php'; ?>
 
             </div>
 
-            <!-- Indice de Contaminantes -->
-
+            <!--
+            /**
+             * @section Índice de calidad del aire
+             * @brief Muestra el porcentaje de celdas por nivel.
+             */
+            -->
             <div class="mapa-indice-container">
                 <h4>Índice de Calidad</h4>
 
@@ -137,23 +220,25 @@ include __DIR__ . '/partials/headerLogueado.php'; ?>
                 </div>
             </div>
 
-
-
-            <!-- Botones de Zoom -->
+            <!-- Controles de zoom -->
             <div class="map-zoom-controls">
                 <button id="zoom-in"><img src="img/acercarIcono.svg" alt=""></button>
                 <button id="zoom-out"><img src="img/alejarIcono.svg" alt=""></button>
             </div>
 
-            <!-- Botón de Centrar Mi ubicacion -->
+            <!-- Botón geolocalización -->
             <button id="btn-geoloc" class="map-location-btn">
                 <img src="img/ubicacionIcono.svg" alt="">
             </button>
 
-            <!-- Cotenedr del Timline -->
+            <!--
+            /**
+             * @section Timeline temporal
+             * @brief Control de navegación histórica de medidas.
+             */
+            -->
             <div class="timeline-box">
 
-                <!-- Controles -->
                 <div class="timeline-controls">
                     <button id="tl-back"><img src="img/atrasarIcono.svg" alt=""></button>
                     <button id="tl-pause"><img src="img/pauseIcono.svg" alt=""></button>
@@ -161,7 +246,6 @@ include __DIR__ . '/partials/headerLogueado.php'; ?>
                     <button id="tl-forward"><img src="img/avanzarIcono.svg" alt=""></button>
                 </div>
 
-                <!-- Slider -->
                 <input
                         type="range"
                         id="timeline-slider"
@@ -170,30 +254,20 @@ include __DIR__ . '/partials/headerLogueado.php'; ?>
                         value="12"
                 >
 
-                <!-- Eje dinámico -->
-                <div class="timeline-labels" id="timeline-labels">
-                    <!-- Se rellena dinámicamente con JS -->
-                    <!-- Ejemplo visual:
-                    <span>00:00</span>
-                    <span>2</span>
-                    <span>4</span>
-                    <span>6</span>
-                    <span>8</span>
-                    <span>10</span>
-                    <span>Ahora</span>
-                    -->
-                </div>
+                <div class="timeline-labels" id="timeline-labels"></div>
             </div>
-
 
         </section>
     </section>
 
 </main>
 
-</main>
-
-<!-- Leaflet JS -->
+<!--
+/**
+ * @section Librerías externas
+ * @brief Dependencias necesarias para el mapa.
+ */
+-->
 <script
         src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
@@ -201,21 +275,19 @@ include __DIR__ . '/partials/headerLogueado.php'; ?>
 ></script>
 
 <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
-
-<!-- Turf.js (para interpolaciones si las necesitas) -->
 <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
 
-<!-- Lógica de estaciones oficiales (define cargarEstacionesOficiales) -->
+<!-- Lógica de estaciones oficiales -->
 <script src="js/estacionesOficiales.js"></script>
 
-<!-- Tu script del mapa -->
+<!-- Script principal del mapa -->
 <script src="js/mapaUser.js"></script>
 
-<?php include __DIR__ . '/popupContaminantes.php'; ?>
-
-</body>
-</html>
-
+<?php
+/**
+ * @brief Popup informativo de contaminantes.
+ */
+include __DIR__ . '/popupContaminantes.php'; ?>
 
 </body>
 </html>

@@ -1,32 +1,80 @@
 <?php
+/**
+ * @file incidencias.php
+ * @brief Página de gestión y visualización de incidencias del usuario.
+ *
+ * Esta página permite al usuario autenticado:
+ *  - Visualizar el listado de incidencias enviadas.
+ *  - Consultar el detalle y estado de cada incidencia.
+ *  - Enviar nuevas incidencias al sistema.
+ *
+ * Requisitos:
+ *  - El usuario debe tener una sesión PHP activa.
+ *  - La información dinámica se carga mediante JavaScript (incidencias.js).
+ *
+ * Dependencias:
+ *  - $_SESSION['usuario']
+ *  - js/incidencias.js
+ *  - API backend (Node.js)
+ */
+
 session_start();
 
-// Comprobar sesión activa
+/**
+ * ------------------------------------------------------------------
+ * Comprobación de sesión activa
+ * ------------------------------------------------------------------
+ * Si no existe una sesión válida, se redirige al usuario a la página
+ * de login para evitar accesos no autorizados.
+ */
 if (!isset($_SESSION['usuario'])) {
     header("Location: login.php");
     exit();
 }
 
+/**
+ * ------------------------------------------------------------------
+ * Datos del usuario autenticado
+ * ------------------------------------------------------------------
+ * Se recuperan los datos almacenados en la sesión PHP.
+ */
 $usuario = $_SESSION['usuario'];
 ?>
 <!DOCTYPE html>
 <html lang="es">
 
 <head>
+    <!--
+        ==============================================================
+        METADATOS BÁSICOS
+        ==============================================================
+    -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Incidencias - Atmos</title>
 
-    <!-- Estilos Globales -->
+    <!--
+        ==============================================================
+        ESTILOS GLOBALES
+        ==============================================================
+    -->
     <link rel="stylesheet" href="css/index.css">
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/buttons.css">
     <link rel="stylesheet" href="css/footer.css">
 
-    <!-- Estilos Específicos -->
+    <!--
+        ==============================================================
+        ESTILOS ESPECÍFICOS DE LA PÁGINA
+        ==============================================================
+    -->
     <link rel="stylesheet" href="css/incidencias.css">
 
-    <!-- Fuentes y Iconos -->
+    <!--
+        ==============================================================
+        FUENTES E ICONOS
+        ==============================================================
+    -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -37,23 +85,40 @@ $usuario = $_SESSION['usuario'];
 
 <body>
 
-    <!-- HEADER -->
+    <!--
+        ==============================================================
+        HEADER (USUARIO LOGUEADO)
+        ==============================================================
+    -->
     <?php include __DIR__ . '/partials/headerLogueado.php'; ?>
 
+    <!--
+        ==============================================================
+        CONTENIDO PRINCIPAL
+        ==============================================================
+    -->
     <main class="incidencias-wrap">
         <div class="incidencias-grid">
 
-            <!-- COLUMNA IZQUIERDA -->
+            <!--
+                ==========================================================
+                COLUMNA IZQUIERDA
+                ==========================================================
+            -->
             <div class="col-left">
 
-                <!-- 1. Incidencias (Arriba) -->
+                <!--
+                    ------------------------------------------------------
+                    1. LISTADO DE INCIDENCIAS
+                    ------------------------------------------------------
+                -->
                 <div class="card-box">
                     <div class="card-header-gradient">
                         <h2>Incidencias</h2>
                     </div>
                     <div class="card-body p-0">
                         <div class="incidencias-list" id="incidenceList">
-                            <!-- Cargado dinámicamente por JS -->
+                            <!-- Contenido cargado dinámicamente por JS -->
                             <div class="loading-state" style="padding: 20px; text-align: center; color: #666;">
                                 <i class="fa-solid fa-spinner fa-spin"></i> Cargando incidencias...
                             </div>
@@ -61,7 +126,11 @@ $usuario = $_SESSION['usuario'];
                     </div>
                 </div>
 
-                <!-- 2. Enviar una incidencia (Abajo) -->
+                <!--
+                    ------------------------------------------------------
+                    2. FORMULARIO PARA ENVIAR INCIDENCIA
+                    ------------------------------------------------------
+                -->
                 <div class="card-box">
                     <div class="card-header-gradient">
                         <div class="header-icon-title">
@@ -86,11 +155,19 @@ $usuario = $_SESSION['usuario'];
 
             </div>
 
-            <!-- COLUMNA DERECHA -->
+            <!--
+                ==========================================================
+                COLUMNA DERECHA (DETALLE DE INCIDENCIA)
+                ==========================================================
+            -->
             <div class="col-right">
                 <div class="card-box card-box-right">
 
-                    <!-- Sección Título -->
+                    <!--
+                        --------------------------------------------------
+                        SECCIÓN: TÍTULO Y DESCRIPCIÓN
+                        --------------------------------------------------
+                    -->
                     <div class="right-section">
                         <div class="card-header-gradient">
                             <div class="header-icon-title">
@@ -99,13 +176,15 @@ $usuario = $_SESSION['usuario'];
                             </div>
                         </div>
                         <div class="card-body" id="detailContent">
-                            <!-- Contenido del título (Detalle) -->
+
+                            <!-- Estado vacío -->
                             <div class="empty-state-detail" id="emptyStateDetail"
                                 style="text-align: center; margin-top: 50px; color: #9CA3AF;">
                                 <i class="fa-regular fa-folder-open" style="font-size: 40px; margin-bottom: 20px;"></i>
                                 <p>Selecciona una incidencia para ver los detalles.</p>
                             </div>
 
+                            <!-- Contenido dinámico -->
                             <div id="contentDetailWrapper" style="display: none;">
                                 <h2 class="detail-title-text" id="detailTitle"></h2>
                                 <p class="detail-full-text" id="detailDesc"></p>
@@ -113,7 +192,11 @@ $usuario = $_SESSION['usuario'];
                         </div>
                     </div>
 
-                    <!-- Sección Resolución -->
+                    <!--
+                        --------------------------------------------------
+                        SECCIÓN: RESOLUCIÓN DE LA INCIDENCIA
+                        --------------------------------------------------
+                    -->
                     <div class="right-section">
                         <div class="card-header-gradient">
                             <div class="header-icon-title">
@@ -122,7 +205,8 @@ $usuario = $_SESSION['usuario'];
                             </div>
                         </div>
                         <div class="card-body" id="resolutionContent">
-                            <!-- Contenido Dinámico (Status Hero) -->
+
+                            <!-- Estado inicial -->
                             <div class="status-hero pending" id="statusHeroPlaceholder"
                                 style="background: #FAFAFA; border-style: solid;">
                                 <div class="status-icon-large" style="background: #F1F5F9; color:#94A3B8;">
@@ -142,9 +226,16 @@ $usuario = $_SESSION['usuario'];
         </div>
     </main>
 
+    <!--
+        ==============================================================
+        VARIABLES GLOBALES PARA JAVASCRIPT
+        ==============================================================
+    -->
     <script>
         window.ID_USUARIO = <?= json_encode($usuario['id_usuario']); ?>;
     </script>
+
+    <!-- Script principal de incidencias -->
     <script src="js/incidencias.js"></script>
 
 </body>

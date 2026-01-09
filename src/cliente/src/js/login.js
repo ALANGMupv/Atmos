@@ -1,22 +1,24 @@
 /**
- * login.js
- * -------------------------
- * Módulo del frontend encargado de gestionar el inicio de sesión de la APP.
+ * @file login.js
+ * @brief Gestión del inicio de sesión de la aplicación.
  *
- * Funcionalidades principales:
- *   - Autenticar usuarios mediante Firebase Authentication.
- *   - Obtener el ID Token emitido por Firebase.
- *   - Validar sesión con el backend (Node.js + MySQL).
- *   - Crear sesión local (PHP) en el servidor.
- *   - Sincronizar la contraseña actual de Firebase con MySQL (tras restablecimiento).
+ * Este módulo del frontend se encarga de:
+ * - Autenticar usuarios mediante Firebase Authentication.
+ * - Obtener el ID Token emitido por Firebase.
+ * - Validar la sesión con el backend (Node.js + MySQL).
+ * - Crear sesión local en el servidor (PHP).
+ * - Sincronizar la contraseña actual de Firebase con MySQL
+ *   tras un restablecimiento de contraseña.
  *
- * Autor: Alejandro Vazquez Remes
- * Modificaciones: Santiago Fuenmayor Ruiz (sincronización de contraseña)
+ * @author Alejandro Vazquez Remes
+ * @note Modificaciones por Santiago Fuenmayor Ruiz
+ *       (sincronización de contraseña Firebase ↔ MySQL)
  */
 
-// --------------------------------------------------------------------------
-//  Importación de módulos de Firebase
-// --------------------------------------------------------------------------
+// ==========================================================
+// IMPORTACIÓN DE MÓDULOS FIREBASE
+// ==========================================================
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 
 import {
@@ -26,29 +28,47 @@ import {
   browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
-// --------------------------------------------------------------------------
-//  Configuración e inicialización de Firebase
-// --------------------------------------------------------------------------
+// ==========================================================
+// CONFIGURACIÓN E INICIALIZACIÓN DE FIREBASE
+// ==========================================================
+
+/** Configuración pública del proyecto Firebase */
 const firebaseConfig = {
   apiKey: "AIzaSyBQ8T4ECyaDpybvoL6M6XbmfaipYfFeEXM",
   authDomain: "atmos-e3f6c.firebaseapp.com",
   projectId: "atmos-e3f6c"
 };
 
-// Inicializar Firebase
+/** Inicialización de Firebase */
 const app = initializeApp(firebaseConfig);
+
+/** Servicio de autenticación Firebase */
 const auth = getAuth(app);
 
-// --- HABILITAR PERSISTENCIA DEL LOGIN (OBLIGATORIO)
+/**
+ * @brief Habilita la persistencia del login.
+ *
+ * Permite que el usuario permanezca autenticado
+ * aunque navegue entre páginas.
+ */
 setPersistence(auth, browserLocalPersistence)
-    .then(() => {
-      console.log("Persistencia habilitada: el login se mantiene al cambiar de página.");
-    })
-    .catch(err => {
-      console.error("Error aplicando la persistencia:", err);
-    });
+  .then(() => {
+    console.log("Persistencia habilitada: el login se mantiene al cambiar de página.");
+  })
+  .catch(err => {
+    console.error("Error aplicando la persistencia:", err);
+  });
 
-// Traduce los mensajes de Firebase al español para una buena UX
+// ==========================================================
+// UTILIDADES
+// ==========================================================
+
+/**
+ * @brief Traduce los códigos de error de Firebase a mensajes en español.
+ *
+ * @param {string} code Código de error devuelto por Firebase.
+ * @return {string} Mensaje traducido y comprensible para el usuario.
+ */
 function traducirErrorFirebase(code) {
   switch (code) {
     case "auth/user-not-found":
@@ -72,19 +92,25 @@ function traducirErrorFirebase(code) {
   }
 }
 
-// --------------------------------------------------------------------------
-//  Manejador principal de inicio de sesión
-// --------------------------------------------------------------------------
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.querySelector(".formulario-login-pagLogin");
+// ==========================================================
+// MANEJADOR PRINCIPAL DE INICIO DE SESIÓN
+// ==========================================================
 
+/**
+ * @brief Inicializa el formulario de login al cargar el DOM.
+ */
+document.addEventListener("DOMContentLoaded", () => {
+
+  /** Formulario de inicio de sesión */
+  const form = document.querySelector(".formulario-login-pagLogin");
 
   form.addEventListener("submit", async (evt) => {
     evt.preventDefault();
 
-    // ----------------------------------------------------------------------
-    //  1) Lectura y validación de los datos del formulario
-    // ----------------------------------------------------------------------
+    // ======================================================
+    // 1) LECTURA Y VALIDACIÓN DEL FORMULARIO
+    // ======================================================
+
     const correo = document.getElementById("correo").value.trim();
     const contrasena = document.getElementById("contrasena").value;
 
@@ -94,28 +120,32 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      // ----------------------------------------------------------------------
-      //  2) Iniciar sesión con Firebase
-      // ----------------------------------------------------------------------
+      // ====================================================
+      // 2) AUTENTICACIÓN CON FIREBASE
+      // ====================================================
+
       const cred = await signInWithEmailAndPassword(auth, correo, contrasena);
       const user = cred.user;
 
-      // ----------------------------------------------------------------------
-      //  3) Verificar si el correo está confirmado
-      // ----------------------------------------------------------------------
+      // ====================================================
+      // 3) VERIFICACIÓN DE CORREO
+      // ====================================================
+
       if (!user.emailVerified) {
         alert("Por favor, verifica tu correo electrónico antes de iniciar sesión.");
         return;
       }
 
-      // ----------------------------------------------------------------------
-      //  4) Obtener el ID Token emitido por Firebase
-      // ----------------------------------------------------------------------
+      // ====================================================
+      // 4) OBTENCIÓN DEL ID TOKEN
+      // ====================================================
+
       const idToken = await user.getIdToken();
 
-      // ----------------------------------------------------------------------
-      //  5) Enviar token al backend (Node) para validar y obtener datos del usuario
-      // ----------------------------------------------------------------------
+      // ====================================================
+      // 5) VALIDACIÓN CON BACKEND (NODE)
+      // ====================================================
+
       const response = await fetch("https://nagufor.upv.edu.es/login", {
         method: "POST",
         headers: {
@@ -126,14 +156,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const data = await response.json();
 
-      // ----------------------------------------------------------------------
-      //  6) Validar respuesta del backend
-      // ----------------------------------------------------------------------
+      // ====================================================
+      // 6) PROCESAMIENTO DE RESPUESTA
+      // ====================================================
+
       if (data.status === "ok") {
-        // ------------------------------------------------------------------
-        //  6.1) Crear sesión PHP local con los datos del usuario
-        // ------------------------------------------------------------------
-        console.log("JSON QUE VOY A ENVIAR A guardarSesion.php:", {
+
+        // --------------------------------------------------
+        // 6.1) CREACIÓN DE SESIÓN PHP
+        // --------------------------------------------------
+
+        console.log("JSON enviado a guardarSesion.php:", {
           id_usuario: data.usuario.id_usuario,
           nombre: data.usuario.nombre,
           apellidos: data.usuario.apellidos,
@@ -153,20 +186,20 @@ document.addEventListener("DOMContentLoaded", () => {
           })
         });
 
-        // ------------------------------------------------------------------
-        //  6.2) Sincronizar la contraseña nueva en MySQL
-        //       (en caso de haber sido restablecida en Firebase)
-        // ------------------------------------------------------------------
+        // --------------------------------------------------
+        // 6.2) SINCRONIZACIÓN DE CONTRASEÑA CON MYSQL
+        // --------------------------------------------------
+
         try {
           /**
-           * Flujo:
-           *   - Tras restablecer la contraseña en Firebase, el usuario inicia sesión con la nueva.
-           *   - En este punto, aprovechamos para actualizar también el campo "contrasena"
-           *     en la base de datos MySQL, manteniendo ambas fuentes sincronizadas.
+           * Flujo de sincronización:
+           * - El usuario puede haber restablecido la contraseña en Firebase.
+           * - Al iniciar sesión correctamente, se actualiza también
+           *   la contraseña almacenada en MySQL.
            */
           const user = auth.currentUser;
-          const nuevaContrasena = contrasena; // contraseña usada en este login
-          const idToken = await user.getIdToken(); // token actualizado
+          const nuevaContrasena = contrasena;
+          const idToken = await user.getIdToken();
 
           const { id_usuario, nombre, apellidos, email } = data.usuario;
 
@@ -187,23 +220,22 @@ document.addEventListener("DOMContentLoaded", () => {
           });
 
           if (respuestaSync.ok) {
-            console.log(" Contraseña sincronizada correctamente con MySQL.");
+            console.log("Contraseña sincronizada correctamente con MySQL.");
           } else {
-            console.warn(" No se pudo sincronizar la contraseña con MySQL.");
+            console.warn("No se pudo sincronizar la contraseña con MySQL.");
           }
 
         } catch (syncError) {
           console.error("Error sincronizando contraseña con MySQL:", syncError);
         }
 
-        // ------------------------------------------------------------------
-        // 6.3 Redirigir según rol del usuario
-        // ------------------------------------------------------------------
+        // --------------------------------------------------
+        // 6.3) REDIRECCIÓN SEGÚN ROL
+        // --------------------------------------------------
+
         if (data.usuario.id_rol === 2) {
-          // Empresas → Informe de nodos
           window.location.href = "informe_nodos.php";
         } else {
-          // Usuarios normales → Home de siempre
           window.location.href = "userPage.php";
         }
 
