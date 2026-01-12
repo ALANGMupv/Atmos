@@ -378,7 +378,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     // --------------------------------------------------------------
-    /// (savedInstanceState: Bundle) → onCreate()
+    // (savedInstanceState: Bundle) → onCreate()
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

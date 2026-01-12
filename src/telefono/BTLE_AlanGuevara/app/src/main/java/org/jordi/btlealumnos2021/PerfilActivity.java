@@ -16,14 +16,19 @@ import androidx.appcompat.widget.AppCompatButton;
 import com.google.firebase.auth.FirebaseAuth;
 
 /**
- * Nombre Fichero: PerfilActivity.java
- * Descripción: Muestra la información del perfil del usuario:
- *              nombre completo y correo electrónico, obtenidos
- *              de la sesión que viene de la BBDD MySQL.
- * Autor: Alan Guevara Martínez
- * Fecha: 17/11/2025
+ * @brief Pantalla de perfil del usuario.
+ *
+ * Muestra la información básica del usuario autenticado
+ * (nombre completo y correo electrónico), obtenida desde
+ * la sesión local sincronizada con la BBDD MySQL.
+ *
+ * Permite:
+ *  - Editar el perfil.
+ *  - Cerrar sesión mediante popup de confirmación.
+ *
+ * @author Alan Guevara Martínez
+ * @date 17/11/2025
  */
-
 public class PerfilActivity extends FuncionesBaseActivity {
 
     // Botón cerrar sesión
@@ -81,13 +86,14 @@ public class PerfilActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * Nombre Método: cargarDatosPerfilDesdeSesion
-     * Descripción:
-     *   Obtiene de SesionManager los datos guardados en SharedPreferences
-     *   (nombre, apellidos y email) y los muestra en los TextViews del perfil.
+     * @brief Carga y muestra los datos del perfil desde la sesión local.
      *
-     *   Estos datos proceden originalmente de la BBDD MySQL, ya que
-     *   fueron devueltos por el endpoint /login y guardados en la sesión.
+     * Obtiene nombre, apellidos y correo electrónico desde
+     * {@link SesionManager} (SharedPreferences) y los muestra
+     * en los TextView correspondientes.
+     *
+     * Los datos proceden originalmente del backend MySQL
+     * tras el login del usuario.
      */
     private void cargarDatosPerfilDesdeSesion() {
         // Recuperar nombre, apellidos y correo de la sesión local
@@ -118,16 +124,16 @@ public class PerfilActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * Nombre Método: abrirPopupCerrarSesion
-     * Descripción:
-     *   Muestra el popup de confirmación para cerrar sesión.
-     *   Desde el popup, el usuario puede:
-     *     - Cancelar → se cierra el popup.
-     *     - Confirmar → se cierra sesión (Firebase + SharedPreferences) y
-     *                   se redirige a la pantalla de inicio de sesión.
+     * @brief Muestra el popup de confirmación para cerrar sesión.
      *
-     * Entradas:
-     *  - v: Vista desde la que se ha hecho clic (botón "Cerrar sesión").
+     * Permite al usuario:
+     *  - Cancelar el cierre de sesión.
+     *  - Confirmar el cierre, lo que implica:
+     *      - Cerrar sesión en Firebase.
+     *      - Limpiar la sesión local.
+     *      - Redirigir a la pantalla de inicio de sesión.
+     *
+     * @param v Vista desde la que se ha lanzado la acción.
      */
     private void abrirPopupCerrarSesion(View v) {
 

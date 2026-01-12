@@ -6,13 +6,17 @@ import android.widget.ImageView;
 import androidx.appcompat.app.AppCompatActivity;
 
 /**
+ * @brief Pantalla de política de privacidad de la aplicación.
  *
- * Pantalla de privacidad de la aplicación.
+ * Esta Activity muestra la información relacionada con la
+ * política de privacidad de ATMOS.
  *
- * Muestra la información relacionada con la política de privacidad
+ * El usuario puede cerrar la pantalla mediante el botón
+ * de cierre (X), volviendo a la pantalla anterior.
  *
+ * @author Nerea Aguilar Forés
+ * @date 2025
  */
-
 public class PrivacidadActivity extends AppCompatActivity {
 
     @Override

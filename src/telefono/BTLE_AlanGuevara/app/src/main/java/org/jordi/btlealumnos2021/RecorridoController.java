@@ -31,28 +31,28 @@ import com.android.volley.toolbox.Volley;
  */
 public class RecorridoController {
 
-    /** Contexto de la aplicación necesario para acceder a servicios del sistema */
+    /* Contexto de la aplicación necesario para acceder a servicios del sistema */
     private final Context context;
 
-    /** Botón para iniciar el servicio de recorrido */
+    /* Botón para iniciar el servicio de recorrido */
     private final Button btnIniciar;
 
-    /** Botón para detener el servicio de recorrido */
+    /* Botón para detener el servicio de recorrido */
     private final Button btnDetener;
 
-    /** TextView que muestra la distancia recorrida hoy */
+    /* TextView que muestra la distancia recorrida hoy */
     private final TextView tvHoy;
 
-    /** TextView que muestra la distancia recorrida ayer */
+    /* TextView que muestra la distancia recorrida ayer */
     private final TextView tvAyer;
 
-    /** Receiver encargado de recibir actualizaciones en tiempo real del servicio GPS */
+    /* Receiver encargado de recibir actualizaciones en tiempo real del servicio GPS */
     private BroadcastReceiver recorridoReceiver;
 
-    /** Receiver que detecta la detención del servicio */
+    /* Receiver que detecta la detención del servicio */
     private BroadcastReceiver stopReceiver;
 
-    /** Última distancia válida mostrada en pantalla */
+    /* Última distancia válida mostrada en pantalla */
     private double ultimoValorMostradoHoy = -1; // Para que no se muestre 0 por error si algo falla
 
 

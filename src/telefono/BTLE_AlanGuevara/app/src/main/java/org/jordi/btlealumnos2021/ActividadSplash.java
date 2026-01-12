@@ -8,10 +8,11 @@ import android.os.Looper;
 import androidx.appcompat.app.AppCompatActivity;
 
 /**
- * Muestra el logo de ATMOS durante 2 segundos.
- * Luego decide si mostrar:
- *  - El onboarding (si es primera vez)
- *  - La pantalla de login (si ya entró antes)
+ * @brief Actividad de pantalla de carga (splash).
+ *
+ * Muestra el logo de ATMOS durante un tiempo fijo y decide
+ * a qué pantalla redirigir al usuario según su estado:
+ * onboarding, login o sesión existente.
  */
 public class ActividadSplash extends AppCompatActivity {
 

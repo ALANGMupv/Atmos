@@ -24,10 +24,17 @@ import org.json.JSONObject;
 
 
 /**
- * Nombre Fichero: ReestablecerContrasenaActivity.java
- * Descripción: Actividad de Android que permite restablecer la contraseña enviando un correo de recuperación mediante Firebase Authentication.
- * Autor: Alan Guevara Martínez
- * Fecha: 15/11/2025
+ * @brief Pantalla de restablecimiento de contraseña.
+ *
+ * Permite al usuario solicitar el restablecimiento de su contraseña
+ * introduciendo su correo electrónico. La petición se envía al backend
+ * de ATMOS, que se encarga de generar y enviar el correo de recuperación.
+ *
+ * Tras el envío correcto, el usuario es redirigido a la pantalla
+ * de inicio de sesión.
+ *
+ * @author Alan Guevara Martínez
+ * @date 15/11/2025
  */
 
 public class RestablecerContrasenaActivity extends AppCompatActivity {
@@ -74,9 +81,9 @@ public class RestablecerContrasenaActivity extends AppCompatActivity {
     }
 
 
-    /// --------------------------------------------------------------
-    /// MÉTODO PRINCIPAL → enviarCorreoRestablecer()
-    /// --------------------------------------------------------------
+    // --------------------------------------------------------------
+    // MÉTODO PRINCIPAL → enviarCorreoRestablecer()
+    // --------------------------------------------------------------
     private void enviarCorreoRestablecer() {
 
         String correo = campoCorreo.getText().toString().trim();

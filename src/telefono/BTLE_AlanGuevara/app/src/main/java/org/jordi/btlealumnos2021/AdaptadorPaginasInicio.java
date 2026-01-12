@@ -10,8 +10,12 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
-/// Adaptador para ViewPager2 que muestra las páginas del onboarding.
-
+/**
+ * @brief Adaptador para el ViewPager2 del onboarding.
+ *
+ * Se encarga de mostrar las distintas páginas del proceso de onboarding,
+ * inflando el layout correspondiente y asignando imagen, título y descripción.
+ */
 public class AdaptadorPaginasInicio extends RecyclerView.Adapter<AdaptadorPaginasInicio.ViewHolderPagina> {
 
     private final List<PaginaInicio> paginas;

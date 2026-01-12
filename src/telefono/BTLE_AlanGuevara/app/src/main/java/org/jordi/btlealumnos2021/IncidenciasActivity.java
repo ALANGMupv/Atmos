@@ -25,13 +25,17 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 /**
- * Nombre Clase: IncidenciasActivity
- * Descripción:
- *   Activity encargada de mostrar el listado de incidencias
- *   del usuario y permitir ver o enviar nuevas incidencias.
+ * @brief Pantalla de gestión de incidencias del usuario.
  *
- * Autora: Nerea Aguilar Forés
- * Fecha: 17/12/2025
+ * Muestra el listado de incidencias asociadas al usuario y permite
+ * alternar entre incidencias enviadas y aquellas que ya tienen
+ * respuesta por parte del administrador.
+ *
+ * También permite crear nuevas incidencias y consultar el detalle
+ * de cada una mediante ventanas emergentes.
+ *
+ * @author Nerea Aguilar Forés
+ * @date 17/12/2025
  */
 public class IncidenciasActivity extends AppCompatActivity {
 
@@ -45,15 +49,12 @@ public class IncidenciasActivity extends AppCompatActivity {
     private int idUsuario = 1; // Ajustar según sesión real
 
     /**
-     * Nombre Método: onCreate
-     * Descripción:
-     *   Inicializa la activity, el RecyclerView y carga
-     *   las incidencias del usuario desde el backend.
+     * @brief Inicializa la pantalla de incidencias.
      *
-     * @param savedInstanceState Estado previo de la activity
+     * Configura el RecyclerView, los tabs de navegación y carga
+     * las incidencias del usuario desde el backend.
      *
-     * Autora: Nerea Aguilar Forés
-     * Fecha: 17/12/2025
+     * @param savedInstanceState Estado previo de la actividad (si existe).
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,13 +100,10 @@ public class IncidenciasActivity extends AppCompatActivity {
     }
 
     /**
-     * Nombre Método: cargarIncidencias
-     * Descripción:
-     *   Solicita al backend el listado de incidencias
-     *   del usuario y las muestra en el RecyclerView.
+     * @brief Carga y muestra las incidencias del usuario.
      *
-     * Autora: Nerea Aguilar Forés
-     * Fecha: 17/12/2025
+     * Solicita al backend el listado de incidencias y actualiza
+     * el RecyclerView según el modo activo (respuestas o enviadas).
      */
     private void cargarIncidencias() {
 
@@ -190,17 +188,16 @@ public class IncidenciasActivity extends AppCompatActivity {
     }
 
     /**
-     * @brief Abre un popup con la información detallada
-     *        de la incidencia seleccionada.
+     * @brief Muestra el detalle completo de una incidencia.
      *
-     * Muestra:
-     *  - Título
-     *  - Descripción
-     *  - Respuesta del administrador (si existe)
-     *  - Estado de la incidencia
-     *  - Fecha formateada
+     * Abre un diálogo con la información de la incidencia seleccionada,
+     * incluyendo asunto, descripción, respuesta del administrador,
+     * estado y fecha formateada.
      *
-     * @param incidencia Incidencia seleccionada por el usuario
+     * Si la incidencia no estaba marcada como leída, se actualiza
+     * su estado tanto en el backend como en la sesión local.
+     *
+     * @param incidencia Incidencia seleccionada por el usuario.
      *
      * @author Nerea Aguilar Forés
      * @date 29/12/2025
@@ -271,13 +268,10 @@ public class IncidenciasActivity extends AppCompatActivity {
     }
 
     /**
-     * Nombre Método: abrirPopupEnviarIncidencia
-     * Descripción:
-     *   Abre el popup que permite al usuario
-     *   enviar una nueva incidencia al backend.
+     * @brief Abre el formulario para enviar una nueva incidencia.
      *
-     * Autora: Nerea Aguilar Forés
-     * Fecha: 17/12/2025
+     * Muestra un diálogo que permite al usuario introducir el asunto
+     * y la descripción de una nueva incidencia, que se envía al backend.
      */
     private void abrirPopupEnviarIncidencia() {
 
@@ -328,6 +322,12 @@ public class IncidenciasActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    /**
+     * @brief Convierte una fecha ISO a un formato legible para el usuario.
+     *
+     * @param fechaIso Fecha en formato ISO recibida del backend.
+     * @return Fecha formateada para mostrar en la interfaz.
+     */
     private String formatearFechaUsuario(String fechaIso) {
         try {
             SimpleDateFormat isoFormat =
@@ -346,6 +346,12 @@ public class IncidenciasActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * @brief Devuelve el texto descriptivo del estado de una incidencia.
+     *
+     * @param idEstado Identificador numérico del estado.
+     * @return Texto asociado al estado de la incidencia.
+     */
     private String getTextoEstado(int idEstado) {
         switch (idEstado) {
             case 1: return "Recibida";

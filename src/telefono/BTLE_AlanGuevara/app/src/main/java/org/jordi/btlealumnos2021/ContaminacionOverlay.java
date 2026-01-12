@@ -152,11 +152,11 @@ public class ContaminacionOverlay extends Overlay {
     @Override
     public void draw(Canvas canvas, MapView mapView, boolean shadow) {
 
-        /// Si se trata de una llamada al shadow layer o no hay puntos, no dibujar nada.
+        // Si se trata de una llamada al shadow layer o no hay puntos, no dibujar nada.
         if (shadow || puntos.isEmpty()) return;
 
 
-        /// Reiniciar contadores índices
+        // Reiniciar contadores índices
         contBuena = 0;
         contModerada = 0;
         contInsalubre = 0;
@@ -164,58 +164,58 @@ public class ContaminacionOverlay extends Overlay {
         totalCeldas = 0;
 
 
-        /// Número de divisiones por eje del lienzo.
+        // Número de divisiones por eje del lienzo.
         final int GRID = 55;
 
-        /// Objeto Paint reutilizado para dibujar los círculos interpolados.
+        // Objeto Paint reutilizado para dibujar los círculos interpolados.
         final Paint paint = new Paint();
         paint.setStyle(Paint.Style.FILL);
-        paint.setAntiAlias(true);       /// suaviza bordes
-        paint.setDither(true);          /// mejora mezcla de colores en gradientes
-        paint.setFilterBitmap(true);    /// suaviza al escalar
+        paint.setAntiAlias(true);       // suaviza bordes
+        paint.setDither(true);          // mejora mezcla de colores en gradientes
+        paint.setFilterBitmap(true);    // suaviza al escalar
 
         int width = canvas.getWidth();
         int height = canvas.getHeight();
 
-        /// Tamaño de cada celda (píxeles).
+        // Tamaño de cada celda (píxeles).
         float stepX = width / (float) GRID;
         float stepY = height / (float) GRID;
 
-        /// Radio de influencia geográfico para IDW.
+        // Radio de influencia geográfico para IDW.
         final double RADIO = 0.013;  // ≈1–1.2 km dependiendo latitud
         final double EXP = 2.2;        // exponente IDW, 2 = estándar
         final float ALPHA = 0.11f; // opacidad del heatmap
 
-        /// Recorrer toda la cuadrícula
+        // Recorrer toda la cuadrícula
         for (int ix = 0; ix < GRID; ix++) {
             for (int iy = 0; iy < GRID; iy++) {
 
-                /// Centro del píxel del grid
+                // Centro del píxel del grid
                 float cx = ix * stepX + stepX / 2f;
                 float cy = iy * stepY + stepY / 2f;
 
-                /// Convertimos el centro del píxel a coordenadas geo
+                // Convertimos el centro del píxel a coordenadas geo
                 GeoPoint gp = (GeoPoint) mapView.getProjection().fromPixels((int) cx, (int) cy);
 
                 double lat = gp.getLatitude();
                 double lon = gp.getLongitude();
 
-                /// Acumuladores IDW
-                double sumW = 0;      /// suma de pesos
-                double maxNivel = 0; /// Nos quedaremos con el PEOR nivel para cuando se seleccionen todos los contaminantes
+                // Acumuladores IDW
+                double sumW = 0;      // suma de pesos
+                double maxNivel = 0; // Nos quedaremos con el PEOR nivel para cuando se seleccionen todos los contaminantes
 
-                /// Evaluar influencia de cada punto sobre la celda actual
+                // Evaluar influencia de cada punto sobre la celda actual
                 for (PuntoContaminacion p : puntos) {
 
-                    /// Distancia geográfica aproximada
+                    // Distancia geográfica aproximada
                     double dx = lon - p.lon;
                     double dy = lat - p.lat;
                     double d = Math.sqrt(dx * dx + dy * dy);
 
-                    /// Si está fuera del radio, no aporta nada
+                    // Si está fuera del radio, no aporta nada
                     if (d > RADIO) continue;
 
-                    /// Peso IDW (si d=0 se fuerza peso máximo)
+                    // Peso IDW (si d=0 se fuerza peso máximo)
                     double w = d == 0 ? 1 : 1 / Math.pow(d, EXP);
 
                     sumW += w;
@@ -230,7 +230,7 @@ public class ContaminacionOverlay extends Overlay {
 
                 }
 
-                /// Enviar resultados índices a la Activity
+                // Enviar resultados índices a la Activity
                 if (indiceListener != null && totalCeldas > 0) {
 
                     int pctBuena = (int) ((contBuena * 100f) / totalCeldas);
@@ -238,7 +238,7 @@ public class ContaminacionOverlay extends Overlay {
                     int pctInsalubre = (int) ((contInsalubre * 100f) / totalCeldas);
                     int pctMala = (int) ((contMala * 100f) / totalCeldas);
 
-                    /// Determinar categoría predominante
+                    // Determinar categoría predominante
                     String dominante = "buena";
                     int max = pctBuena;
 
@@ -263,16 +263,16 @@ public class ContaminacionOverlay extends Overlay {
                     );
                 }
 
-                /// Si ningún punto aporta peso, este píxel se descarta
+                // Si ningún punto aporta peso, este píxel se descarta
                 if (sumW == 0) continue;
 
-                /// Convertimos el PEOR nivel a color
+                // Convertimos el PEOR nivel a color
                 int[] rgb = colorPorNivel(maxNivel);
                 int rr = rgb[0];
                 int gg = rgb[1];
                 int bb = rgb[2];
 
-                /// Índices calidad del aire, contabilizar celdas y clasificar
+                // Índices calidad del aire, contabilizar celdas y clasificar
                 String nivel = clasificar(rr, gg, bb);
                 totalCeldas++;
 
@@ -292,10 +292,10 @@ public class ContaminacionOverlay extends Overlay {
                 }
 
 
-                /// Ajustar color con alpha para permitir ver el mapa debajo
+                // Ajustar color con alpha para permitir ver el mapa debajo
                 paint.setColor(Color.argb((int) (ALPHA * 255), rr, gg, bb));
 
-                /// Se dibuja un círculo ligeramente menor que la celda
+                // Se dibuja un círculo ligeramente menor que la celda
                 canvas.drawRect(
                         cx - stepX,
                         cy - stepY,
@@ -330,22 +330,22 @@ public class ContaminacionOverlay extends Overlay {
      */
     private int[] colorPorNivel(double n) {
 
-        /// Calidad buena → verde
+        // Calidad buena → verde
         if (n <= 0.10) {
             return new int[]{36, 255, 84};
         }
 
-        /// Calidad moderada → amarillo
+        // Calidad moderada → amarillo
         if (n <= 0.45) {
             return new int[]{255, 240, 0};
         }
 
-        /// Calidad insalubre → naranja
+        // Calidad insalubre → naranja
         if (n <= 0.75) {
             return new int[]{255, 144, 0};
         }
 
-        /// Calidad mala → rojo
+        // Calidad mala → rojo
         return new int[]{255, 48, 48};
     }
 

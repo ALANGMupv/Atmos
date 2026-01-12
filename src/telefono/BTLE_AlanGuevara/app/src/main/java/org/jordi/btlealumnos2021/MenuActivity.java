@@ -18,19 +18,14 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 
 /**
- * Nombre Clase: MenuActivity
- * Descripción:
- *   Pantalla "Menú de Acciones" donde el usuario puede:
- *     - Consultar el manual de usuario.   (de momento: Toast "no activo")
- *     - Reportar incidencias.             (de momento: Toast "no activo")
- *     - Desvincular el sensor.           (abre popup de confirmación)
+ * @brief Activity que muestra el menú de acciones del usuario.
  *
- *   La opción "Desvincular sensor" solo se muestra si el usuario tiene
- *   una placa asociada en el backend. Esta comprobación se realiza mediante
- *   LogicaFake.resumenUsuario().
+ * Permite acceder a distintas funcionalidades como incidencias
+ * y la desvinculación del sensor. La opción de desvincular solo
+ * se muestra si el usuario tiene una placa asociada en el backend.
  *
- * Autor: Alan Guevara Martínez
- * Fecha modificación: 19/11/2025
+ * @author Alan Guevara Martínez
+ * @date 19/11/2025
  */
 public class MenuActivity extends FuncionesBaseActivity {
 
@@ -42,6 +37,14 @@ public class MenuActivity extends FuncionesBaseActivity {
     // Cola Volley para peticiones HTTP
     private RequestQueue queue;
 
+    /**
+     * @brief Inicializa la pantalla de menú de acciones.
+     *
+     * Configura el header, la navegación inferior, inicializa
+     * las vistas del menú y asigna los listeners correspondientes.
+     *
+     * @param savedInstanceState Estado previo de la activity.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,6 +64,12 @@ public class MenuActivity extends FuncionesBaseActivity {
         configurarListeners();
     }
 
+    /**
+     * @brief Actualiza el estado del menú al volver a primer plano.
+     *
+     * Comprueba si el usuario tiene una placa asociada para
+     * mostrar u ocultar la opción de desvincular sensor.
+     */
     @Override
     protected void onResume() {
         super.onResume();
@@ -70,9 +79,7 @@ public class MenuActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * Nombre Método: inicializarVistas
-     * Descripción:
-     *   Enlaza las vistas del XML con las variables de la Activity.
+     * @brief Enlaza las vistas del layout con las variables de la activity.
      */
     private void inicializarVistas() {
         cardManualUsuario    = findViewById(R.id.cardManualUsuario);
@@ -81,12 +88,10 @@ public class MenuActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * Nombre Método: configurarListeners
-     * Descripción:
-     *   Asigna el comportamiento a cada tarjeta del menú:
-     *     - Manual de usuario → Toast informativo.
-     *     - Incidencias       → Toast informativo.
-     *     - Desvincular sensor → muestra popup de confirmación.
+     * @brief Configura el comportamiento de las tarjetas del menú.
+     *
+     * Asigna las acciones correspondientes a cada opción:
+     * manual de usuario, incidencias y desvinculación de sensor.
      */
     private void configurarListeners() {
 
@@ -117,9 +122,7 @@ public class MenuActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * Nombre Método: comprobarEstadoPlacaYActualizarUI
-     * Descripción:
-     *   Llama al backend para saber si el usuario tiene una placa asociada.
+     *  @brief Llama al backend para saber si el usuario tiene una placa asociada.
      *   En función del resultado:
      *     - onSinPlaca()  → Oculta la tarjeta de "Desvincular sensor".
      *     - onConPlaca()  → Muestra la tarjeta.
@@ -180,13 +183,10 @@ public class MenuActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * Nombre Método: mostrarPopupDesvincular
-     * Descripción:
-     *   Muestra el popup de confirmación para desvincular el sensor
-     *   usando el layout popup_desvincular_sensor.xml
+     * @brief Muestra un popup de confirmación para desvincular el sensor.
      *
-     *   - Botón "Cancelar": cierra el popup sin hacer nada más.
-     *   - Botón "Desvincular": llama a LogicaFake.desvincularPlacaServidor.
+     * Si el usuario confirma, se llama al backend para eliminar la
+     * asociación entre el usuario y su placa.
      */
     private void mostrarPopupDesvincular() {
 

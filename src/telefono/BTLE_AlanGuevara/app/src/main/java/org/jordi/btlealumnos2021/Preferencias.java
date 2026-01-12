@@ -4,8 +4,18 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 /**
- * Clase que gestiona datos persistentes simples.
- * Aquí se guarda si el usuario ya vio el onboarding.
+ * @brief Gestor de preferencias simples de la aplicación.
+ *
+ * Esta clase encapsula el acceso a SharedPreferences para
+ * almacenar información persistente básica relacionada
+ * con el estado de la aplicación.
+ *
+ * Actualmente se utiliza para:
+ *  - Determinar si el usuario abre la app por primera vez.
+ *  - Decidir si mostrar o no el onboarding inicial.
+ *
+ * @author Alan Guevara Martínez
+ * @date 2025
  */
 public class Preferencias {
 

@@ -15,13 +15,13 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 /**
- * Clase Base: FuncionesBaseActivity
- * Descripción:
- *   Contiene funciones comunes y reutilizables entre distintas Activities,
- *   como configurar el header, la barra de navegación inferior y utilidades
- *   compartidas (como el toggle de contraseña).
+ * @brief Activity base con funcionalidades comunes reutilizables.
  *
- * Autora: Nerea Aguilar Forés
+ * Proporciona métodos compartidos para configurar el header superior,
+ * la barra de navegación inferior y utilidades generales como el
+ * toggle de visibilidad de contraseñas.
+ *
+ * @author Nerea Aguilar Forés
  */
 public class FuncionesBaseActivity extends AppCompatActivity {
     @Override
@@ -30,15 +30,12 @@ public class FuncionesBaseActivity extends AppCompatActivity {
     }
 
     /**
-     * Nombre Método: setupHeader
-     * Descripción:
-     *   Configura el header superior (toolbar) asignando el título
-     *   y la funcionalidad de los iconos de perfil y notificaciones.
+     * @brief Configura el header superior de la pantalla.
      *
-     * Entradas:
-     *  - titulo: Texto que se mostrará en el header.
+     * Asigna el título del header y define la funcionalidad de los iconos
+     * de notificaciones y perfil.
      *
-     * Autora: Nerea Aguilar Forés
+     * @param titulo Texto que se mostrará en el header.
      */
     protected void setupHeader(String titulo) {
         TextView tituloHeader = findViewById(R.id.tituloHeader);
@@ -63,20 +60,17 @@ public class FuncionesBaseActivity extends AppCompatActivity {
     }
 
     /**
-     * Nombre Método: setupBottomNav
-     * Descripción:
-     *   Configura la barra de navegación inferior (Bottom Navigation),
-     *   marcando el botón seleccionado según la pantalla actual.
+     * @brief Configura la barra de navegación inferior.
      *
-     *   selected:
-     *      0 = Mapas
-     *      1 = Usuario
-     *      2 = Menú
+     * Marca el botón correspondiente como seleccionado según la pantalla
+     * actual y define la navegación entre secciones.
      *
-     * Entradas:
-     *  - selected: índice del botón de navegación activo.
+     * Valores de selección:
+     * - 0 → Mapas
+     * - 1 → Usuario
+     * - 2 → Menú
      *
-     * Autora: Nerea Aguilar Forés
+     * @param selected Índice del botón activo.
      */
     protected void setupBottomNav(int selected) {
         LinearLayout navMapas = findViewById(R.id.nav_mapas);
@@ -115,13 +109,12 @@ public class FuncionesBaseActivity extends AppCompatActivity {
     }
 
     /**
-     * Nombre Método: habilitarToggleContrasena
-     * Descripción:
-     *   Permite alternar entre mostrar y ocultar la contraseña.
-     *   Además cambia el icono del ojo (abierto/cerrado).
+     * @brief Habilita la visualización temporal de la contraseña.
      *
-     * Entradas:
-     *  - editText: EditText con drawableEnd del ojo.
+     * Permite alternar entre mostrar y ocultar el contenido de un campo
+     * de contraseña al pulsar el icono del ojo situado al final del EditText.
+     *
+     * @param editText Campo de texto que contiene la contraseña.
      */
     public void habilitarToggleContrasena(final EditText editText) {
         if (editText == null) return;
@@ -173,10 +166,10 @@ public class FuncionesBaseActivity extends AppCompatActivity {
     }
 
     /**
-     * Nombre Método: setupBottomNav
-     * Descripción:
-     *   Cuando la página en la que está el usuario no es ninguna de las de que está en el menú se utiliza este método.
-     *   Nada seleccionado.
+     * @brief Configura la barra de navegación inferior sin ningún botón seleccionado.
+     *
+     * Se utiliza cuando la pantalla actual no corresponde a ninguna de las
+     * opciones principales del menú inferior.
      */
     protected void setupBottomNav() {
         setupBottomNav(-1); // Indica que ningún botón debe aparecer como seleccionado

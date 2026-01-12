@@ -6,17 +6,19 @@ import android.content.SharedPreferences;
 import org.json.JSONObject;
 
 /**
- * Nombre Fichero: SesionManager.java
- * Descripción:
- *    Clase encargada de gestionar la sesión local del usuario mediante SharedPreferences.
- *    Esta versión guarda el JSON COMPLETO del usuario (más robusto) y además expone
- *    funciones para obtener campos individuales (nombre, email, apellidos…) para mantener
- *    compatibilidad con EditarPerfil y el resto de la app.
+ * @brief Gestor de sesión local del usuario.
  *
- * Autores:
- *    - Original: Nerea Aguilar Forés y Alan Guevara Martínez
- *    - Modificaciones: Judit Espinoza Cervera
+ * Se encarga de almacenar y recuperar la información de sesión
+ * del usuario mediante SharedPreferences.
  *
+ * La sesión se guarda como un único objeto JSON completo,
+ * lo que permite mayor robustez ante cambios en el backend
+ * y facilita el acceso a campos individuales (id, nombre,
+ * apellidos, email, estado, etc.).
+ *
+ * @author Nerea Aguilar Forés
+ * @author Alan Guevara Martínez
+ * @author Judit Espinoza Cervera
  */
 
 public class SesionManager {
@@ -34,17 +36,14 @@ public class SesionManager {
     /// MÉTODO: guardarSesion
     /// ============================================================
     /**
-     * Nombre Método: guardarSesion
-     * Descripción:
-     *      Guarda EN UNA SOLA CLAVE el JSON completo con todos los datos del usuario.
-     *      Esto evita errores si el backend cambia algún campo o añade nuevos.
+     * @brief Guarda la sesión del usuario en el dispositivo.
      *
-     * Entradas:
-     *      - context : contexto Android
-     *      - userJson : objeto JSON devuelto por el backend al hacer login
+     * Almacena el objeto JSON completo devuelto por el backend
+     * en una única clave de SharedPreferences, evitando problemas
+     * si se añaden o modifican campos en el futuro.
      *
-     * Salidas:
-     *      - No retorna nada. Persiste la sesión localmente.
+     * @param context  Contexto de la aplicación
+     * @param userJson Objeto JSON con los datos del usuario
      */
     public static void guardarSesion(Context context, JSONObject userJson) {
         try {
@@ -62,16 +61,14 @@ public class SesionManager {
     /// MÉTODO: obtenerSesion
     /// ============================================================
     /**
-     * Nombre Método: obtenerSesion
-     * Descripción:
-     *      Devuelve el JSON completo guardado en SharedPreferences.
+     * @brief Obtiene la sesión completa del usuario.
      *
-     * Entradas:
-     *      - context : contexto Android
+     * Recupera y reconstruye el objeto JSON almacenado
+     * en SharedPreferences.
      *
-     * Salidas:
-     *      - JSONObject si existe sesión
-     *      - null si no existe sesión
+     * @param context Contexto de la aplicación
+     * @return JSONObject con los datos del usuario,
+     *         o null si no existe sesión
      */
     public static JSONObject obtenerSesion(Context context) {
         try {
@@ -91,8 +88,10 @@ public class SesionManager {
     /// ============================================================
 
     /**
-     * Nombre Método: obtenerIdUsuario
-     * Descripción: Devuelve el ID del usuario guardado.
+     * @brief Devuelve el identificador del usuario.
+     *
+     * @param context Contexto de la aplicación
+     * @return ID del usuario o -1 si no existe sesión
      */
     public static int obtenerIdUsuario(Context context) {
         JSONObject sesion = obtenerSesion(context);
@@ -101,8 +100,10 @@ public class SesionManager {
     }
 
     /**
-     * Nombre Método: obtenerNombre
-     * Descripción: Devuelve el nombre guardado.
+     * @brief Devuelve el nombre del usuario.
+     *
+     * @param context Contexto de la aplicación
+     * @return Nombre del usuario o cadena vacía
      */
     public static String obtenerNombre(Context context) {
         JSONObject sesion = obtenerSesion(context);
@@ -111,8 +112,10 @@ public class SesionManager {
     }
 
     /**
-     * Nombre Método: obtenerApellidos
-     * Descripción: Devuelve los apellidos guardados.
+     * @brief Devuelve los apellidos del usuario.
+     *
+     * @param context Contexto de la aplicación
+     * @return Apellidos del usuario o cadena vacía
      */
     public static String obtenerApellidos(Context context) {
         JSONObject sesion = obtenerSesion(context);
@@ -121,8 +124,10 @@ public class SesionManager {
     }
 
     /**
-     * Nombre Método: obtenerEmail
-     * Descripción: Devuelve el email guardado.
+     * @brief Devuelve el correo electrónico del usuario.
+     *
+     * @param context Contexto de la aplicación
+     * @return Email del usuario o cadena vacía
      */
     public static String obtenerEmail(Context context) {
         JSONObject sesion = obtenerSesion(context);
@@ -131,8 +136,10 @@ public class SesionManager {
     }
 
     /**
-     * Nombre Método: obtenerEstado
-     * Descripción: Devuelve el estado guardado (si existe).
+     * @brief Devuelve el estado del usuario.
+     *
+     * @param context Contexto de la aplicación
+     * @return Estado del usuario o 0 si no existe
      */
     public static int obtenerEstado(Context context) {
         JSONObject sesion = obtenerSesion(context);
@@ -145,16 +152,10 @@ public class SesionManager {
     /// MÉTODO: haySesionActiva
     /// ============================================================
     /**
-     * Nombre Método: haySesionActiva
-     * Descripción:
-     *      Comprueba si existe una sesión guardada (JSON no nulo).
+     * @brief Indica si existe una sesión activa.
      *
-     * Entradas:
-     *      - context : contexto Android
-     *
-     * Salidas:
-     *      - true si existe sesión
-     *      - false si no existe
+     * @param context Contexto de la aplicación
+     * @return true si hay sesión guardada, false en caso contrario
      */
     public static boolean haySesionActiva(Context context) {
         return obtenerSesion(context) != null;
@@ -165,15 +166,12 @@ public class SesionManager {
     /// MÉTODO: cerrarSesion
     /// ============================================================
     /**
-     * Nombre Método: cerrarSesion
-     * Descripción:
-     *      Elimina la sesión completa del dispositivo (logout).
+     * @brief Cierra la sesión del usuario.
      *
-     * Entradas:
-     *      - context : contexto Android
+     * Elimina completamente la información de sesión
+     * almacenada en el dispositivo.
      *
-     * Salidas:
-     *      - No retorna nada.
+     * @param context Contexto de la aplicación
      */
     public static void cerrarSesion(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);

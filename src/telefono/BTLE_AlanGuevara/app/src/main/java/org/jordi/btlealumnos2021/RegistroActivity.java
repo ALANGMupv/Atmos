@@ -28,12 +28,17 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 /**
- * Nombre Fichero: RegistroActivity.java
- * Descripción: Pantalla encargada del registro de nuevos usuarios.
- *              Valida los datos, crea el usuario en Firebase, envía el token al servidor
- *              y redirige a la pantalla de inicio de sesión.
- * Autora: Nerea Aguilar Forés
- * Fecha: 2025
+ * @brief Pantalla de registro de nuevos usuarios.
+ *
+ * Permite al usuario crear una cuenta nueva en ATMOS.
+ * Valida los datos introducidos, crea el usuario en Firebase,
+ * obtiene el token de autenticación y lo envía al backend.
+ *
+ * Tras un registro correcto, el usuario es redirigido
+ * a la pantalla de inicio de sesión.
+ *
+ * @author Nerea Aguilar Forés
+ * @date 2025
  */
 public class RegistroActivity extends FuncionesBaseActivity {
 
@@ -44,6 +49,15 @@ public class RegistroActivity extends FuncionesBaseActivity {
     private RequestQueue queue;
     private TextView enlaceLogin;
 
+    /**
+     * @brief Inicializa la pantalla de registro.
+     *
+     * Configura los campos del formulario, la validación de
+     * términos y condiciones, los enlaces de navegación
+     * y la lógica del botón de registro.
+     *
+     * @param savedInstanceState Estado previo de la Activity
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -108,14 +122,14 @@ public class RegistroActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * Nombre Método: registrarUsuario
-     * Descripción: Valida los datos del formulario, crea el usuario en Firebase,
-     *              obtiene el token ID y lo envía al servidor.
-     * Entradas:
-     *  - Ninguna (lee directamente los campos de la vista)
-     * Salidas:
-     *  - No retorna nada. Muestra mensajes o invoca el flujo de registro.
-     * Autora: Nerea Aguilar Forés
+     * @brief Valida el formulario y registra un nuevo usuario.
+     *
+     * Realiza validaciones locales, crea el usuario en Firebase,
+     * obtiene el token ID y lo envía al backend para completar
+     * el registro en la base de datos.
+     *
+     * @note El usuario debe aceptar los términos y condiciones
+     *       para poder completar el registro.
      */
     private void registrarUsuario() {
 
@@ -191,17 +205,15 @@ public class RegistroActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * Nombre Método: enviarRegistroAlServidor
-     * Descripción: Llama a la lógica de negocio (LogicaFake) para registrar el usuario
-     *              en el backend usando el token de Firebase.
-     * Entradas:
-     *  - idToken: Token de Firebase ya autenticado
-     *  - nombre: Nombre introducido
-     *  - apellidos: Apellidos introducidos
-     *  - password: Contraseña
-     * Salidas:
-     *  - No retorna nada. Procesa el resultado mediante callbacks.
-     * Autora: Nerea Aguilar Forés
+     * @brief Envía los datos del nuevo usuario al backend.
+     *
+     * Utiliza el token de Firebase para registrar el usuario
+     * en el servidor mediante LogicaFake.
+     *
+     * @param idToken   Token de autenticación de Firebase
+     * @param nombre    Nombre del usuario
+     * @param apellidos Apellidos del usuario
+     * @param password  Contraseña del usuario
      */
     private void enviarRegistroAlServidor(String idToken, String nombre, String apellidos, String password) {
 
