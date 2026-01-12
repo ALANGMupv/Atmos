@@ -3,7 +3,7 @@
  *  Fichero: perfil.js
  *  Autor: Alan Guevara Martínez
  *  Descripción: Controla la apertura y cierre del popup de cierre
- *               de sesión en la página de perfil.
+ *  de sesión en la página de perfil.
  *  Fecha: 16/11/2025
  * --------------------------------------------------------------
  */

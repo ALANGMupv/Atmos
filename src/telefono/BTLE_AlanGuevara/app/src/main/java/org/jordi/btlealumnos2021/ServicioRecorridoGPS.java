@@ -140,9 +140,9 @@ public class ServicioRecorridoGPS extends Service {
         }
 
         LocationRequest request = LocationRequest.create()
-                .setInterval(2000)
-                .setFastestInterval(1000)
-                .setSmallestDisplacement(1.0f) // Antes 1 metros mínimo para que Google decida enviar algo
+                .setInterval(2100) // Original 2000
+                .setFastestInterval(1100) // Original 1000
+                .setSmallestDisplacement(1.0f) // Original 1 metros mínimo para que Google decida enviar algo
                 .setPriority(Priority.PRIORITY_HIGH_ACCURACY);
 
 
@@ -197,7 +197,7 @@ public class ServicioRecorridoGPS extends Service {
         //    Si la precisión es peor de 15 metros, se descarta la lectura
         //    porque puede generar saltos falsos en la distancia.
         // ------------------------------------------------------------------
-        if (nueva.getAccuracy() > 18) { // Original 15
+        if (nueva.getAccuracy() > 20) { // Original 15
             Log.w(TAG,
                     "Localización descartada por baja precisión: "
                             + nueva.getAccuracy());
@@ -227,7 +227,7 @@ public class ServicioRecorridoGPS extends Service {
         //    Incrementos demasiado pequeños (< 0.8 m) suelen ser ruido
         //    del GPS cuando el usuario está parado o se mueve muy poco.
         // ------------------------------------------------------------------
-        if (incremento < 0.9) { // Original 0.8
+        if (incremento < 1.0) { // Original 0.8
             Log.d(TAG,
                     "Incremento demasiado pequeño descartado: "
                             + incremento + " m");
@@ -250,7 +250,7 @@ public class ServicioRecorridoGPS extends Service {
         float velocidad = nueva.getSpeed(); // m/s
 
         // Si la velocidad es muy baja, probablemente está parado
-        if (velocidad < 0.3f) { // < ? km/h
+        if (velocidad < 0.5f) { // < ? km/h
             Log.d(TAG, "Descartado por velocidad baja: " + velocidad);
             return;
         }

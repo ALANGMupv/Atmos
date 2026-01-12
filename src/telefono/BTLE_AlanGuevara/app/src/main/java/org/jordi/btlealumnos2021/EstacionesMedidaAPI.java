@@ -45,9 +45,9 @@ public class EstacionesMedidaAPI {
     private static volatile long cacheTimestampMs = 0;
 
     /**
-     * @brief Tiempo de vida de la cache: 1 minuto.
+     * @brief Tiempo de vida de la cache: 3 minutos.
      */
-    private static final long CACHE_TTL_MS = 60 * 1000;
+    private static final long CACHE_TTL_MS = 3 * 60 * 1000;
 
 
     /**
