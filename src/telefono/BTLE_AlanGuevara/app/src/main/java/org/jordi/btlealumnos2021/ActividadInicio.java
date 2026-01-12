@@ -16,10 +16,11 @@ import java.util.List;
 
 
 /**
+ * @brief Actividad de onboarding inicial de la aplicación.
  *
- * Pantallas de onboarding.
- * 3 páginas: Bienvenido / Conecta / Empieza ahora
- *
+ * Gestiona las pantallas de introducción que se muestran al usuario
+ * la primera vez que abre la aplicación, permitiendo navegar entre
+ * tres páginas informativas antes del registro o inicio de sesión.
  */
 public class ActividadInicio extends AppCompatActivity {
 
@@ -33,6 +34,14 @@ public class ActividadInicio extends AppCompatActivity {
 
     private TextView tvIrInicio;
 
+    /**
+     * @brief Inicializa la actividad de onboarding.
+     *
+     * Configura el ViewPager, los botones de navegación y los listeners
+     * necesarios para gestionar el flujo de pantallas iniciales.
+     *
+     * @param savedInstanceState Estado previo de la actividad (si existe).
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,9 +93,10 @@ public class ActividadInicio extends AppCompatActivity {
     }
 
     /**
+     * @brief Configura el contenido de las páginas del onboarding.
      *
-     * Configura el contenido de las páginas del onboarding.
-     *
+     * Inicializa la lista de páginas que se mostrarán en el ViewPager,
+     * incluyendo imágenes, títulos y descripciones.
      */
     private void configurarPaginas() {
         paginas = new ArrayList<>();
@@ -111,16 +121,19 @@ public class ActividadInicio extends AppCompatActivity {
     }
 
     /**
+     * @brief Actualiza la visibilidad de los controles de navegación.
      *
-     * Muestra/oculta los botones según la página.
+     * Muestra u oculta los botones de regresar, siguiente, comenzar
+     * y el acceso a inicio de sesión según la página actual.
      *
+     * @param pagina Índice de la página actualmente visible.
      */
     private void actualizarControles(int pagina) {
 
         boolean primera = pagina == 0;
         boolean ultima = pagina == paginas.size() - 1;
 
-        /**
+        /*
          * REGRESAR:
          * - NO aparece en página 0/2
          * - SÍ aparece en página 1
@@ -131,19 +144,19 @@ public class ActividadInicio extends AppCompatActivity {
             botonRegresar.setVisibility(View.VISIBLE);
         }
 
-        /**
+        /*
          * SIGUIENTE:
          * - Solo aparece en páginas 0 y 1
          */
         botonSiguiente.setVisibility(ultima ? View.GONE : View.VISIBLE);
 
-        /**
+        /*
          * COMENZAR:
          * - Solo aparece en la última página
          */
         botonComenzar.setVisibility(ultima ? View.VISIBLE : View.GONE);
 
-        /**
+        /*
          * TEXTO INICIAR SESIÓN:
          * - Solo aparece en la última página
          */
@@ -151,7 +164,7 @@ public class ActividadInicio extends AppCompatActivity {
     }
 
 
-    /// Termina el onboarding y marca que ya se vio.
+    // Termina el onboarding y marca que ya se vio.
     private void finalizar() {
         preferencias.marcarNoPrimeraVez();
         startActivity(new Intent(this, RegistroActivity.class));

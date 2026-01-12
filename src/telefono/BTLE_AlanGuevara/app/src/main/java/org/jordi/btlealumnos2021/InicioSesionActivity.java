@@ -36,11 +36,14 @@ import java.util.concurrent.Executor;
 
 
 /**
- * Nombre Fichero: InicioSesionActivity.java
- * Descripción: Pantalla encargada del inicio de sesión de usuarios ya registrados.
- * Valida los datos, inicia sesión en Firebase y envía el token al servidor.
- * Autora: Nerea Aguilar Forés
- * Fecha: 2025
+ * @brief Activity encargada del inicio de sesión de usuarios registrados.
+ *
+ * Valida las credenciales introducidas por el usuario, inicia sesión en
+ * Firebase, obtiene el idToken y lo envía al backend para completar
+ * la autenticación. También soporta acceso mediante biometría.
+ *
+ * @author Nerea Aguilar Forés
+ * @date 2025
  */
 public class InicioSesionActivity extends FuncionesBaseActivity {
 
@@ -55,6 +58,15 @@ public class InicioSesionActivity extends FuncionesBaseActivity {
     private BiometricPrompt biometricPrompt;
     private BiometricPrompt.PromptInfo promptInfo;
 
+    /**
+     * @brief Inicializa la pantalla de inicio de sesión.
+     *
+     * Configura los campos de entrada, listeners de navegación,
+     * lógica de login y, si existe una sesión previa, inicia
+     * automáticamente la autenticación biométrica.
+     *
+     * @param savedInstanceState Estado previo de la activity.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -100,15 +112,16 @@ public class InicioSesionActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * Nombre Método: validarLogin
-     * Descripción: Comprueba que los campos de email y contraseña sean válidos.
-     * Entradas:
-     * - email: Texto introducido en el campo correo.
-     * - password: Texto introducido en el campo contraseña.
-     * Salidas:
-     * - true si los datos son válidos.
-     * - false si falta algún campo o el email no es válido.
-     * Autora: Nerea Aguilar Forés
+     * @brief Valida los datos introducidos en el formulario de login.
+     *
+     * Comprueba que el email y la contraseña no estén vacíos
+     * y que el formato del correo electrónico sea válido.
+     *
+     * @param email Correo electrónico introducido.
+     * @param password Contraseña introducida.
+     * @return true si los datos son válidos, false en caso contrario.
+     *
+     * @author Nerea Aguilar Forés
      */
     private boolean validarLogin(String email, String password) {
 
@@ -126,11 +139,13 @@ public class InicioSesionActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * Nombre Método: iniciarSesion
-     * Descripción: Inicia sesión en Firebase y obtiene el idToken para enviarlo al servidor.
-     * Entradas: Ninguna (obtiene los valores de los campos de la vista).
-     * Salidas: No retorna nada. Llama al método de login del servidor.
-     * Autora: Nerea Aguilar Forés
+     * @brief Inicia sesión del usuario mediante Firebase Authentication.
+     *
+     * Autentica al usuario con email y contraseña, comprueba que el
+     * correo esté verificado y obtiene un idToken para enviarlo
+     * posteriormente al backend.
+     *
+     * @author Nerea Aguilar Forés
      */
     private void iniciarSesion() {
 
@@ -183,13 +198,15 @@ public class InicioSesionActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * Nombre Método: enviarLoginAlServidor
-     * Descripción: Envía el token de Firebase al servidor usando LogicaFake.
-     * Entradas:
-     * - idToken: Token de Firebase autenticado.
-     * Salidas:
-     * - No retorna nada. Gestiona resultados por callback.
-     * Autora: Nerea Aguilar Forés
+     * @brief Envía el idToken de Firebase al backend.
+     *
+     * Llama al método de login del servidor mediante LogicaFake
+     * y gestiona la respuesta guardando la sesión local y
+     * redirigiendo al usuario a la pantalla principal.
+     *
+     * @param idToken Token de autenticación de Firebase.
+     *
+     * @author Nerea Aguilar Forés
      */
     private void enviarLoginAlServidor(String idToken) {
 
@@ -255,7 +272,10 @@ public class InicioSesionActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * Traduce los mensajes de error de Firebase al español.
+     * @brief Traduce mensajes de error devueltos por Firebase al español.
+     *
+     * @param mensajeOriginal Mensaje de error original de Firebase.
+     * @return Texto de error traducido y comprensible para el usuario.
      */
     private String traducirErrorFirebase(String mensajeOriginal) {
 
@@ -298,14 +318,14 @@ public class InicioSesionActivity extends FuncionesBaseActivity {
     //BIOMETRIA
 
     /**
-     * Nombre Método: puedeUsarBiometria
-     * Descripción: Comprueba si el dispositivo soporta autenticación biométrica
-     * (huella, reconocimiento facial o credenciales del dispositivo).
-     * Entradas:
-     * - Ninguna (usa el contexto de la Activity).
-     * Salidas:
-     * - boolean: true si se puede usar biometría, false en caso contrario.
-     * Autora: Nerea Aguilar Forés
+     * @brief Comprueba si el dispositivo permite autenticación biométrica.
+     *
+     * Verifica la disponibilidad de hardware, huellas registradas
+     * y credenciales del dispositivo.
+     *
+     * @return true si se puede usar biometría, false en caso contrario.
+     *
+     * @author Nerea Aguilar Forés
      */
     private boolean puedeUsarBiometria() {
         BiometricManager manager = BiometricManager.from(this);
@@ -336,14 +356,12 @@ public class InicioSesionActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * Nombre Método: mostrarDialogoConfigurarHuella
-     * Descripción: Muestra un diálogo informando al usuario que debe registrar
-     * una huella en los ajustes del dispositivo para poder usar biometría.
-     * Entradas:
-     * - Ninguna.
-     * Salidas:
-     * - No retorna nada. Interactúa mediante botones con el usuario.
-     * Autora: Nerea Aguilar Forés
+     * @brief Muestra un diálogo para configurar la huella en el dispositivo.
+     *
+     * Informa al usuario de que debe registrar una huella en los
+     * ajustes del sistema para poder usar autenticación biométrica.
+     *
+     * @author Nerea Aguilar Forés
      */
     private void mostrarDialogoConfigurarHuella() {
 
@@ -364,14 +382,12 @@ public class InicioSesionActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * Nombre Método: configurarBiometria
-     * Descripción: Inicializa los componentes necesarios para el uso de biometría,
-     * incluyendo el BiometricPrompt y el mensaje del cuadro de autenticación.
-     * Entradas:
-     * - Ninguna (usa contexto de la Activity).
-     * Salidas:
-     * - No retorna nada. Deja preparado el prompt biométrico.
-     * Autora: Nerea Aguilar Forés
+     * @brief Inicializa el sistema de autenticación biométrica.
+     *
+     * Configura el BiometricPrompt y define el comportamiento
+     * ante éxito, error o fallo de autenticación.
+     *
+     * @author Nerea Aguilar Forés
      */
     private void configurarBiometria() {
 
@@ -409,14 +425,13 @@ public class InicioSesionActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * Nombre Método: accederConSesionGuardada
-     * Descripción: Obtiene el token almacenado de forma segura y, si existe,
-     * permite el acceso automático a la aplicación tras autenticación biométrica.
-     * Entradas:
-     * - Ninguna.
-     * Salidas:
-     * - No retorna nada. Realiza navegación a MapasActivity si el token existe.
-     * Autora: Nerea Aguilar Forés
+     * @brief Accede automáticamente a la aplicación con una sesión guardada.
+     *
+     * Tras una autenticación biométrica correcta, recupera la
+     * sesión almacenada localmente y redirige al usuario
+     * a la pantalla principal.
+     *
+     * @author Nerea Aguilar Forés
      */
     private void accederConSesionGuardada() {
 

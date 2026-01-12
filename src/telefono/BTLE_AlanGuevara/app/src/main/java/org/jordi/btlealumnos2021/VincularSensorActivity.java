@@ -24,27 +24,16 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 
 /**
- * Nombre Clase: VincularSensorActivity
- * Descripción:
- *      Pantalla que permite al usuario vincular un sensor a su cuenta
- *      utilizando dos métodos: escaneo de QR o introducción manual del código.
+ * @brief Pantalla de vinculación de sensores.
  *
- * Funcionalidad:
- *      - Botón atrás para volver a página anterior.
- *      - Tarjeta para escanear código QR.
- *      - Tarjeta para introducir manualmente el código.
- *      - Botón final para vincular el sensor usando el texto introducido.
- *      - Muestra popups de éxito o error según la respuesta del servidor.
+ * Permite al usuario asociar un sensor a su cuenta mediante
+ * escaneo de código QR o introducción manual del código.
  *
- * Comportamiento de popups:
- *      - Si la vinculación es correcta → se muestra popup_sensor_vinculado
- *        durante 3 segundos y luego se redirige a UserPageActivity.
- *      - Si falla la vinculación → se muestra popup_sensor_no_vinculado
- *        durante 2 segundos y se mantiene en la misma pantalla.
- *      - Si el usuario toca fuera del popup, este se cierra.
+ * Gestiona la comunicación con el backend, el control de errores
+ * y la visualización de popups de éxito o fallo en la vinculación.
  *
- * Autor: Alan Guevara Martínez
- * Fecha: 18/11/2025
+ * @author Alan Guevara Martínez
+ * @date 2025-11-18
  */
 public class VincularSensorActivity extends FuncionesBaseActivity {
 
@@ -78,9 +67,11 @@ public class VincularSensorActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * Nombre Método: inicializarVistas
-     * Descripción:
-     * Asocia las vistas del layout XML con las variables Java.
+     * @brief Inicializa las vistas del layout.
+     *
+     * Asocia los elementos XML con sus variables Java.
+     *
+     * @author Alan Guevara Martínez
      */
     private void inicializarVistas() {
         btnBack = findViewById(R.id.btnBack);
@@ -90,13 +81,12 @@ public class VincularSensorActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * Nombre Método: configurarListeners
-     * Descripción:
-     * Configura los eventos de click:
-     * - Volver atrás.
-     * - Ir a la actividad de escaneo de QR.
-     * - Dar foco al campo de código al pulsar la tarjeta.
-     * - Lógica completa de vinculación al pulsar el botón.
+     * @brief Configura los listeners de interacción del usuario.
+     *
+     * Gestiona navegación, escaneo QR, foco del campo de texto
+     * y acción de vinculación del sensor.
+     *
+     * @author Alan Guevara Martínez
      */
     private void configurarListeners() {
 
@@ -137,17 +127,14 @@ public class VincularSensorActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * Nombre Método: vincularPorCodigo
-     * Descripción:
-     * Ejecuta el flujo de vinculación de sensor usando el código
-     * introducido manualmente en el EditText.
-     * <p>
-     * 1. Obtiene id_usuario desde SesionManager.
-     * 2. Llama a LogicaFake.vincularPlacaServidor.
-     * 3. Muestra popup de éxito o error según la respuesta.
-     * <p>
-     * Entradas:
-     * - codigo: String con el código/UUID de la placa.
+     * @brief Ejecuta la vinculación del sensor mediante código manual.
+     *
+     * Obtiene el usuario desde sesión, realiza la petición al backend
+     * y muestra el popup correspondiente según el resultado.
+     *
+     * @param codigo Código o UUID del sensor a vincular.
+     *
+     * @author Alan Guevara Martínez
      */
     private void vincularPorCodigo(String codigo) {
         // 1. Obtener id_usuario desde la sesión local
@@ -212,17 +199,14 @@ public class VincularSensorActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * Nombre Método: mostrarPopupSensorVinculado
-     * Descripción:
-     * Muestra el popup de sensor vinculado correctamente
-     * (popup_sensor_vinculado.xml), lo mantiene visible durante 3 segundos
-     * y luego redirige a UserPageActivity.
+     * @brief Muestra el popup de sensor vinculado correctamente.
      *
-     * Si el usuario toca fuera del popup, este se cierra (o eso se espera).
+     * El popup permanece visible 3 segundos y luego redirige
+     * automáticamente a la pantalla principal del usuario.
      *
-     * Entradas:
-     *  - codigoQueEstesVinculando: String con el código que se ha vinculado correctamente,
-     *    mostrado en el popup.
+     * @param codigoQueEstesVinculando Código del sensor vinculado.
+     *
+     * @author Alan Guevara Martínez
      */
     private void mostrarPopupSensorVinculado(String codigoQueEstesVinculando) {
 
@@ -268,13 +252,12 @@ public class VincularSensorActivity extends FuncionesBaseActivity {
 
 
     /**
-     * Nombre Método: mostrarPopupSensorNoVinculado
-     * Descripción:
-     * Muestra el popup de sensor NO vinculado
-     * (popup_sensor_no_vinculado.xml), lo mantiene visible durante
-     * 2 segundos y luego lo cierra, permaneciendo en la misma pantalla.
-     * <p>
-     * Si el usuario toca fuera del popup, este se cierra.
+     * @brief Muestra el popup de error al no poder vincular el sensor.
+     *
+     * El popup se cierra automáticamente tras 2 segundos,
+     * permaneciendo en la misma pantalla.
+     *
+     * @author Alan Guevara Martínez
      */
     private void mostrarPopupSensorNoVinculado() {
         LayoutInflater inflater = LayoutInflater.from(this);
@@ -302,15 +285,15 @@ public class VincularSensorActivity extends FuncionesBaseActivity {
 
 
     /**
-     * Nombre Método: onActivityResult
-     * Descripción:
-     * Método que recibe el resultado de una Activity llamada desde esta.
-     * En este caso, se utiliza para recibir el código QR obtenido desde
-     * EscanearQrActivity.
-     * <p>
-     * Si el resultado proviene del lector QR (REQ_QR) y es correcto
-     * (RESULT_OK), se extrae el código leído y se llama al método
-     * vincularPorCodigo(codigo) para continuar con el proceso de vinculación.
+     * @brief Recibe el resultado de actividades lanzadas desde esta pantalla.
+     *
+     * Procesa el código QR obtenido y continúa el flujo de vinculación.
+     *
+     * @param requestCode Código de la petición.
+     * @param resultCode Resultado devuelto por la actividad.
+     * @param data Intent con los datos de retorno.
+     *
+     * @author Alan Guevara Martínez
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {

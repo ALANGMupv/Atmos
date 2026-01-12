@@ -26,21 +26,18 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 /**
- * Nombre fichero: UserPageActivity.java
- * Descripción: Pantalla "Mi sensor" del usuario. Muestra el saludo con el nombre del usuario,
- * detecta si tiene una placa vinculada y elige entre:
- * - Mostrar pantalla "Ups... no tienes sensor"
- * - Mostrar pantalla con últimas medidas y promedio del sensor
- * <p>
- * Entradas:
- * - Datos guardados en sesión: id_usuario, nombre, etc.
- * - Datos obtenidos del servidor mediante LogicaFake.resumenUsuario()
- * <p>
- * Salidas:
- * - Vista en pantalla según si el usuario tiene o no placa
- * - Valores de última medida y promedio en caso afirmativo
- * <p>
- * Autora: Nerea Aguilar Forés
+ * @brief Pantalla "Mi sensor" del usuario.
+ *
+ * Muestra el saludo con el nombre del usuario y detecta si tiene
+ * una placa vinculada para mostrar:
+ *  - Pantalla sin sensor
+ *  - Pantalla con última medición y promedio
+ *
+ * Obtiene los datos desde sesión local y desde el backend mediante
+ * LogicaFake.resumenUsuarioPorGas().
+ *
+ * @author Nerea Aguilar Forés
+ * @author Alan Guevara Martínez
  */
 public class UserPageActivity extends FuncionesBaseActivity {
 
@@ -65,6 +62,14 @@ public class UserPageActivity extends FuncionesBaseActivity {
     // Instancia a la clase recorrido para no añadir más lineas de código aquí
     private RecorridoController recorridoController;
 
+    /**
+     * @brief Inicializa la actividad y configura la interfaz.
+     *
+     * Prepara la navegación, inicializa vistas, configura el spinner
+     * de gases, activa la gráfica y carga el estado inicial del usuario.
+     *
+     * @param savedInstanceState Estado previo de la actividad
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,9 +85,9 @@ public class UserPageActivity extends FuncionesBaseActivity {
 
         nombre = SesionManager.obtenerNombre(this);
 
-        /// ---------------------------------------------------------------
-        /// REFERENCIAS A LA TARJETA DE PROMEDIO Y ULTIMA
-        /// ---------------------------------------------------------------
+        // ---------------------------------------------------------------
+        // REFERENCIAS A LA TARJETA DE PROMEDIO Y ULTIMA
+        // ---------------------------------------------------------------
         txtUltimaFecha = findViewById(R.id.tv_ultima_fecha);
         txtPromedioFecha = findViewById(R.id.tv_promedio_fecha);
 
@@ -112,11 +117,11 @@ public class UserPageActivity extends FuncionesBaseActivity {
                 tvRecorridoHoy,
                 tvRecorridoAyer
         );
-        /** ------------ FIN - Distancia recorrida ------------ */
+        /* ------------ FIN - Distancia recorrida ------------ */
 
-        /// ---------------------------------------------------------------
-        /// REFERENCIAS DE LA TARJETA DE LA GRÁFICA
-        /// ---------------------------------------------------------------
+        // ---------------------------------------------------------------
+        // REFERENCIAS DE LA TARJETA DE LA GRÁFICA
+        // ---------------------------------------------------------------
         com.github.mikephil.charting.charts.BarChart barChart = findViewById(R.id.barChartCalidadAire);
         TextView txtRangoFechasGrafica = findViewById(R.id.txtRangoFechasGrafica);
         TextView txtEstadoCalidad = findViewById(R.id.txtEstadoCalidad);
@@ -124,9 +129,9 @@ public class UserPageActivity extends FuncionesBaseActivity {
         TextView btnModoDia = findViewById(R.id.btnModoDia);
         TextView btnModoHora = findViewById(R.id.btnModoHora);
 
-    /// ---------------------------------------------------------------
-    /// CREAR HELPER DE GRÁFICA
-    /// ---------------------------------------------------------------
+    // ---------------------------------------------------------------
+    // CREAR HELPER DE GRÁFICA
+    // ---------------------------------------------------------------
         graficaHelper = new GraficaHelper(
                 this,
                 barChart,
@@ -216,9 +221,9 @@ public class UserPageActivity extends FuncionesBaseActivity {
             }
         });
 
-        /// ---------------------------------------------------------------
-        /// POPUP información
-        /// ---------------------------------------------------------------
+        // ---------------------------------------------------------------
+        // POPUP información
+        // ---------------------------------------------------------------
         ImageView iconoInfo = findViewById(R.id.iconoInfo);
 
         iconoInfo.setOnClickListener(v -> {
@@ -226,17 +231,17 @@ public class UserPageActivity extends FuncionesBaseActivity {
             startActivity(intent);
         });
 
-        /// ---------------------------------------------------------------
-        /// MOSTRAR ¡HOLA, USUARIO!
-        /// ---------------------------------------------------------------
+        // ---------------------------------------------------------------
+        // MOSTRAR ¡HOLA, USUARIO!
+        // ---------------------------------------------------------------
         txtHolaUsuario = findViewById(R.id.textBienvenida);
         txtHolaUsuario.setText("¡Hola, " + nombre + "!");
 
-        /// ---------------------------------------------------------------
-        /// OBTENER REFERENCIAS A LOS DOS LAYOUTS:
-        /// - layoutSinSensor → la vista "Ups..."
-        /// - layoutConSensor → los datos reales del sensor
-        /// ---------------------------------------------------------------
+        // ---------------------------------------------------------------
+        // OBTENER REFERENCIAS A LOS DOS LAYOUTS:
+        // - layoutSinSensor → la vista "Ups..."
+        // - layoutConSensor → los datos reales del sensor
+        // ---------------------------------------------------------------
         layoutSinSensor = findViewById(R.id.layoutSinSensor);
         layoutConSensor = findViewById(R.id.layoutConSensor);
 
@@ -264,10 +269,12 @@ public class UserPageActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * Nombre Método: tipoSeleccionado
-     * Descripción: Este método devuelve el tipo correcto según la posición del spinner
-     * Autor: Alan Guevara Martínez
-     * Fecha: 19/11/2025
+     * @brief Obtiene el tipo de gas seleccionado en el spinner.
+     *
+     * @return Código del gas seleccionado (11–14).
+     *
+     * @author Alan Guevara Martínez
+     * @date 2025-11-19
      */
     private int tipoSeleccionado() {
 
@@ -294,10 +301,14 @@ public class UserPageActivity extends FuncionesBaseActivity {
 
 
     /**
-     * Nombre Método: onResume
-     * Autor: Alan Guevara Martínez
-     * Fecha: 18/11/2025
+     * @brief Se ejecuta cuando la actividad vuelve a primer plano.
+     *
+     * Recarga el estado del usuario y del sensor.
+     *
+     * @author Alan Guevara Martínez
+     * @date 2025-11-18
      */
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -306,18 +317,16 @@ public class UserPageActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * Nombre Método: onActivityResult
-     * Descripción:
-     * Método que recibe el resultado de una Activity que fue abierta
-     * desde esta pantalla. En este caso, lo usamos para detectar cuándo
-     * volvemos de la pantalla de "Vincular Sensor".
-     * <p>
-     * Si el resultado viene con el requestCode 999 y es RESULT_OK,
-     * significa que se ha realizado algún cambio (como vincular/desvincular
-     * un sensor) y entonces recargamos los datos del usuario.
-     * <p>
-     * Autor: Alan Guevara Martínez
-     * Fecha: 18/11/2025
+     * @brief Recibe resultados de actividades lanzadas desde esta pantalla.
+     *
+     * Se utiliza para detectar cambios tras vincular o desvincular un sensor.
+     *
+     * @param requestCode Código de la petición.
+     * @param resultCode Resultado devuelto por la actividad.
+     * @param data Intent con los datos de retorno.
+     *
+     * @author Alan Guevara Martínez
+     * @date 2025-11-18
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -334,27 +343,12 @@ public class UserPageActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * Nombre Método: recargarEstadoUsuario
-     * Descripción:
-     * Consulta al servidor si el usuario tiene una placa vinculada y,
-     * en caso afirmativo, obtiene:
-     * - la última medición del gas seleccionado
-     * - el promedio del día del gas seleccionado
-     * <p>
-     * Este método usa el endpoint actualizado:
-     * GET /resumenUsuarioPorGas?id_usuario=XX&tipo=YY
-     * <p>
-     * Entradas:
-     * - No recibe parámetros. Usa:
-     * tipoSeleccionado (gas del spinner)
-     * SesionManager.obtenerIdUsuario()
-     * <p>
-     * Salidas:
-     * - Actualiza la interfaz de usuario mostrando:
-     * * layoutSinSensor → si NO tiene placa
-     * * layoutConSensor → si SÍ tiene una placa
-     * <p>
-     * Autora: Nerea Aguilar Forés
+     * @brief Consulta el estado del usuario y su sensor en el backend.
+     *
+     * Actualiza la vista mostrando la pantalla con o sin sensor,
+     * así como la última medición y el promedio diario.
+     *
+     * @author Nerea Aguilar Forés
      */
     private void recargarEstadoUsuario() {
 
@@ -369,18 +363,18 @@ public class UserPageActivity extends FuncionesBaseActivity {
                 queue,
                 new LogicaFake.ResumenUsuarioCallback() {
 
-                    /// ----------------------------------------------------
-                    /// CASO 1: EL USUARIO NO TIENE PLACA
-                    /// ----------------------------------------------------
+                    // ----------------------------------------------------
+                    // CASO 1: EL USUARIO NO TIENE PLACA
+                    // ----------------------------------------------------
                     @Override
                     public void onSinPlaca() {
                         layoutConSensor.setVisibility(View.GONE);
                         layoutSinSensor.setVisibility(View.VISIBLE);
                     }
 
-                    /// ----------------------------------------------------
-                    /// CASO 2: EL USUARIO TIENE PLACA ASIGNADA
-                    /// ----------------------------------------------------
+                    // ----------------------------------------------------
+                    // CASO 2: EL USUARIO TIENE PLACA ASIGNADA
+                    // ----------------------------------------------------
                     @Override
                     public void onConPlaca(String placa, double ultimaValor, String ultimaFecha, double promedio) {
 
@@ -399,9 +393,9 @@ public class UserPageActivity extends FuncionesBaseActivity {
                         txtEstadoUltima.setText(simbolo + "\nppm");
                         txtEstadoPromedio.setText(simbolo + "\nppm");
 
-                        /// ----------------------------------------------------
-                        /// ACTUALIZAR ESTADO DE CALIDAD EN LAS TARJETAS
-                        /// ----------------------------------------------------
+                        // ----------------------------------------------------
+                        // ACTUALIZAR ESTADO DE CALIDAD EN LAS TARJETAS
+                        // ----------------------------------------------------
                         //
                         // Última medición
                         String textoCalidadUltima = obtenerTextoCalidad(ultimaValor, tipoSeleccionado);
@@ -427,18 +421,18 @@ public class UserPageActivity extends FuncionesBaseActivity {
 
                     }
 
-                    /// ----------------------------------------------------
-                    /// CASO 3: ERROR CONTROLADO
-                    /// ----------------------------------------------------
+                    // ----------------------------------------------------
+                    // CASO 3: ERROR CONTROLADO
+                    // ----------------------------------------------------
                     @Override
                     public void onErrorServidor() {
                         Toast.makeText(UserPageActivity.this,
                                 "Error en el servidor", Toast.LENGTH_SHORT).show();
                     }
 
-                    /// ----------------------------------------------------
-                    /// CASO 4: ERROR INESPERADO
-                    /// ----------------------------------------------------
+                    // ----------------------------------------------------
+                    // CASO 4: ERROR INESPERADO
+                    // ----------------------------------------------------
                     @Override
                     public void onErrorInesperado() {
                         Toast.makeText(UserPageActivity.this,
@@ -449,19 +443,13 @@ public class UserPageActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * Nombre Método: obtenerTextoCalidad
-     * Descripción:
-     * Devuelve el texto "Buena", "Regular", "Mala" o "Sin datos"
-     * según el valor medido y el tipo de gas seleccionado.
-     * <p>
-     * Entradas:
-     * - valor: doble con la medida (última o promedio)
-     * - tipoGas: código del gas (11 = NO2, 12 = CO, 13 = O3, 14 = SO2)
-     * <p>
-     * Salidas:
-     * - String con el texto correspondiente al estado de calidad
-     * <p>
-     * Autora: Nerea Aguilar Forés
+     * @brief Devuelve el texto descriptivo de la calidad del aire.
+     *
+     * @param valor Valor de la medición.
+     * @param tipoGas Código del gas.
+     * @return Texto de calidad ("Buena", "Moderada", "Insalubre", "Mala").
+     *
+     * @author Nerea Aguilar Forés
      */
     private String obtenerTextoCalidad(double valor, int tipoGas) {
 
@@ -499,19 +487,13 @@ public class UserPageActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * Nombre Método: obtenerIconoCalidad
-     * Descripción:
-     * Devuelve el recurso drawable del icono correspondiente
-     * al estado de calidad: bueno, regular, malo o sin datos.
-     * <p>
-     * Entradas:
-     * - valor: doble con la medida (última o promedio)
-     * - tipoGas: código del gas (11–14)
-     * <p>
-     * Salidas:
-     * - int con el identificador del drawable a usar
-     * <p>
-     * Autora: Nerea Aguilar Forés
+     * @brief Devuelve el icono asociado a la calidad del aire.
+     *
+     * @param valor Valor de la medición.
+     * @param tipoGas Código del gas.
+     * @return Identificador del recurso drawable.
+     *
+     * @author Nerea Aguilar Forés
      */
     private int obtenerIconoCalidad(double valor, int tipoGas) {
 
@@ -550,19 +532,12 @@ public class UserPageActivity extends FuncionesBaseActivity {
 
 
     /**
-     * Nombre Método: formatearFecha
-     * Descripción:
-     * Convierte una fecha en formato "yyyy-MM-dd HH:mm:ss"
-     * (que viene del backend) a un formato más legible
-     * como "dd/MM/yyyy".
-     * <p>
-     * Entradas:
-     * - fechaISO: cadena de fecha recibida del servidor.
-     * <p>
-     * Salidas:
-     * - Cadena formateada o "-" si falla.
-     * <p>
-     * Autora: Nerea Aguilar Forés
+     * @brief Formatea una fecha ISO recibida del backend.
+     *
+     * @param fechaISO Fecha en formato ISO.
+     * @return Fecha formateada para mostrar o "-" si falla.
+     *
+     * @author Nerea Aguilar Forés
      */
     private String formatearFecha(String fechaISO) {
 
@@ -590,8 +565,12 @@ public class UserPageActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * Devuelve el símbolo del gas según el tipo (11–14)
-     * Autora: Nerea Aguilar Forés
+     * @brief Devuelve el símbolo químico del gas.
+     *
+     * @param tipoGas Código del gas.
+     * @return Símbolo químico correspondiente.
+     *
+     * @author Nerea Aguilar Forés
      */
     private String simboloGas(int tipoGas) {
         switch (tipoGas) {
@@ -609,25 +588,12 @@ public class UserPageActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * Nombre Método: actualizarEstadoSensor
-     * Descripción:
-     *     Consulta la capa LogicaFake, que a su vez llama al endpoint
-     *     GET /estadoPlaca para obtener si la placa asociada al usuario
-     *     está activa, inactiva o si el usuario no tiene placa vinculada.
+     * @brief Consulta y actualiza el estado del sensor del usuario.
      *
-     *     Según el estado recibido, actualiza la tarjeta izquierda en la UI:
-     *         - Cambia el icono del sensor
-     *         - Cambia el texto del estado
-     *         - Cambia el color del texto (verde/rojo/gris)
+     * @param idUsuario Identificador del usuario.
      *
-     * Entradas:
-     *     - idUsuario : ID del usuario almacenado en sesión
-     *
-     * Salidas:
-     *     - Actualiza ivEstadoSensor y tvEstadoSensor en pantalla
-     *
-     * Autora: Nerea Aguilar Forés
-     * Fecha: 21/11/2025
+     * @author Nerea Aguilar Forés
+     * @date 2025-11-21
      */
     private void actualizarEstadoSensor(int idUsuario) {
 
@@ -674,24 +640,12 @@ public class UserPageActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * Nombre Método: actualizarEstadoSenal
-     * Descripción:
-     *     Consulta la capa LogicaFake, que llama al endpoint GET /estadoSenal
-     *     para obtener el nivel de intensidad de señal del sensor del usuario.
+     * @brief Consulta y actualiza el estado de la señal del sensor.
      *
-     *     Según el nivel recibido (fuerte, media, baja, mala o sin_datos),
-     *     actualiza la tarjeta derecha en la pantalla:
-     *         - Cambia el icono de señal
-     *         - Cambia el texto descriptivo
+     * @param idUsuario Identificador del usuario.
      *
-     * Entradas:
-     *     - idUsuario : ID del usuario almacenado en sesión
-     *
-     * Salidas:
-     *     - Actualiza img_wifi y tv_distancia en la interfaz de usuario
-     *
-     * Autora: Nerea Aguilar Forés
-     * Fecha: 21/11/2025
+     * @author Nerea Aguilar Forés
+     * @date 2025-11-21
      */
     private void actualizarEstadoSenal(int idUsuario) {
 
@@ -751,23 +705,13 @@ public class UserPageActivity extends FuncionesBaseActivity {
 
     // Mensajes caritas
     /**
-     * Nombre Método: mensajePorCategoria
-     * Descripción:
-     *     Devuelve el mensaje descriptivo asociado a cada categoría de calidad
-     *     del aire, similar a los tooltips usados en la versión web.
+     * @brief Devuelve un mensaje explicativo según la calidad del aire.
      *
-     *     Los textos explican de forma sencilla el estado promedio de la calidad
-     *     del aire según la categoría actual (Buena, Moderada, Insalubre o Mala).
+     * @param categoria Categoría de calidad.
+     * @return Mensaje descriptivo.
      *
-     * Entradas:
-     *     - categoria : Texto que indica la calidad actual ("Buena", "Regular",
-     *                   "Moderada", "Insalubre" o "Mala").
-     *
-     * Salidas:
-     *     - String con el mensaje explicativo que debe mostrarse al usuario.
-     *
-     * Autora: Nerea Aguilar Forés
-     * Fecha: 06/12/2025
+     * @author Nerea Aguilar Forés
+     * @date 2025-12-06
      */
     private String mensajePorCategoria(String categoria) {
 
@@ -791,23 +735,13 @@ public class UserPageActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * Nombre Método: activarMensajeCarita
-     * Descripción:
-     *     Muestra un mensaje flotante (PopupWindow) junto a la carita,
-     *     sin bloquear la pantalla, imitando el estilo de la versión web.
+     * @brief Muestra un popup informativo al pulsar el icono de estado.
      *
-     *     El popup aparece cerca del icono, tiene fondo blanco
-     *     con borde redondeado y se cierra automáticamente a los 3s.
+     * @param iconCarita Icono pulsado por el usuario.
+     * @param txtEstado Texto con la categoría de calidad.
      *
-     * Entradas:
-     *     - iconCarita : ImageView que el usuario toca
-     *     - txtEstado  : Texto que contiene "Buena", "Mala", etc.
-     *
-     * Salidas:
-     *     - Muestra un popup ligero estilo tooltip.
-     *
-     * Autor: Alan + ChatGPT
-     * Fecha: 06/12/2025
+     * @author Alan Guevara Martínez
+     * @date 2025-12-06
      */
     private void activarMensajeCarita(ImageView iconCarita, TextView txtEstado) {
 
@@ -865,12 +799,11 @@ public class UserPageActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * @brief Se ejecuta cuando la actividad es destruida.
+     * @brief Libera recursos antes de destruir la actividad.
      *
-     * Libera los recursos utilizados por el controlador del recorrido
-     * para evitar fugas de memoria antes de finalizar la actividad.
+     * Evita fugas de memoria liberando el controlador del recorrido.
      *
-     * @author Alan
+     * @author Alan Guevara Martínez
      * @date 2025-12-17
      */
     @Override

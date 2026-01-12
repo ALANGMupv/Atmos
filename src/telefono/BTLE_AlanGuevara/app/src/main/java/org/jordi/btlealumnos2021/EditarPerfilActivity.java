@@ -29,33 +29,35 @@ import com.google.firebase.auth.GetTokenResult;
 import org.json.JSONObject;
 
 /**
- * Nombre Fichero: EditarPerfilActivity.java
- * Descripción: Pantalla donde el usuario puede modificar su
- *              nombre y apellidos. El correo se muestra en modo
- *              lectura. Para aplicar cambios debe introducir su
- *              contraseña actual (validada contra Firebase).
- *              Si pulsa "Cambiar contraseña" se le cerrará la
- *              sesión y será redirigido a la pantalla de
- *              restablecer contraseña.
- * Autor: Alan Guevara Martínez
- * Fecha: 17/11/2025
+ * @brief Pantalla de edición del perfil de usuario.
+ *
+ * Permite al usuario modificar su nombre y apellidos. El correo
+ * electrónico se muestra en modo solo lectura. Para aplicar los
+ * cambios es necesario introducir la contraseña actual, que se
+ * valida contra Firebase.
+ *
+ * Si el usuario decide cambiar la contraseña, se cerrará la sesión
+ * actual y se redirigirá a la pantalla de restablecimiento.
+ *
+ * @author Alan Guevara Martínez
+ * @date 17/11/2025
  */
 
 public class EditarPerfilActivity extends FuncionesBaseActivity {
 
-    /// Campos de texto
+    // Campos de texto
     private EditText etNombre;
     private EditText etApellidos;
     private EditText etCorreo;
     private EditText etContrasena;
 
-    /// Botón actualizar
+    // Botón actualizar
     private Button btnActualizar;
 
-    /// Enlace Cambiar contraseña
+    // Enlace Cambiar contraseña
     private TextView btnCambiarContrasena;
 
-    /// Cola de peticiones HTTP (Volley) para usar en LogicaFake
+    // Cola de peticiones HTTP (Volley) para usar en LogicaFake
     private RequestQueue queue;
 
     @Override
@@ -64,10 +66,10 @@ public class EditarPerfilActivity extends FuncionesBaseActivity {
         setContentView(R.layout.editar_perfil);
         setupBottomNav();
 
-        /// Inicializar cola de Volley
+        // Inicializar cola de Volley
         queue = Volley.newRequestQueue(this);
 
-        /// Referencias a vistas
+        // Referencias a vistas
         etNombre          = findViewById(R.id.etNombre);
         etApellidos       = findViewById(R.id.etApellidos);
         etCorreo          = findViewById(R.id.etCorreo);
@@ -75,48 +77,48 @@ public class EditarPerfilActivity extends FuncionesBaseActivity {
         btnActualizar     = findViewById(R.id.btnActualizar);
         btnCambiarContrasena = findViewById(R.id.btnCambiarContrasena);
 
-        /// --- FUNCIONALIDAD FLECHA ATRÁS ---
-        /// Al pulsar la flecha, vuelve a la pantalla de Perfil.
+        // --- FUNCIONALIDAD FLECHA ATRÁS ---
+        // Al pulsar la flecha, vuelve a la pantalla de Perfil.
         ImageView btnBack = findViewById(R.id.btnBackEditar);
         if (btnBack != null) {
             btnBack.setOnClickListener(v -> {
                 Intent intent = new Intent(EditarPerfilActivity.this, PerfilActivity.class);
                 startActivity(intent);
-                finish(); /// Evita que EditarPerfilActivity quede en el historial
+                finish(); // Evita que EditarPerfilActivity quede en el historial
             });
         }
 
-        /// ----------------------------------------------------
-        /// 1. Cargar datos iniciales desde la sesión local
-        /// ----------------------------------------------------
+        // ----------------------------------------------------
+        // 1. Cargar datos iniciales desde la sesión local
+        // ----------------------------------------------------
         cargarDatosDesdeSesion();
 
-        /// ----------------------------------------------------
-        /// 2. Ojo para mostrar/ocultar la contraseña
-        /// ----------------------------------------------------
+        // ----------------------------------------------------
+        // 2. Ojo para mostrar/ocultar la contraseña
+        // ----------------------------------------------------
         habilitarToggleContrasena(etContrasena);
 
-        /// ----------------------------------------------------
-        /// 3. Lógica botón "Actualizar mi información"
-        /// ----------------------------------------------------
+        // ----------------------------------------------------
+        // 3. Lógica botón "Actualizar mi información"
+        // ----------------------------------------------------
         if (btnActualizar != null) {
             btnActualizar.setOnClickListener(v -> actualizarPerfil());
         }
 
-        /// ----------------------------------------------------
-        /// 4. Lógica "Cambiar contraseña" (popup + redirección)
-        /// ----------------------------------------------------
+        // ----------------------------------------------------
+        // 4. Lógica "Cambiar contraseña" (popup + redirección)
+        // ----------------------------------------------------
         if (btnCambiarContrasena != null) {
             btnCambiarContrasena.setOnClickListener(this::abrirPopupCambiarContrasena);
         }
     }
 
     /**
-     * Nombre Método: cargarDatosDesdeSesion
-     * Descripción:
-     *   Rellena los EditText de nombre, apellidos y correo con
-     *   los datos guardados en SesionManager (SharedPreferences).
-     *   Estos datos vienen originalmente de la BBDD MySQL.
+     * @brief Carga los datos del usuario desde la sesión local.
+     *
+     * Rellena los campos de nombre, apellidos y correo electrónico
+     * utilizando la información almacenada en el SesionManager.
+     * El correo se establece como solo lectura.
      */
     private void cargarDatosDesdeSesion() {
         String nombre    = SesionManager.obtenerNombre(this);
@@ -131,25 +133,21 @@ public class EditarPerfilActivity extends FuncionesBaseActivity {
         }
         if (etCorreo != null) {
             etCorreo.setText(email);
-            /// Ya lo marcamos como solo lectura en XML (enabled=false),
-            /// pero por seguridad lo aseguramos también por código
+            // Ya lo marcamos como solo lectura en XML (enabled=false),
+            // pero por seguridad lo aseguramos también por código
             etCorreo.setEnabled(false);
         }
     }
 
     /**
-     * Nombre Método: actualizarPerfil
-     * Descripción:
-     *   Método principal llamado al pulsar el botón
-     *   "Actualizar mi información".
+     * @brief Actualiza los datos del perfil del usuario.
      *
-     *   Flujo:
-     *    1. Validar que nombre, apellidos y contraseña no estén vacíos.
-     *    2. Obtener usuario actual de Firebase.
-     *    3. Reautenticar en Firebase con email + contraseña.
-     *    4. Obtener idToken.
-     *    5. Llamar a LogicaFake.actualizarUsuarioServidor (PUT /usuario).
-     *    6. Si OK, actualizar SesionManager y volver a PerfilActivity.
+     * Flujo del proceso:
+     * 1. Valida los campos del formulario.
+     * 2. Reautentica al usuario en Firebase con su contraseña actual.
+     * 3. Obtiene un token de sesión actualizado.
+     * 4. Envía los nuevos datos al backend mediante LogicaFake.
+     * 5. Actualiza la sesión local y vuelve a la pantalla de perfil.
      */
     private void actualizarPerfil() {
         /// 1. Leer datos del formulario
@@ -158,7 +156,7 @@ public class EditarPerfilActivity extends FuncionesBaseActivity {
         String email     = etCorreo.getText().toString().trim();   // solo lectura, pero lo mandamos
         String contrasenaActual = etContrasena.getText().toString();
 
-        /// Validaciones básicas
+        // Validaciones básicas
         if (nombre.isEmpty() || apellidos.isEmpty()) {
             Toast.makeText(this, "Nombre y apellidos no pueden estar vacíos", Toast.LENGTH_SHORT).show();
             return;
@@ -169,18 +167,18 @@ public class EditarPerfilActivity extends FuncionesBaseActivity {
             return;
         }
 
-        /// 2. Obtener usuario actual de Firebase
+        // 2. Obtener usuario actual de Firebase
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) {
             Toast.makeText(this, "Tu sesión ha caducado, vuelve a iniciar sesión", Toast.LENGTH_LONG).show();
-            /// Opcional: redirigir al login
+            // Opcional: redirigir al login
             Intent intent = new Intent(EditarPerfilActivity.this, InicioSesionActivity.class);
             startActivity(intent);
             finish();
             return;
         }
 
-        /// 3. Reautenticar con Firebase usando el email de Firebase y la contraseña actual
+        // 3. Reautenticar con Firebase usando el email de Firebase y la contraseña actual
         String emailFirebase = user.getEmail();
         if (emailFirebase == null) {
             Toast.makeText(this, "No se ha podido obtener el correo de Firebase", Toast.LENGTH_SHORT).show();
@@ -189,13 +187,13 @@ public class EditarPerfilActivity extends FuncionesBaseActivity {
 
         AuthCredential credential = EmailAuthProvider.getCredential(emailFirebase, contrasenaActual);
 
-        /// Desactivar botón para evitar pulsaciones múltiples
+        // Desactivar botón para evitar pulsaciones múltiples
         btnActualizar.setEnabled(false);
         Toast.makeText(this, "Confirmando contraseña...", Toast.LENGTH_SHORT).show();
 
         user.reauthenticate(credential)
                 .addOnSuccessListener(authResult -> {
-                    /// 4. Obtener un token actualizado
+                    // 4. Obtener un token actualizado
                     user.getIdToken(true)
                             .addOnSuccessListener((GetTokenResult result) -> {
                                 String idToken = result.getToken();
@@ -205,7 +203,7 @@ public class EditarPerfilActivity extends FuncionesBaseActivity {
                                     return;
                                 }
 
-                                /// 5. Llamar al backend para actualizar MySQL usando LogicaFake
+                                // 5. Llamar al backend para actualizar MySQL usando LogicaFake
                                 int idUsuario = SesionManager.obtenerIdUsuario(EditarPerfilActivity.this);
                                 if (idUsuario <= 0) {
                                     btnActualizar.setEnabled(true);
@@ -225,7 +223,7 @@ public class EditarPerfilActivity extends FuncionesBaseActivity {
                                         new LogicaFake.ActualizarUsuarioCallback() {
                                             @Override
                                             public void onActualizacionOk() {
-                                                /// 6. Actualizar sesión local con los nuevos datos
+                                                // 6. Actualizar sesión local con los nuevos datos
                                                 try {
                                                     JSONObject userJson = new JSONObject();
                                                     userJson.put("id_usuario", idUsuario);
@@ -277,17 +275,16 @@ public class EditarPerfilActivity extends FuncionesBaseActivity {
     }
 
     /**
-     * Nombre Método: abrirPopupCambiarContrasena
-     * Descripción:
-     *   Muestra el popup de confirmación para cambiar la contraseña.
-     *   Si el usuario confirma:
-     *      - Se cierra la sesión Firebase
-     *      - Se limpia la sesión local (SharedPreferences)
-     *      - Se redirige a RestablecerContrasenaActivity
-     *   Si cancela: simplemente se cierra el popup.
+     * @brief Muestra un popup para confirmar el cambio de contraseña.
      *
-     * Entradas:
-     *  - v: Vista que ha lanzado el evento (TextView "Cambiar contraseña").
+     * Si el usuario confirma:
+     * - Se cierra la sesión de Firebase.
+     * - Se elimina la sesión local.
+     * - Se redirige a la pantalla de restablecer contraseña.
+     *
+     * Si cancela, el popup simplemente se cierra.
+     *
+     * @param v Vista que lanza el evento.
      */
     private void abrirPopupCambiarContrasena(View v) {
         LayoutInflater inflater = LayoutInflater.from(this);
@@ -305,25 +302,25 @@ public class EditarPerfilActivity extends FuncionesBaseActivity {
         AppCompatButton btnCancelar = popupView.findViewById(R.id.btnCancelarCerrar);
         AppCompatButton btnConfirmar = popupView.findViewById(R.id.btnConfirmarCerrar);
 
-        /// Botón cancelar: solo cierra el popup
+        // Botón cancelar: solo cierra el popup
         btnCancelar.setOnClickListener(view -> popup.dismiss());
 
-        /// Botón confirmar:
+        // Botón confirmar:
         btnConfirmar.setOnClickListener(view -> {
             stopService(new Intent(EditarPerfilActivity.this, ServicioDeteccionBeacons.class));
 
-            /// 1. Cerrar sesión en Firebase
+            // 1. Cerrar sesión en Firebase
             FirebaseAuth.getInstance().signOut();
 
-            /// 2. Limpiar sesión local
+            // 2. Limpiar sesión local
             SesionManager.cerrarSesion(EditarPerfilActivity.this);
 
-            /// 3. Ir a RestablecerContrasenaActivity
+            // 3. Ir a RestablecerContrasenaActivity
             Intent intent = new Intent(EditarPerfilActivity.this, RestablecerContrasenaActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
 
-            /// 4. Cerrar popup y esta Activity
+            // 4. Cerrar popup y esta Activity
             popup.dismiss();
             finish();
         });

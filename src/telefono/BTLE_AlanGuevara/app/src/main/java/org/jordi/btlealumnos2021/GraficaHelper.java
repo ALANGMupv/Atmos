@@ -25,16 +25,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Clase de ayuda para gestionar la gráfica de calidad del aire.
+ * @brief Clase auxiliar para gestionar la gráfica de calidad del aire.
  *
- * Se encarga de:
- *   - Alternar entre modo "día" (últimos 7 días) y "hora" (últimas 8 horas).
- *   - Pedir los datos a LogicaFake (endpoints /resumen7Dias y /resumen8Horas).
- *   - Pintar la gráfica con MPAndroidChart.
- *   - Actualizar la carita y el texto de estado de la gráfica.
+ * Se encarga de alternar entre los modos de visualización por días
+ * (últimos 7 días) y por horas (últimas 8 horas), solicitar los datos
+ * al backend y representar la información mediante MPAndroidChart.
  *
- * Autor: Alan Guevara Martínez
- * Fecha: 21/11/2025
+ * También actualiza el estado visual de la calidad del aire
+ * (texto e icono) en función de los valores obtenidos.
+ *
+ * @author Alan Guevara Martínez
+ * @date 21/11/2025
  */
 public class GraficaHelper {
 
@@ -54,7 +55,22 @@ public class GraficaHelper {
     // Último tipo de gas usado (11,12,13,14). 0 = ninguno todavía.
     private int ultimoTipoGas = 0;
 
-
+    /**
+     * @brief Crea un gestor de gráficas de calidad del aire.
+     *
+     * Inicializa la gráfica, los textos informativos, los botones de modo
+     * y deja el componente preparado para cargar datos.
+     *
+     * @param context            Contexto de la aplicación.
+     * @param barChart           Gráfica de barras donde se mostrarán los datos.
+     * @param txtRangoFechas     Texto que indica el rango temporal mostrado.
+     * @param txtEstadoCalidad   Texto del estado general de la calidad del aire.
+     * @param iconEstadoCalidad  Icono visual del estado de la calidad del aire.
+     * @param btnModoDia         Botón para seleccionar el modo por días.
+     * @param btnModoHora        Botón para seleccionar el modo por horas.
+     * @param queue              Cola de peticiones Volley.
+     * @param idUsuario          Identificador del usuario.
+     */
     public GraficaHelper(Context context,
                          BarChart barChart,
                          TextView txtRangoFechas,
@@ -81,13 +97,10 @@ public class GraficaHelper {
     }
 
     /**
-     * Nombre Método: configurarChart
-     * Descripción:
-     *   Configura los aspectos visuales básicos del BarChart
-     *   (sin datos todavía): ejes, rejilla, leyenda, etc.
+     * @brief Configura los parámetros visuales básicos de la gráfica.
      *
-     * Autor: Alan Guevara Martínez
-     * Fecha: 21/11/2025
+     * Ajusta ejes, rejilla, leyenda y formato del eje Y para representar
+     * categorías de calidad del aire en lugar de valores reales.
      */
     private void configurarChart() {
         barChart.getDescription().setEnabled(false);
@@ -130,14 +143,10 @@ public class GraficaHelper {
     }
 
     /**
-     * Nombre Método: configurarBotonesModo
-     * Descripción:
-     *   Asigna los listeners a los botones "D" y "H" para cambiar
-     *   entre modo día y modo hora. Cada vez que se pulsa,
-     *   se vuelve a recargar la gráfica con el último gas usado.
+     * @brief Configura los botones de cambio de modo de la gráfica.
      *
-     * Autor: Alan Guevara Martínez
-     * Fecha: 21/11/2025
+     * Asigna los listeners a los botones de modo día y modo hora para
+     * recargar la gráfica con el último gas seleccionado.
      */
     private void configurarBotonesModo() {
         btnModoDia.setOnClickListener(v -> {
@@ -165,12 +174,10 @@ public class GraficaHelper {
 
 
     /**
-     * Nombre Método: actualizarBotonesModo
-     * Descripción:
-     *   Cambia los fondos de los botones D/H según el modo activo.
+     * @brief Actualiza el estado visual de los botones de modo.
      *
-     * Autor: Alan Guevara Martínez
-     * Fecha: 21/11/2025
+     * Cambia los fondos de los botones y el texto del rango temporal
+     * según el modo activo (día u hora).
      */
     private void actualizarBotonesModo() {
         if ("dia".equals(modoActual)) {
@@ -185,15 +192,13 @@ public class GraficaHelper {
     }
 
     /**
-     * Nombre Método: recargarGrafica
-     * Descripción:
-     *   Llama a LogicaFake para obtener los datos de la gráfica según:
-     *     - modoActual ("dia" o "hora")
-     *     - idUsuario
-     *     - tipoGas seleccionado
+     * @brief Recarga la gráfica con datos actualizados.
      *
-     *   Una vez recibidos los datos, los pinta en el BarChart y
-     *   actualiza la carita y el texto de estado.
+     * Solicita al backend los datos correspondientes al gas indicado
+     * y al modo actual (día u hora), y actualiza la gráfica y el estado
+     * visual de la calidad del aire.
+     *
+     * @param tipoGas Código del gas seleccionado (11, 12, 13, 14).
      */
     public void recargarGrafica(int tipoGas) {
         // Guardamos qué gas se está usando, para poder recargarlo
@@ -234,23 +239,16 @@ public class GraficaHelper {
     }
 
     /**
-     * Nombre Método: pintarGrafica
-     * Descripción:
-     *   Recibe listas de labels y valores y las representa en el
-     *   BarChart. Calcula también el promedio para actualizar la
-     *   carita y el texto de estado de la gráfica.
+     * @brief Representa los datos recibidos en la gráfica.
      *
-     * Entradas:
-     *   - labels:  etiquetas del eje X (días u horas).
-     *   - valores: valores numéricos de cada barra.
-     *   - promedio: valor promedio general del periodo.
-     *   - tipoGas: código del gas para evaluar rangos.
+     * Convierte los valores reales de contaminación en categorías fijas
+     * de calidad del aire, pinta las barras correspondientes y actualiza
+     * el estado visual general según el promedio.
      *
-     * Salidas:
-     *   - No retorna nada. Solo actualiza la UI.
-     *
-     * Autor: Alan Guevara Martínez
-     * Fecha: 21/11/2025
+     * @param labels   Etiquetas del eje X (días u horas).
+     * @param valores  Valores reales de contaminación.
+     * @param promedio Valor promedio del periodo.
+     * @param tipoGas  Código del gas para evaluar rangos de calidad.
      */
     private void pintarGrafica(List<String> labels,
                                List<Float> valores,
@@ -330,16 +328,14 @@ public class GraficaHelper {
     }
 
     /**
-     * Nombre Método: actualizarEstadoCalidad
-     * Descripción:
-     *   Determina el estado general (Buena, Moderada, Insalubre, Mala)
-     *   a partir de un índice de calidad entre 0 y 1, y actualiza
-     *   el texto y la carita.
+     * @brief Actualiza el estado general de la calidad del aire.
      *
-     *   0.00 – 0.25 → Buena       → cara_buena
-     *   0.25 – 0.50 → Moderada    → cara_regular
-     *   0.50 – 0.75 → Insalubre   → cara_regular
-     *   0.75 – 1.00 → Mala        → cara_mala
+     * Determina el nivel de calidad (Buena, Moderada, Insalubre o Mala)
+     * en función del valor promedio y actualiza el texto y el icono
+     * correspondientes.
+     *
+     * @param promedio Valor promedio del gas.
+     * @param tipoGas  Código del gas evaluado.
      */
     private void actualizarEstadoCalidad(double promedio, int tipoGas) {
 
@@ -426,19 +422,14 @@ public class GraficaHelper {
 
 
     /**
-     * Nombre Método: colorParaValor
-     * Descripción:
-     *   Devuelve un color (verde, amarillo, naranja, rojo)
-     *   según un índice de calidad entre 0 y 1.
+     * @brief Devuelve el color asociado a un valor de contaminación.
      *
-     *   0.00 – 0.25 → Buena  (verde)
-     *   0.25 – 0.50 → Moderada (amarillo)
-     *   0.50 – 0.75 → Insalubre (naranja)
-     *   0.75 – 1.00 → Mala (rojo)
+     * Asigna un color representativo (verde, amarillo, naranja o rojo)
+     * según el nivel de calidad del aire del gas indicado.
      *
-     * Entradas:
-     *   - valor: índice de calidad (0–1) para esa barra.
-     *   - tipoGas: NO lo usamos aquí, pero lo dejamos por compatibilidad.
+     * @param v       Valor real del gas.
+     * @param tipoGas Código del gas.
+     * @return Color correspondiente al nivel de calidad.
      */
     private int colorParaValor(float v, int tipoGas) {
 

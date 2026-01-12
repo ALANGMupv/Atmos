@@ -13,29 +13,27 @@ import com.journeyapps.barcodescanner.BarcodeResult;
 import com.journeyapps.barcodescanner.DecoratedBarcodeView;
 
 /**
- * Nombre Clase: EscanearQrActivity
- * Descripción:
- *      Pantalla encargada de activar la cámara del dispositivo y leer
- *      códigos QR en tiempo real utilizando la librería ZXing.
+ * @brief Pantalla para el escaneo de códigos QR.
  *
- * Funcionamiento:
- *      - Primero solicita el permiso de cámara si no está concedido.
- *      - Cuando hay permiso, inicia el escaneo continuo.
- *      - Al detectar un QR, devuelve el código a la Activity anterior
- *        mediante setResult().
+ * Activa la cámara del dispositivo y realiza la lectura de códigos QR
+ * en tiempo real utilizando la librería ZXing. El resultado del escaneo
+ * se devuelve a la Activity anterior mediante setResult().
  *
- * Autor: Alan Guevara Martínez
- * Fecha: 18/11/2025
+ * El flujo incluye la gestión del permiso de cámara y el control del
+ * ciclo de vida del escáner.
+ *
+ * @author Alan Guevara Martínez
+ * @date 18/11/2025
  */
 public class EscanearQrActivity extends AppCompatActivity {
 
-    /// Vista especializada de ZXing que muestra la cámara y detecta códigos
+    // Vista especializada de ZXing que muestra la cámara y detecta códigos
     private DecoratedBarcodeView scannerView;
 
-    /// Botón para volver atrás sin leer ningún QR
+    // Botón para volver atrás sin leer ningún QR
     private ImageView btnBackQr;
 
-    /// Código interno para identificar la petición del permiso de cámara
+    // Código interno para identificar la petición del permiso de cámara
     private static final int CAMERA_REQUEST_CODE = 1001;
 
     @Override
@@ -47,7 +45,7 @@ public class EscanearQrActivity extends AppCompatActivity {
         scannerView = findViewById(R.id.barcodeScanner);
         btnBackQr   = findViewById(R.id.btnBackQr);
 
-        /**
+        /*
          * Acción del botón atrás:
          *  - Cierra la Activity
          *  - Devuelve RESULT_CANCELED porque no se ha leído ningún QR
@@ -57,7 +55,7 @@ public class EscanearQrActivity extends AppCompatActivity {
             finish();
         });
 
-        /**
+        /*
          * Antes de iniciar la cámara, comprobamos si el permiso ya está concedido.
          * Si NO lo está → se solicita al usuario.
          * Si sí lo está → iniciamos directamente el escaneo.
@@ -78,13 +76,11 @@ public class EscanearQrActivity extends AppCompatActivity {
     }
 
     /**
-     * Nombre Método: iniciarEscaneo
-     * Descripción:
-     *      Configura ZXing para escanear de forma continua cualquier código QR.
-     *      Cuando detecta uno:
-     *          - Pausa la cámara
-     *          - Devuelve el texto leído a la Activity anterior
-     *          - Cierra esta pantalla
+     * @brief Inicia el escaneo continuo de códigos QR.
+     *
+     * Configura el callback de ZXing para detectar códigos QR en tiempo real.
+     * Al detectar uno válido, se pausa la cámara, se devuelve el resultado
+     * a la Activity anterior y se cierra esta pantalla.
      */
     private void iniciarEscaneo() {
 
@@ -114,12 +110,15 @@ public class EscanearQrActivity extends AppCompatActivity {
             }
         });
 
-        /// Encender cámara y comenzar escaneo
+        // Encender cámara y comenzar escaneo
         scannerView.resume();
     }
 
     /**
-     * Al volver a primer plano, reanuda la cámara si se tienen permisos.
+     * @brief Reanuda la cámara al volver a primer plano.
+     *
+     * Si el permiso de cámara está concedido, se reactiva el escáner
+     * para continuar con la lectura de códigos QR.
      */
     @Override
     protected void onResume() {
@@ -135,7 +134,9 @@ public class EscanearQrActivity extends AppCompatActivity {
     }
 
     /**
-     * Al salir de la pantalla, detener la cámara para liberar recursos.
+     * @brief Pausa la cámara al salir de la pantalla.
+     *
+     * Detiene el escáner para liberar recursos del sistema.
      */
     @Override
     protected void onPause() {
@@ -146,11 +147,15 @@ public class EscanearQrActivity extends AppCompatActivity {
     }
 
     /**
-     * Nombre Método: onRequestPermissionsResult
-     * Descripción:
-     *      Maneja la respuesta del usuario cuando se solicita el permiso
-     *      de la cámara. Si acepta → se inicia el escáner.
-     *      Si rechaza → la pantalla se cierra porque no puede funcionar.
+     * @brief Maneja el resultado de la solicitud de permiso de cámara.
+     *
+     * Si el usuario concede el permiso, se inicia el escaneo QR.
+     * En caso contrario, la pantalla se cierra al no poder funcionar
+     * sin acceso a la cámara.
+     *
+     * @param requestCode  Código de la petición.
+     * @param permissions  Permisos solicitados.
+     * @param grantResults Resultado de los permisos.
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {

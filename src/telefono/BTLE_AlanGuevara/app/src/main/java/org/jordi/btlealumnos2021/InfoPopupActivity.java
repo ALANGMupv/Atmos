@@ -7,10 +7,13 @@ import android.widget.ImageView;
 import androidx.appcompat.app.AppCompatActivity;
 
 /**
- * Nombre Fichero: InfoPopupActivity.java
- * Descripción: Maneja el popup con la información de la página del sensor.
- * Autora: Nerea Aguilar Forés
- * Fecha: 2025
+ * @brief Activity que muestra un popup informativo del sensor.
+ *
+ * Se encarga de mostrar una ventana emergente con información
+ * adicional sobre el sensor y permite cerrarla mediante un botón.
+ *
+ * @author Nerea Aguilar Forés
+ * @date 2025
  */
 public class InfoPopupActivity extends AppCompatActivity {
 

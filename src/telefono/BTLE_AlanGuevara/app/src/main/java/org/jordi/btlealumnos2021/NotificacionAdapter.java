@@ -36,8 +36,6 @@ public class NotificacionAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         this.listener = listener;
     }
 
-    // ---------------- MÉTODO CLAVE (ANTES FALTABA) ----------------
-
     public void setNotificaciones(List<NotificacionAtmos> nuevas,
                                   List<NotificacionAtmos> leidas) {
 

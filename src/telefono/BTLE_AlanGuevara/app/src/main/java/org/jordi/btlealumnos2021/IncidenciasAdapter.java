@@ -14,26 +14,25 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 /**
- * @file IncidenciasAdapter.java
  * @brief Adapter para mostrar la lista de incidencias del usuario.
  *
  * Se encarga de:
- *  - Mostrar título, descripción y fecha formateada
- *  - Mostrar el estado de la incidencia (Recibida / En proceso / Resuelta / Rechazada)
- *  - Mostrar u ocultar el punto rojo según si la respuesta está leída por el usuario
+ * - Mostrar título, descripción y fecha formateada.
+ * - Mostrar el estado de la incidencia.
+ * - Mostrar u ocultar el punto rojo según si la respuesta ha sido leída.
  *
  * @author Nerea Aguilar Forés
  * @date 29/12/2025
  */
 public class IncidenciasAdapter extends RecyclerView.Adapter<IncidenciasAdapter.ViewHolder> {
 
-    /** Lista de incidencias a mostrar */
+    /* Lista de incidencias a mostrar */
     private final List<Incidencia> lista;
 
-    /** Listener de click sobre cada tarjeta */
+    /* Listener de click sobre cada tarjeta */
     private final View.OnClickListener listener;
 
-    /** Indica si esta pestaña debe mostrar punto rojo (RESPUESTAS sí, ENVIADAS no) */
+    /* Indica si esta pestaña debe mostrar punto rojo (RESPUESTAS sí, ENVIADAS no) */
     private final boolean mostrarPuntoRojo;
 
     /**

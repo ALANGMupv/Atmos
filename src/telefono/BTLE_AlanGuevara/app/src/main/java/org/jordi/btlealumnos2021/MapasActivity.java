@@ -75,8 +75,8 @@ public class MapasActivity extends FuncionesBaseActivity {
     private final android.os.Handler handlerIndice = new android.os.Handler();
     private Runnable tareaDelayedIndice;
 
-    /// -----------------------------------------------------------------------
-    /// Handler para detectar FIN DE MOVIMIENTO
+    // -----------------------------------------------------------------------
+    // Handler para detectar FIN DE MOVIMIENTO
     private final android.os.Handler handlerMovimiento = new android.os.Handler();
     private Runnable tareaFinMovimiento = null;
     // -----------------------------------------------------------------------
@@ -107,22 +107,18 @@ public class MapasActivity extends FuncionesBaseActivity {
 
         setContentView(R.layout.activity_mapas);
 
-        /// Título del encabezado.
+        // Título del encabezado.
         setupHeader("Mapas");
 
-        /// Selección del elemento "Mapas" en la navegación inferior.
+        // Selección del elemento "Mapas" en la navegación inferior.
         setupBottomNav(0); // 0 = Mapas
 
-        /**
-         * @note Se fuerza la verificación de permisos BLE una vez cargada la Activity,
-         *       garantizando que el usuario pueda concederlos antes de iniciar el servicio.
-         */
         runOnUiThread(() -> verificarPermisosYArrancarServicio());
 
         /* Llamada al método que carga el mapa de leaflet */
         inicializarMapa();
 
-        /** ------------------- CONTAMINANTES -------------------*/
+        /* ------------------- CONTAMINANTES -------------------*/
         LinearLayout bottomSheet = findViewById(R.id.bottomSheetContaminantes);
 
         // abrir
@@ -141,7 +137,7 @@ public class MapasActivity extends FuncionesBaseActivity {
                 startActivity(new Intent(this, InfoContaminantesActivity.class))
         );
 
-        /** ======== Seleccionar contaminantes (gases) ======== */
+        /* ======== Seleccionar contaminantes (gases) ======== */
 
         LinearLayout itemTodos = findViewById(R.id.itemTodos);
         LinearLayout itemO3 = findViewById(R.id.itemO3);
@@ -199,9 +195,9 @@ public class MapasActivity extends FuncionesBaseActivity {
         itemNO2.setOnClickListener(listener);
         itemCO.setOnClickListener(listener);
         itemSO2.setOnClickListener(listener);
-        /** ---------------- FIN SECCIÓN CONTAMINANTES -----------------*/
+        /* ---------------- FIN SECCIÓN CONTAMINANTES -----------------*/
 
-        /** ----------------- ÍNDICE CALIDAD DEL AIRE ------------------*/
+        /* ----------------- ÍNDICE CALIDAD DEL AIRE ------------------*/
 
         //Abrir "popup"
         findViewById(R.id.chipIndice).setOnClickListener(v -> {
@@ -214,9 +210,9 @@ public class MapasActivity extends FuncionesBaseActivity {
                 findViewById(R.id.bottomSheetIndice).setVisibility(View.GONE)
         );
 
-        /** -------------- FIN SECCIÓN CALIDAD DEL AIRE ---------------*/
+        /* -------------- FIN SECCIÓN CALIDAD DEL AIRE ---------------*/
 
-        /** ----------------- BUSCADOR DE UBICACIONES ------------------*/
+        /* ----------------- BUSCADOR DE UBICACIONES ------------------*/
         EditText edtBuscar = findViewById(R.id.edtBuscar);
 
         LinearLayout layoutBusqueda = findViewById(R.id.layoutBusqueda);
@@ -255,8 +251,8 @@ public class MapasActivity extends FuncionesBaseActivity {
 
         listaSugerencias.setAdapter(adapterSugerencias);
 
-        /**
-         * @brief Listener que detecta cambios en el texto para autocompletar.
+        /*
+         * Listener que detecta cambios en el texto para autocompletar.
          */
         watcher = new android.text.TextWatcher() {
             @Override
@@ -303,8 +299,8 @@ public class MapasActivity extends FuncionesBaseActivity {
 
         edtBuscar.addTextChangedListener(watcher);
 
-        /**----------------------------------------------------------------------------*/
-        /** -------------- SECCIÓN BUSCADOR DE UBICACIONES ---------------*/
+        /*----------------------------------------------------------------------------*/
+        /* -------------- SECCIÓN BUSCADOR DE UBICACIONES ---------------*/
 
         edtBuscar.setOnEditorActionListener((v, actionId, event) -> {
 
@@ -334,8 +330,8 @@ public class MapasActivity extends FuncionesBaseActivity {
         });
 
 
-        /**
-         * @brief Cuando el usuario toca una sugerencia → usarla como búsqueda
+        /*
+         * Cuando el usuario toca una sugerencia → usarla como búsqueda
          */
         listaSugerencias.setOnItemClickListener((parent, view, position, id) -> {
             String seleccionado = adapterSugerencias.getItem(position);
@@ -356,7 +352,7 @@ public class MapasActivity extends FuncionesBaseActivity {
             buscarUbicacion(seleccionado);
         });
 
-        /** -------------- FIN SECCIÓN BUSCADOR DE UBICACIONES ---------------*/
+        /* -------------- FIN SECCIÓN BUSCADOR DE UBICACIONES ---------------*/
     }
 
     /**
@@ -380,7 +376,7 @@ public class MapasActivity extends FuncionesBaseActivity {
         }
     }
 
-    /// ------------------ PERMISOS BLE Y ARRANQUE SERVICIO ------------------
+    // ------------------ PERMISOS BLE Y ARRANQUE SERVICIO ------------------
 
     /**
      * @return true si todos los permisos están aprobados; false en caso contrario.
@@ -473,7 +469,7 @@ public class MapasActivity extends FuncionesBaseActivity {
     // ---------------------------------------------------------
 
 
-    /// ------------------ MAPA CONTAMINACIÓN ------------------
+    // ------------------ MAPA CONTAMINACIÓN ------------------
 
     /**
      * @brief Inicializa el mapa OSM en su estado básico
@@ -651,7 +647,7 @@ public class MapasActivity extends FuncionesBaseActivity {
         // --------------------------------------------------------------
     }
 
-    /** -------------------------------------------------------------------------
+    /* -------------------------------------------------------------------------
      * LIMPIEZA DEL PANEL DE ÍNDICE DE CALIDAD DEL AIRE
      * ------------------------------------------------------------------------- */
 
@@ -670,9 +666,9 @@ public class MapasActivity extends FuncionesBaseActivity {
             return;
         }
 
-        /// ------------------------------------------------------------------
-        /// 1) SI YA TENEMOS UNA UBICACIÓN REAL (GPS o NETWORK) → usarla
-        /// ------------------------------------------------------------------
+        // ------------------------------------------------------------------
+        // 1) SI YA TENEMOS UNA UBICACIÓN REAL (GPS o NETWORK) → usarla
+        // ------------------------------------------------------------------
         if (ultimaLoc != null) {
 
             GeoPoint p = new GeoPoint(
@@ -700,9 +696,9 @@ public class MapasActivity extends FuncionesBaseActivity {
             return;
         }
 
-        /// ------------------------------------------------------------------
-        /// 2) SI NO HAY UBICACIÓN AÚN → probar con lastKnownLocation
-        /// ------------------------------------------------------------------
+        // ------------------------------------------------------------------
+        // 2) SI NO HAY UBICACIÓN AÚN → probar con lastKnownLocation
+        // ------------------------------------------------------------------
         android.location.LocationManager lm =
                 (android.location.LocationManager) getSystemService(LOCATION_SERVICE);
 
@@ -910,9 +906,9 @@ public class MapasActivity extends FuncionesBaseActivity {
          *   - Cada 1 metro recorrido
          */
 
-        /// -------------------------------------------------------------
-        /// 1) GPS_PROVIDER → muy preciso, pero puede NO emitir en interior
-        /// -------------------------------------------------------------
+        // -------------------------------------------------------------
+        // 1) GPS_PROVIDER → muy preciso, pero puede NO emitir en interior
+        // -------------------------------------------------------------
         lm.requestLocationUpdates(
                 android.location.LocationManager.GPS_PROVIDER,
                 2000,   // intervalo mínimo en ms
@@ -963,9 +959,9 @@ public class MapasActivity extends FuncionesBaseActivity {
                 }
         );
 
-        /// -----------------------------------------------------------------
-        /// 2) NETWORK_PROVIDER → menos preciso, pero SIEMPRE responde en ciudad
-        /// -----------------------------------------------------------------
+        // -----------------------------------------------------------------
+        // 2) NETWORK_PROVIDER → menos preciso, pero SIEMPRE responde en ciudad
+        // -----------------------------------------------------------------
         lm.requestLocationUpdates(
                 android.location.LocationManager.NETWORK_PROVIDER,
                 2000,   // intervalo mínimo en ms
@@ -1017,7 +1013,7 @@ public class MapasActivity extends FuncionesBaseActivity {
         );
     }
 
-    /** ----- SECCIÓN PINTAR MAPA ----- */
+    /* ----- SECCIÓN PINTAR MAPA ----- */
 
     /**
      * @brief Carga puntos de contaminación desde la API y los envía al overlay.
@@ -1040,7 +1036,7 @@ public class MapasActivity extends FuncionesBaseActivity {
      */
     private void cargarContaminacion(String tipoGas) {
 
-        /// Caso A: se piden todos los gases y se elige el peor índice para cada placa
+        // Caso A: se piden todos los gases y se elige el peor índice para cada placa
         if (tipoGas.equals("TODOS")) {
 
             logica.obtenerMedidasTodos(arr -> {
@@ -1085,7 +1081,7 @@ public class MapasActivity extends FuncionesBaseActivity {
 
         } else {
 
-            /// Caso B: se pide solo un gas específico
+            // Caso B: se pide solo un gas específico
             int gas = Integer.parseInt(tipoGas);
 
             logica.obtenerMedidasPorGas(gas, arr -> {
@@ -1170,9 +1166,9 @@ public class MapasActivity extends FuncionesBaseActivity {
         return 0;
     }
 
-    /** ----- FIN SECCIÓN PINTAR MAPA -----*/
+    /* ----- FIN SECCIÓN PINTAR MAPA -----*/
 
-    /** ----- SECCIÓN ACTUALIZAR PANEL ÍNDICES MAPA -----*/
+    /* ----- SECCIÓN ACTUALIZAR PANEL ÍNDICES MAPA -----*/
     /**
      * @brief Actualiza el panel de índice según los valores interpolados visibles.
      * @details Colores, textos y recomendaciones se ajustan automáticamente
@@ -1258,9 +1254,9 @@ public class MapasActivity extends FuncionesBaseActivity {
                 break;
         }
     }
-    /** ----- FIN SECCIÓN ACTUALIZAR PANEL ÍNDICES MAPA -----*/
+    /* ----- FIN SECCIÓN ACTUALIZAR PANEL ÍNDICES MAPA -----*/
 
-    /** ----- SECCIÓN ESTACIONES DE MEDIDA REAL - API https://explore.openaq.org -----*/
+    /* ----- SECCIÓN ESTACIONES DE MEDIDA REAL - API https://explore.openaq.org -----*/
     // --------------------------------------------------------------------------------------
     /**
      * @brief Convierte NO₂ a ppm si la unidad viene en µg/m³.
@@ -1412,9 +1408,9 @@ public class MapasActivity extends FuncionesBaseActivity {
             );
 
 
-            /// -------------------------------------------------------------
-            /// 1) Crear marcador asociado al mapa
-            /// -------------------------------------------------------------
+            // -------------------------------------------------------------
+            // 1) Crear marcador asociado al mapa
+            // -------------------------------------------------------------
             Marker m = new Marker(mapa);
 
             // Posición geográfica de la estación
@@ -1423,10 +1419,10 @@ public class MapasActivity extends FuncionesBaseActivity {
             // Anclaje del icono (centrado horizontal, punta inferior)
             m.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
 
-            /// -------------------------------------------------------------
-            /// 2) Calcular nivel predominante de la estación
-            ///    (peor gas según API oficial)
-            /// -------------------------------------------------------------
+            // -------------------------------------------------------------
+            // 2) Calcular nivel predominante de la estación
+            //    (peor gas según API oficial)
+            // -------------------------------------------------------------
             double nivel = calcularNivelEstacion(e);
 
             // Obtener color visual según nivel
@@ -1444,9 +1440,9 @@ public class MapasActivity extends FuncionesBaseActivity {
                 m.setIcon(icono);
             }
 
-            /// -------------------------------------------------------------
-            /// 3) Configurar popup de información
-            /// -------------------------------------------------------------
+            // -------------------------------------------------------------
+            // 3) Configurar popup de información
+            // -------------------------------------------------------------
 
             // Título del popup (nombre de la estación)
             m.setTitle(e.nombre);
@@ -1459,9 +1455,9 @@ public class MapasActivity extends FuncionesBaseActivity {
                             "SO₂: " + valor(e.so2, e.unidadSO2)
             );
 
-            /// -------------------------------------------------------------
-            /// 4) Añadir marcador al mapa
-            /// -------------------------------------------------------------
+            // -------------------------------------------------------------
+            // 4) Añadir marcador al mapa
+            // -------------------------------------------------------------
             mapa.getOverlays().add(m);
         }
 

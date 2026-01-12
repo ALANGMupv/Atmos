@@ -1,19 +1,17 @@
 package org.jordi.btlealumnos2021;
 /**
- * Nombre Fichero: NotificacionAtmos.java
- * Descripción: Clase modelo que representa una notificación dentro
- *              del ecosistema ATMOS. Contiene la estructura base
- *              utilizada por el RecyclerView: título, texto,
- *              hora y estado de lectura.
+ * @brief Modelo que representa una notificación dentro de ATMOS.
  *
- *              Esta clase es utilizada para generar, almacenar y
- *              manipular notificaciones locales, así como para
- *              mostrar su información en la interfaz gráfica.
+ * Contiene la información necesaria para mostrar notificaciones
+ * en la interfaz de usuario, incluyendo título, texto, hora y
+ * estado de lectura.
  *
- * Autor: Alejandro Vazquez
- * Fecha: 20/11/2025
+ * Se utiliza principalmente como modelo de datos para el
+ * RecyclerView de notificaciones.
+ *
+ * @author Alejandro Vazquez
+ * @date 20/11/2025
  */
-
 public class NotificacionAtmos {
 
     // Identificador único de la notificación en la BBDD
@@ -27,6 +25,17 @@ public class NotificacionAtmos {
     private long timestamp;  // Para ordenar por fecha (Hoy, Ayer, etc.)
     private boolean leida;
 
+    /**
+     * @brief Constructor de una notificación.
+     *
+     * @param idNotificacion Identificador único de la notificación.
+     * @param tipo Tipo lógico de notificación (ej. O3_CRITICO).
+     * @param titulo Título visible de la notificación.
+     * @param texto Texto descriptivo.
+     * @param hora Hora de la notificación en formato legible.
+     * @param timestamp Marca temporal para ordenación.
+     * @param leida Indica si la notificación ha sido leída.
+     */
     public NotificacionAtmos(int idNotificacion,
                              String tipo,
                              String titulo,

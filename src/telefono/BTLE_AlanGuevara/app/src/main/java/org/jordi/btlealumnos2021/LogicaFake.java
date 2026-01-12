@@ -24,7 +24,6 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import org.json.JSONObject;
 
 /**
- * @file LogicaFake.java
  * @brief Clase encargada de llamar a los métodos de la lógica de negocio.
  *
  * @details Esta clase actúa como intermediaria y gestiona las invocaciones
@@ -101,11 +100,9 @@ public class LogicaFake {
 
     /**
      * Nombre Interfaz: LoginCallback
-     * Descripción: Define los posibles resultados de la petición de login al servidor.
-     * Entradas:
-     *  - Se usan como callbacks al completar la petición HTTP.
-     * Salidas:
-     *  - No retorna nada; se ejecutan los métodos según el resultado.
+     *
+     * @brief Callback para gestionar el resultado del login.
+     *
      * Autores: Nerea Aguilar Forés
      */
     public interface LoginCallback {
@@ -117,15 +114,13 @@ public class LogicaFake {
     }
 
     /**
-     * Nombre Método: loginServidor
-     * Descripción: Realiza la petición de login al servidor usando el idToken de Firebase.
-     * Entradas:
-     *  - idToken: Token de Firebase para autenticar la llamada.
-     *  - queue: Cola de Volley para ejecutar la petición.
-     *  - callback: Implementación de LoginCallback para informar del resultado.
-     * Salidas:
-     *  - No retorna nada; notifica el resultado a través de callback.
-     * Autores: Nerea Aguilar Forés
+     * @brief Realiza la petición de login al servidor usando el idToken de Firebase.
+     *
+     * @param idToken  Token de Firebase para autenticar la llamada.
+     * @param queue   Cola de Volley para ejecutar la petición HTTP.
+     * @param callback Callback que recibe el resultado del login.
+     *
+     * @author Nerea Aguilar Forés
      */
     public static void loginServidor(
             String idToken,
@@ -190,13 +185,12 @@ public class LogicaFake {
     /// =========================================================
 
     /**
-     * Nombre Interfaz: RegistroCallback
-     * Descripción: Define los posibles resultados de la petición de registro al servidor.
-     * Entradas:
-     *  - Se usan como callbacks al completar la petición HTTP.
-     * Salidas:
-     *  - No retorna nada; se ejecutan los métodos según el resultado.
-     * Autores: Nerea Aguilar Forés
+     * @brief Callback para gestionar el resultado del registro de usuario.
+     *
+     * Define los posibles resultados que puede devolver el servidor
+     * al completar una petición de registro.
+     *
+     * @author Nerea Aguilar Forés
      */
     public interface RegistroCallback {
         void onRegistroOk();
@@ -205,18 +199,19 @@ public class LogicaFake {
     }
 
     /**
-     * Nombre Método: registroServidor
-     * Descripción: Realiza la petición de registro al servidor con los datos del usuario.
-     * Entradas:
-     *  - idToken: Token de Firebase para autenticar la llamada.
-     *  - nombre: Nombre del usuario.
-     *  - apellidos: Apellidos del usuario.
-     *  - password: Contraseña del usuario.
-     *  - queue: Cola de Volley para ejecutar la petición.
-     *  - callback: Implementación de RegistroCallback para informar del resultado.
-     * Salidas:
-     *  - No retorna nada; notifica el resultado a través de callback.
-     * Autores: Nerea Aguilar Forés
+     * @brief Realiza la petición de registro de un usuario al servidor.
+     *
+     * Envía al backend los datos necesarios para crear un nuevo usuario
+     * autenticado mediante Firebase.
+     *
+     * @param idToken   Token de Firebase para autenticar la llamada.
+     * @param nombre    Nombre del usuario.
+     * @param apellidos Apellidos del usuario.
+     * @param password  Contraseña del usuario.
+     * @param queue     Cola de Volley para ejecutar la petición HTTP.
+     * @param callback  Callback que recibe el resultado del registro.
+     *
+     * @author Nerea Aguilar Forés
      */
     public static void registroServidor(
             String idToken,
@@ -268,10 +263,13 @@ public class LogicaFake {
     }
 
     /**
-     * Nombre Interfaz: ActualizarUsuarioCallback
-     * Descripción: Define los posibles resultados de la petición de actualización de usuario.
-     * Autor: Alan Guevara Martínez
-     * Fecha: 17/11/2025
+     * @brief Callback para gestionar el resultado de la actualización de usuario.
+     *
+     * Define los posibles resultados devueltos por el servidor al intentar
+     * actualizar los datos de un usuario existente.
+     *
+     * @author Alan Guevara Martínez
+     * @date 17/11/2025
      */
     public interface ActualizarUsuarioCallback {
         void onActualizacionOk();     // Se llama cuando la actualización en el servidor ha sido correcta
@@ -280,28 +278,24 @@ public class LogicaFake {
     }
 
     /**
-     * Nombre Método: actualizarUsuarioServidor
-     * Descripción:
-     *   Realiza la petición PUT /usuario para actualizar nombre, apellidos y/o email
-     *   de un usuario ya existente en la BBDD MySQL.
-     *   Autores: Alan Guevara Martínez
-     *      * Fecha: 17/11/2025
+     * @brief Actualiza los datos de un usuario existente en el servidor.
      *
-     * Entradas:
-     *  - idToken: Token de Firebase para autenticar la llamada (Bearer).
-     *  - idUsuario: ID del usuario en la tabla usuario de MySQL.
-     *  - nombre: Nuevo nombre.
-     *  - apellidos: Nuevos apellidos.
-     *  - email: Email actual del usuario (no se cambia, pero se envía).
-     *  - contrasenaActual: Contraseña actual introducida por el usuario.
-     *  - nuevaContrasena: Nueva contraseña (aquí será vacío, se usa solo para compatibilidad con el método ya hecho).
-     *  - queue: Cola de Volley para ejecutar la petición.
-     *  - callback: Implementación de ActualizarUsuarioCallback.
+     * Realiza una petición PUT al endpoint /usuario para modificar el nombre,
+     * apellidos y credenciales del usuario almacenado en la base de datos.
      *
-     * Salidas:
-     *  - No retorna nada; notifica el resultado por callback.
+     * @param idToken           Token de Firebase para autenticar la llamada (Bearer).
+     * @param idUsuario         ID del usuario en la base de datos MySQL.
+     * @param nombre            Nuevo nombre del usuario.
+     * @param apellidos         Nuevos apellidos del usuario.
+     * @param email             Email actual del usuario (no se modifica).
+     * @param contrasenaActual  Contraseña actual introducida por el usuario.
+     * @param nuevaContrasena   Nueva contraseña (puede ser vacía).
+     * @param queue             Cola de Volley para ejecutar la petición HTTP.
+     * @param callback          Callback que recibe el resultado de la actualización.
+     *
+     * @author Alan Guevara Martínez
+     * @date 17/11/2025
      */
-
     public static void actualizarUsuarioServidor(
             String idToken,
             int idUsuario,
@@ -380,18 +374,12 @@ public class LogicaFake {
     /// RESUMEN USUARIO
     /// =========================================================
     /**
-     * Nombre Interfaz: ResumenUsuarioCallback
-     * Descripción:
-     *   Define los posibles resultados de la petición que obtiene
-     *   información del sensor asociado al usuario.
+     * @brief Callback para obtener el resumen del estado del sensor del usuario.
      *
-     * Entradas:
-     *   - Se usa como callback del método resumenUsuario().
+     * Define los posibles resultados devueltos por el backend al consultar
+     * la información del sensor asociado a un usuario.
      *
-     * Salidas:
-     *   - No retorna nada; activa un método según el resultado.
-     *
-     * Autores: Nerea Aguilar Forés
+     * @author Nerea Aguilar Forés
      */
     public interface ResumenUsuarioCallback {
         void onSinPlaca();                                    // Usuario no tiene placa asociada
@@ -405,19 +393,19 @@ public class LogicaFake {
 /// =========================================================
 
     /**
-     * Nombre Método: resumenUsuario
-     * Descripción:
-     *      Consulta al backend si el usuario tiene placa y devuelve
-     *      la última medida + promedio del gas seleccionado.
+     * @brief Obtiene el resumen del usuario para un gas concreto.
      *
-     * Entradas:
-     *   - idUsuario : ID del usuario
-     *   - tipoGas   : código del gas (11, 12, 13, 14)
-     *   - queue     : cola Volley
-     *   - callback  : interface con los 4 posibles resultados
+     * Consulta al backend si el usuario tiene una placa asociada y devuelve
+     * la última medición registrada junto con el valor promedio del gas indicado.
      *
-     * Autor: Nerea Aguilar Forés
-     * Modificado por: Alan Guevara Martínez (20/11/2025)
+     * @param idUsuario ID del usuario.
+     * @param tipoGas   Código del gas (11, 12, 13, 14).
+     * @param queue     Cola de Volley para ejecutar la petición HTTP.
+     * @param callback  Callback que recibe el resultado de la consulta.
+     *
+     * @author Nerea Aguilar Forés
+     * @author Alan Guevara Martínez
+     * @date 20/11/2025
      */
     public static void resumenUsuarioPorGas(
             int idUsuario,
@@ -501,13 +489,13 @@ public class LogicaFake {
     /// =========================================================
 
     /**
-     * Nombre Interfaz: VincularPlacaCallback
-     * Descripción:
-     *   Define los posibles resultados de la petición de vinculación
-     *   de una placa a un usuario (/vincular).
+     * @brief Callback para gestionar el resultado de la vinculación de una placa.
      *
-     * Autora: Alan Guevara Martínez
-     * Fecha: 18/11/2025
+     * Define los posibles resultados devueltos por el servidor al intentar
+     * asociar una placa a un usuario.
+     *
+     * @author Alan Guevara Martínez
+     * @date 18/11/2025
      */
     public interface VincularPlacaCallback {
         void onVinculacionOk();       // Vinculación correcta
@@ -517,26 +505,19 @@ public class LogicaFake {
     }
 
     /**
-     * Nombre Método: vincularPlacaServidor
-     * Descripción:
-     *   Llama al endpoint POST /vincular para asociar una placa a un usuario.
-     *   Envía al backend los campos:
-     *      - id_usuario
-     *      - id_placa
+     * @brief Vincula una placa a un usuario en el servidor.
      *
-     * Entradas:
-     *  - idUsuario: ID del usuario en la tabla MySQL.
-     *  - idPlaca:   Código/UUID de la placa a vincular.
-     *  - queue:     Cola de Volley para ejecutar la petición HTTP.
-     *  - callback:  Implementación de VincularPlacaCallback para informar del resultado.
+     * Realiza una petición POST al endpoint /vincular para asociar una placa
+     * identificada por su UUID a un usuario existente.
      *
-     * Salidas:
-     *  - No retorna nada. Informa del resultado mediante callback.
+     * @param idUsuario ID del usuario en la base de datos MySQL.
+     * @param idPlaca   Identificador o UUID de la placa a vincular.
+     * @param queue     Cola de Volley para ejecutar la petición HTTP.
+     * @param callback  Callback que recibe el resultado de la vinculación.
      *
-     * Autor: Alan Guevara Martínez
-     * Fecha: 18/11/2025
+     * @author Alan Guevara Martínez
+     * @date 18/11/2025
      */
-
     public static void vincularPlacaServidor(
             int idUsuario,                // ID del usuario que quiere vincular la placa
             String idPlaca,               // ID o código de la placa a vincular
@@ -618,13 +599,13 @@ public class LogicaFake {
     /// =========================================================
 
     /**
-     * Nombre Interfaz: DesvincularPlacaCallback
-     * Descripción:
-     *   Define los posibles resultados de la petición de
-     *   desvinculación de una placa para un usuario.
+     * @brief Callback para gestionar el resultado de la desvinculación de una placa.
      *
-     * Autor: Alan Guevara Martínez
-     * Fecha: 19/11/2025
+     * Define los posibles resultados devueltos por el servidor al eliminar
+     * la relación entre un usuario y su placa asociada.
+     *
+     * @author Alan Guevara Martínez
+     * @date 19/11/2025
      */
     public interface DesvincularPlacaCallback {
         void onDesvinculacionOk();    // Se ha desvinculado correctamente
@@ -634,22 +615,17 @@ public class LogicaFake {
     }
 
     /**
-     * Nombre Método: desvincularPlacaServidor
-     * Descripción:
-     *   Llama al endpoint POST /desvincular para eliminar la relación
-     *   entre un usuario y su placa (tabla usuarioplaca) y poner
-     *   asignada = 0 en la tabla placa.
+     * @brief Desvincula una placa de un usuario en el servidor.
      *
-     * Entradas:
-     *   - idUsuario: ID del usuario en MySQL.
-     *   - queue:     Cola Volley para ejecutar la petición HTTP.
-     *   - callback:  Implementación de DesvincularPlacaCallback.
+     * Llama al endpoint /desvincular para eliminar la relación entre un usuario
+     * y su placa, actualizando el estado correspondiente en la base de datos.
      *
-     * Salidas:
-     *   - No retorna nada, pero notificará el resultado mediante callback.
+     * @param idUsuario ID del usuario en la base de datos MySQL.
+     * @param queue     Cola de Volley para ejecutar la petición HTTP.
+     * @param callback  Callback que recibe el resultado de la desvinculación.
      *
-     * Autor: Alan Guevara Martínez
-     * Fecha: 19/11/2025
+     * @author Alan Guevara Martínez
+     * @date 19/11/2025
      */
     public static void desvincularPlacaServidor(
             int idUsuario,                          // ID del usuario logueado
@@ -716,17 +692,16 @@ public class LogicaFake {
     }
 
     /**
-     * Nombre Método: actualizarEstadoPlaca
-     * Fecha: 20/11/2025
-     * Autor: Alan Guevara Martínez
+     * @brief Actualiza el estado de encendido de una placa.
      *
-     * Descripción:
-     *   Envía al backend el estado actual de la placa (encendida/apagada).
-     *   El backend debe actualizar la columna `encendida` de la tabla placa.
+     * Envía al backend el estado actual de la placa para que se actualice
+     * la columna `encendida` en la base de datos.
      *
-     * Parámetros:
-     *   - idPlaca : UUID de la placa
-     *   - estado  : 1 = encendida, 0 = apagada
+     * @param idPlaca UUID de la placa.
+     * @param estado  Estado de la placa (1 = encendida, 0 = apagada).
+     *
+     * @author Alan Guevara Martínez
+     * @date 20/11/2025
      */
     public void actualizarEstadoPlaca(String idPlaca, int estado) {
 
@@ -767,27 +742,18 @@ public class LogicaFake {
     }
 
     /**
-     * Nombre Método: resumen7Dias
-     * Descripción:
-     *   Llama al endpoint GET /resumen7Dias para obtener los promedios
-     *   diarios de los últimos 7 días del gas indicado para el usuario.
+     * @brief Obtiene el resumen diario de los últimos 7 días.
      *
-     * Entradas:
-     *   - idUsuario: ID del usuario en MySQL.
-     *   - tipoGas:   Código del gas (11,12,13,14).
-     *   - queue:     Cola Volley para ejecutar la petición HTTP.
-     *   - callback:  Implementación de GraficaCallback para recibir el resultado.
+     * Llama al endpoint /resumen7Dias para obtener los promedios diarios
+     * del gas indicado para un usuario.
      *
-     * Salidas:
-     *   - No retorna nada directamente.
-     *   - Notifica a través de callback:
-     *       - onSinPlaca() si el servidor responde status="sin_placa".
-     *       - onDatosObtenidos(labels, valores, promedio) si hay datos.
-     *       - onErrorServidor() si hay error de servidor.
-     *       - onErrorInesperado() si hay error de parseo u otro.
+     * @param idUsuario ID del usuario en la base de datos MySQL.
+     * @param tipoGas   Código del gas (11, 12, 13, 14).
+     * @param queue     Cola de Volley para ejecutar la petición HTTP.
+     * @param callback  Callback que recibe los datos para la gráfica.
      *
-     * Autor: Alan Guevara Martínez
-     * Fecha: 21/11/2025
+     * @author Alan Guevara Martínez
+     * @date 21/11/2025
      */
     public static void resumen7Dias(
             int idUsuario,
@@ -848,27 +814,18 @@ public class LogicaFake {
 
 
     /**
-     * Nombre Método: resumen8Horas
-     * Descripción:
-     *   Llama al endpoint GET /resumen8Horas para obtener los promedios
-     *   horarios de las últimas 8 horas del gas indicado para el usuario.
+     * @brief Obtiene el resumen horario de las últimas 8 horas.
      *
-     * Entradas:
-     *   - idUsuario: ID del usuario en MySQL.
-     *   - tipoGas:   Código del gas (11,12,13,14).
-     *   - queue:     Cola Volley para ejecutar la petición HTTP.
-     *   - callback:  Implementación de GraficaCallback para recibir el resultado.
+     * Llama al endpoint /resumen8Horas para obtener los promedios horarios
+     * del gas indicado para un usuario.
      *
-     * Salidas:
-     *   - No retorna nada directamente.
-     *   - Notifica a través de callback:
-     *       - onSinPlaca() si el servidor responde status="sin_placa".
-     *       - onDatosObtenidos(labels, valores, promedio) si hay datos.
-     *       - onErrorServidor() si hay error de servidor.
-     *       - onErrorInesperado() si hay error de parseo u otro.
+     * @param idUsuario ID del usuario en la base de datos MySQL.
+     * @param tipoGas   Código del gas (11, 12, 13, 14).
+     * @param queue     Cola de Volley para ejecutar la petición HTTP.
+     * @param callback  Callback que recibe los datos para la gráfica.
      *
-     * Autor: Alan Guevara Martínez
-     * Fecha: 21/11/2025
+     * @author Alan Guevara Martínez
+     * @date 21/11/2025
      */
     public static void resumen8Horas(
             int idUsuario,
@@ -936,13 +893,17 @@ public class LogicaFake {
     }
 
     /**
-     * Nombre Método: estadoPlacaServidor
-     * Descripción:
-     *     Llama al endpoint GET /estadoPlaca para obtener si la placa
-     *     del usuario está activa, inactiva o si no tiene placa.
+     * @brief Obtiene el estado de la placa asociada a un usuario.
      *
-     * Autora: Nerea Aguilar Forés
-     * Fecha: 21/11/2025
+     * Consulta al backend si la placa del usuario está activa, inactiva
+     * o si el usuario no tiene ninguna placa vinculada.
+     *
+     * @param idUsuario ID del usuario.
+     * @param queue     Cola de Volley para ejecutar la petición HTTP.
+     * @param callback  Callback que recibe el estado de la placa.
+     *
+     * @author Nerea Aguilar Forés
+     * @date 21/11/2025
      */
     public static void estadoPlacaServidor(
             int idUsuario,
@@ -989,13 +950,17 @@ public class LogicaFake {
     }
 
     /**
-     * Nombre Método: estadoSenalServidor
-     * Descripción:
-     *     Llama al endpoint GET /estadoSenal para obtener la intensidad
-     *     de la señal del sensor del usuario (nivel + rssi).
+     * @brief Obtiene el estado de la señal del sensor del usuario.
      *
-     * Autora: Nerea Aguilar Forés
-     * Fecha: 21/11/2025
+     * Consulta al backend la intensidad de la señal del sensor asociado
+     * a un usuario, devolviendo el nivel de señal y el valor RSSI.
+     *
+     * @param idUsuario ID del usuario.
+     * @param queue     Cola de Volley para ejecutar la petición HTTP.
+     * @param callback  Callback que recibe el nivel de señal y el RSSI.
+     *
+     * @author Nerea Aguilar Forés
+     * @date 21/11/2025
      */
     public static void estadoSenalServidor(
             int idUsuario,
@@ -1313,12 +1278,13 @@ public class LogicaFake {
     }
 
     /**
-     * Nombre Interfaz: EnviarIncidenciaCallback
-     * Descripción:
-     *   Define los posibles resultados del envío de una incidencia al servidor.
+     * @brief Callback para gestionar el envío de una incidencia.
      *
-     * Autora: Nerea Aguilar Forés
-     * Fecha: 17/12/2025
+     * Define los posibles resultados devueltos por el servidor al crear
+     * una nueva incidencia.
+     *
+     * @author Nerea Aguilar Forés
+     * @date 17/12/2025
      */
     public interface EnviarIncidenciaCallback {
         void onOk(int idIncidencia);   // Incidencia creada correctamente
@@ -1327,21 +1293,17 @@ public class LogicaFake {
     }
 
     /**
-     * Nombre Método: listarIncidenciasUsuario
-     * Descripción:
-     *   Llama al endpoint GET /incidencias para obtener todas las
-     *   incidencias asociadas a un usuario.
+     * @brief Obtiene todas las incidencias asociadas a un usuario.
      *
-     * Entradas:
-     *   - idUsuario : ID del usuario
-     *   - queue     : Cola Volley
-     *   - callback  : Callback con el resultado
+     * Llama al endpoint /incidencias para recuperar el listado completo
+     * de incidencias creadas por un usuario.
      *
-     * Salidas:
-     *   - No retorna nada; notifica por callback
+     * @param idUsuario ID del usuario.
+     * @param queue     Cola de Volley para ejecutar la petición HTTP.
+     * @param callback  Callback que recibe el resultado de la consulta.
      *
-     * Autora: Nerea Aguilar Forés
-     * Fecha: 17/12/2025
+     * @author Nerea Aguilar Forés
+     * @date 17/12/2025
      */
     public static void listarIncidenciasUsuario(
             int idUsuario,
@@ -1374,13 +1336,13 @@ public class LogicaFake {
     }
 
     /**
-     * Nombre Interfaz: ListarIncidenciasCallback
-     * Descripción:
-     *   Define los posibles resultados de la petición que obtiene
-     *   todas las incidencias de un usuario.
+     * @brief Callback para gestionar el listado de incidencias de un usuario.
      *
-     * Autora: Nerea Aguilar Forés
-     * Fecha: 17/12/2025
+     * Define los posibles resultados devueltos por el servidor al solicitar
+     * todas las incidencias asociadas a un usuario.
+     *
+     * @author Nerea Aguilar Forés
+     * @date 17/12/2025
      */
     public interface ListarIncidenciasCallback {
         void onIncidenciasOk(JSONArray incidencias);

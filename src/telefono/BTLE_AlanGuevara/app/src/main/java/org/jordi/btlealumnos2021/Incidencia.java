@@ -10,25 +10,25 @@ package org.jordi.btlealumnos2021;
  */
 public class Incidencia {
 
-    /** Identificador de la incidencia */
+    /* Identificador de la incidencia */
     public int idIncidencia;
 
-    /** Asunto o título de la incidencia */
+    /* Asunto o título de la incidencia */
     public String asunto;
 
-    /** Mensaje enviado por el usuario */
+    /* Mensaje enviado por el usuario */
     public String mensaje;
 
-    /** Respuesta del administrador (puede ser null) */
+    /* Respuesta del administrador (puede ser null) */
     public String respuesta;
 
-    /** Fecha de creación de la incidencia */
+    /* Fecha de creación de la incidencia */
     public String fecha;
 
-    /** Estado de la incidencia */
+    /* Estado de la incidencia */
     public int idEstado;
 
-    /** Indica si el usuario ha leído la respuesta */
+    /* Indica si el usuario ha leído la respuesta */
     public int leidaUsuario;
 
     public Incidencia(

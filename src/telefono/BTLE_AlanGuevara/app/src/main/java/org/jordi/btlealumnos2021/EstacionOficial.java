@@ -26,7 +26,7 @@ public class EstacionOficial {
     public String unidadCO;
     public String unidadSO2;
 
-    /**
+    /*
      * ID interno de la estación en OpenAQ.
      * Necesario para consultar sus mediciones reales.
      */
