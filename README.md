@@ -1,6 +1,7 @@
 # 🌱 Proyecto Biometría 2025  
 
 🔗 **Web del proyecto (Plesk):** [https://nagufor.upv.edu.es/cliente/index.php](https://nagufor.upv.edu.es/cliente/index.php)  
+🔗 **Enlace a Trello:** [https://trello.com/b/vPgleVbe](https://trello.com/b/vPgleVbe)  
 
 Repositorio del proyecto de **Biometría y Medio Ambiente**. Incluye código, diseños, API REST, base de datos y pruebas automatizadas.  
 
@@ -24,7 +25,8 @@ Repositorio del proyecto de **Biometría y Medio Ambiente**. Incluye código, di
 
 ## 🛠️ Diseños Código 
 
-- [🎨 Lógica de negocio](https://www.figma.com/design/PFX4TlyGjSa525csbkYxta/Dise%C3%B1oCodigoLogica?node-id=0-1&t=HE8Vt1fw16XM9iU3-1)  
+- [🎨 Lógica de negocio](https://www.figma.com/design/PFX4TlyGjSa525csbkYxta/Dise%C3%B1oCodigoLogica?node-id=0-1&t=HE8Vt1fw16XM9iU3-1)
+- [🎨 Endpoints](https://www.figma.com/board/yg6VatjdEp4iaso8nPc1u2/apiREST?node-id=0-1&p=f)  
 - [🎨 Java (Ingeniería inversa)](https://www.figma.com/board/5gclkZaVUzniiwrtNu5U6k/Ingenier%C3%ADa-Inversa-Java--Dise%C3%B1o-?node-id=0-1&t=2sPA1xDThr6iYJ2P-1)  
 - [🎨 C++ (Ingeniería inversa)](https://www.figma.com/board/M5GoSHtcgihRU9eOloRw9p/Ingenier%C3%ADa-Inversa-C----Dise%C3%B1o-?node-id=0-1&t=fQN68Fkj8KLjSxMq-1)  
 - [🎨 Backend Sprint 0](https://www.figma.com/board/OhXGiBzKXEmR9dCqy3RwvB/Dise%C3%B1o-Backend-y-Frontend?node-id=0-1&t=462ogik28GMpr2IN-1)  
