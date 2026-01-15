@@ -1,9 +1,12 @@
 package org.jordi.btlealumnos2021;
 
+import android.app.DownloadManager;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.Gravity;
@@ -16,6 +19,12 @@ import android.widget.FrameLayout;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * @brief Activity que muestra el menú de acciones del usuario.
@@ -98,11 +107,8 @@ public class MenuActivity extends FuncionesBaseActivity {
         // Tarjeta "Manual de Usuario"
         if (cardManualUsuario != null) {
             cardManualUsuario.setOnClickListener(v ->
-                    Toast.makeText(
-                            MenuActivity.this,
-                            "Funcionalidad no activa de momento",
-                            Toast.LENGTH_SHORT
-                    ).show()
+                    mostrarDialogoConfirmarDescarga()
+
             );
         }
 
@@ -314,4 +320,53 @@ public class MenuActivity extends FuncionesBaseActivity {
             });
         }
     }
+
+    //----------------------------------------------------------------------------------------------
+    // Descargar manual de usuario
+    //----------------------------------------------------------------------------------------------
+
+    private void descargarManual(){
+        String urlPdf = "https://nagufor.upv.edu.es/manual/Manual_de_usuario_Atmos.pdf";
+
+        DownloadManager downloadManager =
+                (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+
+        Uri uri = Uri.parse(urlPdf);
+
+        DownloadManager.Request request =
+                new DownloadManager.Request(uri);
+
+        request.setTitle("Manual de usuario");
+        request.setDescription("Descargando manual de usuario");
+        request.setNotificationVisibility(
+                DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED
+        );
+
+        request.setDestinationInExternalPublicDir(
+                Environment.DIRECTORY_DOWNLOADS,
+                "manual_usuario.pdf"
+        );
+
+        downloadManager.enqueue(request);
+
+        Toast.makeText(
+                this,
+                "Descarga iniciada",
+                Toast.LENGTH_SHORT
+        ).show();
+    }
+
+    private void mostrarDialogoConfirmarDescarga() {
+
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Descarga de manual")
+                .setMessage("Se va a descargar el PDF del manual de usuario.\n¿Desea continuar?")
+                .setPositiveButton("Descargar", (dialog, which) -> {
+                    descargarManual();
+                })
+                .setNegativeButton("Cancelar", null)
+                .setCancelable(true)
+                .show();
+    }
+
 }

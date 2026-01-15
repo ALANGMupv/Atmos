@@ -278,7 +278,8 @@ function dibujarIDW(layer, params) {
             const ll = mapa.containerPointToLatLng([px, py]);
             if (!bounds.contains([ll.lat, ll.lng])) continue;
 
-            let sumW = 0, sumR = 0, sumG = 0, sumB = 0;
+            let sumW = 0;
+            let peorNivel = 0;
 
             for (let p of puntosActuales) {
                 const dx = ll.lng - p.lng;
@@ -288,16 +289,12 @@ function dibujarIDW(layer, params) {
 
                 const w = d === 0 ? 1 : 1 / (d * d);
                 sumW += w;
-                sumR += w * p.r;
-                sumG += w * p.g;
-                sumB += w * p.b;
+                peorNivel = Math.max(peorNivel, p.nivel);
             }
 
             if (sumW === 0) continue;
 
-            const r = sumR / sumW;
-            const g = sumG / sumW;
-            const b = sumB / sumW;
+            const [r, g, b] = colorPorNivel(peorNivel);
 
             ctx.fillStyle = `rgba(${r},${g},${b},0.09)`;
             ctx.beginPath();
@@ -341,8 +338,11 @@ async function cargarMapa(tipo = "ALL") {
                 peor = Math.max(peor, normalizarGas(t, v));
             }
 
-            const [r, g, b] = colorPorNivel(peor);
-            return { lat: p.latitud, lng: p.longitud, r, g, b };
+            return {
+                lat: p.latitud,
+                lng: p.longitud,
+                nivel: peor
+            };
         });
 
     canvasLayer._reset();

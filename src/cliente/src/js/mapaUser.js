@@ -274,10 +274,12 @@ function dibujarIDW(layer, params) {
             const lat = ll.lat;
             const lng = ll.lng;
 
-            // ❗ Solo contar lo visible en pantalla
+            // Solo contar lo visible en pantalla
             if (!bounds.contains([lat, lng])) continue;
 
-            let sumW = 0, sumR = 0, sumG = 0, sumB = 0;
+            let sumW = 0;
+            let peorNivel = 0;
+
 
             for (let p of puntosActuales) {
                 const dx = lng - p.lng;
@@ -288,16 +290,12 @@ function dibujarIDW(layer, params) {
                 const w = d === 0 ? 1 : 1 / Math.pow(d, EXP);
 
                 sumW += w;
-                sumR += w * p.r;
-                sumG += w * p.g;
-                sumB += w * p.b;
+                peorNivel = Math.max(peorNivel, p.nivel);
             }
 
             if (sumW === 0) continue;
 
-            const r = sumR / sumW;
-            const g = sumG / sumW;
-            const b = sumB / sumW;
+            const [r, g, b] = colorPorNivel(peorNivel);
 
             // Clasificar color
             const nivel = clasificarPorColor(r, g, b);
@@ -345,8 +343,11 @@ async function cargarMapa(tipo = "ALL") {
                     peor = Math.max(peor, normalizarGas(t, v));
                 }
 
-                const [r, g, b] = colorPorNivel(peor);
-                return { lat: p.latitud, lng: p.longitud, r, g, b };
+                return {
+                    lat: p.latitud,
+                    lng: p.longitud,
+                    nivel: peor
+                };
             });
     }
 
@@ -357,8 +358,11 @@ async function cargarMapa(tipo = "ALL") {
 
         puntosActuales = data.medidas.map(m => {
             const norm = normalizarGas(Number(tipo), m.valor);
-            const [r, g, b] = colorPorNivel(norm);
-            return { lat: m.latitud, lng: m.longitud, r, g, b };
+            return {
+                lat: m.latitud,
+                lng: m.longitud,
+                nivel: norm
+            };
         });
     }
 
