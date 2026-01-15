@@ -1,6 +1,7 @@
 # 🌱 Proyecto Biometría 2025  
 
 🔗 **Web del proyecto (Plesk):** [https://nagufor.upv.edu.es/cliente/index.php](https://nagufor.upv.edu.es/cliente/index.php)  
+🔗 **Enlace a Trello:** [https://trello.com/b/vPgleVbe](https://trello.com/b/vPgleVbe)  
 
 Repositorio del proyecto de **Biometría y Medio Ambiente**. Incluye código, diseños, API REST, base de datos y pruebas automatizadas.  
 
