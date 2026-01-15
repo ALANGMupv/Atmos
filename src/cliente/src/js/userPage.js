@@ -820,6 +820,32 @@ async function actualizarEstadoSenal() {
     }
 }
 
+// ======================================================================
+//  Función: cargarRecorridoUsuario()
+// ----------------------------------------------------------------------
+//  Obtiene la distancia recorrida hoy (en metros) y la muestra en pantalla
+// ======================================================================
+async function cargarRecorridoUsuario() {
+
+    try {
+        const resp = await fetch(
+            `https://nagufor.upv.edu.es/recorrido?id_usuario=${ID_USUARIO}`
+        );
+
+        const data = await resp.json();
+
+        if (data.status !== "ok") return;
+
+        const spanDistancia = document.getElementById("distanciaHoy");
+
+        if (!spanDistancia) return;
+
+        spanDistancia.textContent = `${data.hoy} m`;
+
+    } catch (err) {
+        console.error("Error cargando recorrido:", err);
+    }
+}
 
 // ======================================================================
 //  9. Inicialización automática al cargar la página
@@ -848,6 +874,9 @@ window.addEventListener("DOMContentLoaded", async () => {
     // --- Estado de señal ---
     actualizarEstadoSenal();                       // primera llamada
     intervaloSenal = setInterval(actualizarEstadoSenal, 500);  // autorefresco
+
+    // --- Recorrido del usuario ---
+    cargarRecorridoUsuario();
 });
 
 
