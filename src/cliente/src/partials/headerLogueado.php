@@ -32,7 +32,7 @@ if (!isset($active))  { $active = null; }
             <!-- Menú -->
             <div class="nav-right">
 
-                <a href="userPage.php"
+                <a href="#"
                    class="nav-link <?php echo $active === 'portal' ? 'is-active' : ''; ?>"
                     <?php echo $active === 'portal' ? 'aria-current="page"' : ''; ?>>
                     MI PORTAL
