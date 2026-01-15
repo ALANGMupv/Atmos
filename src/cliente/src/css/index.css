@@ -369,6 +369,89 @@ body{
   .funcionalidades-sub { font-size: 22px; margin-bottom: 60px; }
 }
 
+/* ====== FAQ (Preguntas Frecuentes) ====== */
+.section-faq {
+    background: #f9fafb;
+    padding: 100px 24px;
+    width: 100%;
+}
+
+.section-faq .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.faq-title {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 600;
+    font-size: 32px;
+    color: #000;
+    text-align: center;
+    margin-bottom: 48px;
+}
+
+.faq-item {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    transition: box-shadow 0.2s ease;
+}
+
+.faq-item:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.faq-item summary {
+    padding: 20px 24px;
+    cursor: pointer;
+    list-style: none; /* Oculta flecha por defecto en algunos navegadores */
+    font-family: 'Roboto', sans-serif;
+    font-weight: 600;
+    font-size: 18px;
+    color: var(--text);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+}
+
+/* Icono personalizado para el summary */
+.faq-item summary::after {
+    content: '+';
+    font-size: 24px;
+    color: var(--green);
+    font-weight: 400;
+    line-height: 1;
+    transition: transform 0.2s ease;
+}
+
+/* Cuando está abierto, rota el icono */
+.faq-item[open] summary::after {
+    transform: rotate(45deg);
+}
+
+/* Ocultar triángulo nativo de detalles (Chrome/Safari) */
+.faq-item summary::-webkit-details-marker {
+    display: none;
+}
+
+.faq-content {
+    padding: 0 24px 24px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--muted);
+    border-top: 1px solid transparent;
+}
+
+.faq-item[open] .faq-content {
+    border-top: 1px solid var(--border);
+    padding-top: 16px; /* espacio extra tras el borde */
+}
+
+
 /* ====== CTA: Compra tu sensor ====== */
 .section-cta{
   background: var(--green);
@@ -410,4 +493,3 @@ body{
   font-size: 18px;          /* antes ~20px */
   border-radius: 28px;      /* uniforme con los del hero */
 }
-
