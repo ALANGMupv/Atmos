@@ -1,4 +1,5 @@
 <?php
+
 session_start();
 
 // Comprobar sesión activa
@@ -9,6 +10,7 @@ if (!isset($_SESSION['usuario'])) {
 
 // Datos del usuario en sesión
 $usuario = $_SESSION['usuario'];
+
 ?>
 
 <!doctype html>
@@ -37,10 +39,10 @@ $usuario = $_SESSION['usuario'];
 
     <?php
     $active = 'portal';
-    include __DIR__ . '/partials/headerLogueado.php';
-    ?>
+    include __DIR__ . '/partials/headerLogueado.php'; ?>
 
     <main>
+
         <section class="home-container">
 
             <!-- Saludo-->
@@ -60,46 +62,33 @@ $usuario = $_SESSION['usuario'];
                             <div class="mapa-indice-container">
                                 <h4>Índice de Calidad</h4>
                                 <div class="leyendas_indices-container">
-                                    <div class="fila-indice">
-                                        <span class="color-buena"></span>
-                                        <span class="texto-indice">Buena</span>
-                                        <span class="porcentaje-buena">0%</span>
+                                    <div class="fila-indice"><span class="color-buena"></span> <span
+                                            class="texto-indice">Buena</span> <span class="porcentaje-buena">0%</span>
                                     </div>
-                                    <div class="fila-indice">
-                                        <span class="color-moderada"></span>
-                                        <span class="texto-indice">Moderada</span>
-                                        <span class="porcentaje-moderada">0%</span>
-                                    </div>
-                                    <div class="fila-indice">
-                                        <span class="color-insalubre"></span>
-                                        <span class="texto-indice">Insalubre</span>
-                                        <span class="porcentaje-insalubre">0%</span>
-                                    </div>
-                                    <div class="fila-indice">
-                                        <span class="color-mala"></span>
-                                        <span class="texto-indice">Mala</span>
-                                        <span class="porcentaje-mala">0%</span>
+                                    <div class="fila-indice"><span class="color-moderada"></span> <span
+                                            class="texto-indice">Moderada</span> <span
+                                            class="porcentaje-moderada">0%</span></div>
+                                    <div class="fila-indice"><span class="color-insalubre"></span> <span
+                                            class="texto-indice">Insalubre</span> <span
+                                            class="porcentaje-insalubre">0%</span></div>
+                                    <div class="fila-indice"><span class="color-mala"></span> <span
+                                            class="texto-indice">Mala</span> <span class="porcentaje-mala">0%</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
                         <button onclick="window.location.href='mapaUser.php'">Ver Mapa</button>
+
                     </div>
 
                     <!-- Menú de acciones -->
                     <div class="menu-container">
                         <h3>Menú de acciones</h3>
                         <div class="botones-menu-container">
-                            <button class="menu-btn">
-                                <img src="img/manualUsuarioBoton.svg" alt="">
-                            </button>
-                            <button class="menu-btn" onclick="window.location.href='incidencias.php'">
-                                <img src="img/incidenciasMenuBoton.svg" alt="">
-                            </button>
-                            <button class="desvincular-btn">
-                                <img src="img/desvincularMenuBoton.svg" alt="">
-                            </button>
+                            <button class="menu-btn"><img src="img/manualUsuarioBoton.svg" alt=""></button>
+                            <button class="menu-btn" onclick="window.location.href='incidencias.php'"><img
+                                    src="img/incidenciasMenuBoton.svg" alt=""></button>
+                            <button class="desvincular-btn"><img src="img/desvincularMenuBoton.svg" alt=""></button>
                         </div>
                     </div>
                 </div>
@@ -117,29 +106,30 @@ $usuario = $_SESSION['usuario'];
                             </button>
                         </div>
 
-                        <!-- Selector de gas -->
-                        <div class="selector-gases-container">
-                            <p>Selecciona un gas contaminante:</p>
-                            <select id="gasSelector">
-                                <option value="NO₂">NO₂</option>
-                                <option value="CO">CO</option>
-                                <option value="O₃" selected>O₃</option>
-                                <option value="SO₂">SO₂</option>
-                            </select>
-                        </div>
+                        <div class="selector-recorrido-container">
 
-                        <!-- Recorrido -->
-                        <div class="recorrido-container">
-                            <div class="recorrido-info">
-                                <p class="recorrido-hoy">Recorrido de hoy: <span>100 m</span></p>
-                                <p class="recorrido-ayer">Ayer: 85 m</p>
+                            <!-- Selector de gas -->
+                            <div class="selector-gases-container">
+                                <p>Selecciona un gas contaminante:</p>
+                                <select id="gasSelector">
+                                    <option value="NO₂">NO₂</option>
+                                    <option value="CO">CO</option>
+                                    <option value="O₃" selected>O₃</option>
+                                    <option value="SO₂">SO₂</option>
+                                </select>
                             </div>
 
-                            <div class="recorrido-acciones">
-                                <button class="recorrido-btn iniciar">Iniciar</button>
-                                <button class="recorrido-btn detener hidden">Detener</button>
+                            <!-- Recorrido -->
+                            <div class="recorrido-container">
+                                <div class="recorrido-info">
+                                    <p class="recorrido-hoy">Distancia recorrida hoy: <span>100 m</span></p>
+                                </div>
                             </div>
                         </div>
+
+
+
+
 
                         <div class="info-miSensor-mobile">
 
@@ -174,8 +164,10 @@ $usuario = $_SESSION['usuario'];
                                         <p class="hora-ultima" id="fechaUltima">--:--</p>
                                     </div>
 
+                                    <!-- Valor que se actualizará -->
                                     <div class="medicion-medio-container">
                                         <p class="medicion-medicion">--</p>
+
                                         <div class="detalles-medicion">
                                             <p class="tipo-medicion" id="gasUltima">--</p>
                                             <p class="unidad-medicion">ppm</p>
@@ -195,8 +187,10 @@ $usuario = $_SESSION['usuario'];
                                         <p class="fecha-promedio" id="fechaPromedio">--/--/----</p>
                                     </div>
 
+                                    <!-- Valor que se actualizará -->
                                     <div class="promedio-medio-container">
                                         <p class="medicion-promedio">--</p>
+
                                         <div class="detalles-medicion-promedio">
                                             <p class="tipo-promedio" id="gasPromedio">--</p>
                                             <p class="unidad-promedio">ppm</p>
@@ -217,13 +211,13 @@ $usuario = $_SESSION['usuario'];
                                 <div class="titulo-grafica-container">
                                     <div class="titulo-grafica">
                                         <h4>Gráfica de Calidad del Aire</h4>
+                                        <!-- Botón de info del popup -->
                                         <button data-popup="popupGrafica" class="informacion-icono">
                                             <img src="img/informacionIcon.svg" alt="">
                                         </button>
                                     </div>
                                     <p id="graficaRangoTexto">--/-- al --/--</p>
                                 </div>
-
                                 <div class="selector-carita-container">
                                     <div class="selector-grafica-container">
                                         <div class="selector-modo-grafica">
@@ -231,21 +225,21 @@ $usuario = $_SESSION['usuario'];
                                             <button class="selector-opcion" data-modo="H">H</button>
                                         </div>
                                     </div>
-
                                     <div class="carita-grafica-container">
+
                                         <div class="carita-grafica">
                                             <img src="img/estadoAireIcono.svg" alt="">
                                             <div id="tooltipCarita" class="tooltip-carita hidden"></div>
                                         </div>
+
                                     </div>
                                 </div>
-                            </div>
 
+                            </div>
                             <div class="bottom-container">
                                 <canvas id="graficaCalidad"></canvas>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </section>
@@ -298,11 +292,15 @@ $usuario = $_SESSION['usuario'];
         window.ID_USUARIO = <?= json_encode($usuario['id_usuario']); ?>;
     </script>
 
+
     <!-- Script de la página -->
     <script type="module" src="js/userPage.js"></script>
 
     <!-- Script para la gráfica de calidad de aire -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+
+
 
 </body>
 
