@@ -1200,6 +1200,61 @@ router.post("/verificarEmailAtmos", async (req, res) => {
         }
     });
 
+    // -------------------------------------------
+// GET /mapa/medidas/gas/historico
+// -------------------------------------------
+    router.get("/mapa/medidas/gas/historico", async (req, res) => {
+        try {
+            const { tipo, fecha, hora } = req.query;
+
+            if (!tipo || !fecha || !hora) {
+                return res.status(400).json({ error: "Faltan parámetros" });
+            }
+
+            const inicio = `${fecha} ${hora}:00`;
+            const fin    = `${fecha} ${hora}:59`;
+
+            const filas = await logica.obtenerMedidasGlobalPorGasEnRango(
+                Number(tipo),
+                inicio,
+                fin
+            );
+
+            res.json({ status: "ok", medidas: filas });
+
+        } catch (err) {
+            res.status(500).json({ status: "error", mensaje: err.message });
+        }
+    });
+
+
+
+// -------------------------------------------
+// GET /mapa/medidas/todos/historico
+// -------------------------------------------
+    router.get("/mapa/medidas/todos/historico", async (req, res) => {
+        try {
+            const { fecha, hora } = req.query;
+
+            if (!fecha || !hora) {
+                return res.status(400).json({ error: "Faltan parámetros" });
+            }
+
+            const inicio = `${fecha} ${hora}:00`;
+            const fin    = `${fecha} ${hora}:59`;
+
+            const filas = await logica.obtenerMedidasGlobalTodasLasPlacasEnRango(
+                inicio,
+                fin
+            );
+
+            res.json({ status: "ok", placas: filas });
+
+        } catch (err) {
+            res.status(500).json({ status: "error", mensaje: err.message });
+        }
+    });
+
     // --------------------------------------------------------------------------
     //  Endpoint: GET /estadoNodos
     // --------------------------------------------------------------------------

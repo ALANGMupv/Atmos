@@ -85,7 +85,7 @@
  * Marca la sección "mapas" como activa.
  */
 $active = 'mapas';
-include __DIR__ . '/partials/headerLogueado.php'; ?>
+include __DIR__ . '/partials/headerEmpresas.php'; ?>
 
 <main>
 
@@ -231,6 +231,47 @@ include __DIR__ . '/partials/headerLogueado.php'; ?>
                 <img src="img/ubicacionIcono.svg" alt="">
             </button>
 
+            <!--
+            /**
+             * @section Filtro temporal histórico
+             * @brief Permite filtrar las medidas del mapa por fecha y hora exactas.
+             */
+            -->
+            <div class="filtro-fecha-container">
+
+                <h4>Filtro temporal</h4>
+
+                <div class="filtro-fecha-campos">
+
+                    <!-- Selector de fecha -->
+                    <div class="campo-fecha">
+                        <label for="filtro-fecha">Fecha</label>
+                        <input
+                                type="date"
+                                id="fecha-input"
+                                name="filtro-fecha"
+                        >
+                    </div>
+
+                    <!-- Selector de hora -->
+                    <div class="campo-hora">
+                        <label for="filtro-hora">Hora</label>
+                        <input
+                                type="time"
+                                id="hora-input"
+                                name="filtro-hora"
+                                step="60"
+                        >
+                    </div>
+                </div>
+                <!-- Botón aplicar filtro -->
+                <button id="btn-aplicar-fecha" class="btn-aplicar-filtro">
+                    Aplicar filtro
+                </button>
+
+            </div>
+
+
         </section>
     </section>
 
@@ -255,7 +296,7 @@ include __DIR__ . '/partials/headerLogueado.php'; ?>
 <script src="js/estacionesOficiales.js"></script>
 
 <!-- Script principal del mapa -->
-<script src="js/mapaUser.js"></script>
+<script src="js/mapaHistorico.js"></script>
 
 <?php
 /**
