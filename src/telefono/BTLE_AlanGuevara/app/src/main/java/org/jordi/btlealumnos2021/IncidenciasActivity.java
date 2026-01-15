@@ -42,7 +42,7 @@ public class IncidenciasActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private RequestQueue requestQueue;
-    private int idUsuario = 1; // Ajustar según sesión real
+    private int idUsuario;
 
     /**
      * Nombre Método: onCreate
@@ -59,6 +59,14 @@ public class IncidenciasActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_incidencias);
+
+        idUsuario = SesionManager.obtenerIdUsuario(this);
+
+        if (idUsuario == -1) {
+            // No hay sesión válida → cerrar pantalla o redirigir a login
+            finish();
+            return;
+        }
 
         //Recycler View
 
