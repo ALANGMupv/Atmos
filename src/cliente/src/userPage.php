@@ -86,7 +86,8 @@ $usuario = $_SESSION['usuario'];
                         <h3>Menú de acciones</h3>
                         <div class="botones-menu-container">
                             <button class="menu-btn"><img src="img/manualUsuarioBoton.svg" alt=""></button>
-                            <button class="menu-btn"><img src="img/incidenciasMenuBoton.svg" alt=""></button>
+                            <button class="menu-btn" onclick="window.location.href='incidencias.php'"><img
+                                    src="img/incidenciasMenuBoton.svg" alt=""></button>
                             <button class="desvincular-btn"><img src="img/desvincularMenuBoton.svg" alt=""></button>
                         </div>
                     </div>

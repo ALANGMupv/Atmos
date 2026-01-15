@@ -32,10 +32,16 @@ if (!isset($active))  { $active = null; }
             <!-- Menú -->
             <div class="nav-right">
 
-                <a href="#"
+                <a href="userPage.php"
                    class="nav-link <?php echo $active === 'portal' ? 'is-active' : ''; ?>"
                     <?php echo $active === 'portal' ? 'aria-current="page"' : ''; ?>>
                     MI PORTAL
+                </a>
+
+                <a href="incidencias.php"
+                   class="nav-link <?php echo $active === 'incidencias' ? 'is-active' : ''; ?>"
+                    <?php echo $active === 'incidencias' ? 'aria-current="page"' : ''; ?>>
+                    INCIDENCIAS
                 </a>
 
                 <a href="mapaUser.php"
