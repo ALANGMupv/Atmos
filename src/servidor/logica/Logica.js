@@ -1343,6 +1343,152 @@ async obtenerUltimasMedidasGlobalTodasLasPlacas() {
     }
 }
 
+    // --------------------------------------------------------------------------
+// Método: obtenerMedidasGlobalPorGasEnRango()
+// --------------------------------------------------------------------------
+    async obtenerMedidasGlobalPorGasEnRango(tipo, fechaInicio, fechaFin) {
+        const conn = await this.pool.getConnection();
+        try {
+            const sql = `
+            SELECT 
+                m.id_medida,
+                m.id_placa,
+                m.tipo,
+                m.valor,
+                m.latitud,
+                m.longitud,
+                m.fecha_hora
+            FROM medida m
+            INNER JOIN (
+                SELECT 
+                    id_placa,
+                    MAX(fecha_hora) AS fh
+                FROM medida
+                WHERE tipo = ?
+                  AND fecha_hora BETWEEN ? AND ?
+                GROUP BY id_placa
+            ) ult
+              ON m.id_placa = ult.id_placa
+             AND m.fecha_hora = ult.fh
+            ORDER BY m.fecha_hora DESC;
+        `;
+
+            const [rows] = await conn.query(sql, [
+                tipo,
+                fechaInicio,
+                fechaFin
+            ]);
+
+            return rows;
+
+        } finally {
+            conn.release();
+        }
+    }
+
+
+    // --------------------------------------------------------------------------
+// Método: obtenerMedidasGlobalTodasLasPlacasEnRango()
+// --------------------------------------------------------------------------
+    async obtenerMedidasGlobalTodasLasPlacasEnRango(fechaInicio, fechaFin) {
+        const conn = await this.pool.getConnection();
+        try {
+
+            const sql = `
+            SELECT *
+            FROM (
+                SELECT 
+                    p.id_placa,
+
+                    -- Posición dentro del rango horario
+                    (
+                        SELECT latitud
+                        FROM medida
+                        WHERE id_placa = p.id_placa
+                          AND fecha_hora BETWEEN ? AND ?
+                        ORDER BY fecha_hora DESC
+                        LIMIT 1
+                    ) AS latitud,
+
+                    (
+                        SELECT longitud
+                        FROM medida
+                        WHERE id_placa = p.id_placa
+                          AND fecha_hora BETWEEN ? AND ?
+                        ORDER BY fecha_hora DESC
+                        LIMIT 1
+                    ) AS longitud,
+
+                    -- NO2
+                    (
+                        SELECT valor
+                        FROM medida
+                        WHERE id_placa = p.id_placa
+                          AND tipo = 11
+                          AND fecha_hora BETWEEN ? AND ?
+                        ORDER BY fecha_hora DESC
+                        LIMIT 1
+                    ) AS NO2,
+
+                    -- CO
+                    (
+                        SELECT valor
+                        FROM medida
+                        WHERE id_placa = p.id_placa
+                          AND tipo = 12
+                          AND fecha_hora BETWEEN ? AND ?
+                        ORDER BY fecha_hora DESC
+                        LIMIT 1
+                    ) AS CO,
+
+                    -- O3
+                    (
+                        SELECT valor
+                        FROM medida
+                        WHERE id_placa = p.id_placa
+                          AND tipo = 13
+                          AND fecha_hora BETWEEN ? AND ?
+                        ORDER BY fecha_hora DESC
+                        LIMIT 1
+                    ) AS O3,
+
+                    -- SO2
+                    (
+                        SELECT valor
+                        FROM medida
+                        WHERE id_placa = p.id_placa
+                          AND tipo = 14
+                          AND fecha_hora BETWEEN ? AND ?
+                        ORDER BY fecha_hora DESC
+                        LIMIT 1
+                    ) AS SO2
+
+                FROM (
+                    SELECT DISTINCT id_placa
+                    FROM medida
+                ) p
+            ) t
+            WHERE t.latitud IS NOT NULL
+              AND t.longitud IS NOT NULL;
+        `;
+
+            const params = [
+                fechaInicio, fechaFin,   // latitud
+                fechaInicio, fechaFin,   // longitud
+                fechaInicio, fechaFin,   // NO2
+                fechaInicio, fechaFin,   // CO
+                fechaInicio, fechaFin,   // O3
+                fechaInicio, fechaFin    // SO2
+            ];
+
+            const [rows] = await conn.query(sql, params);
+            return rows;
+
+        } finally {
+            conn.release();
+        }
+    }
+
 
 
     // --------------------------------------------------------------------------
